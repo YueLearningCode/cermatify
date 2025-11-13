@@ -1,0 +1,46 @@
+name: cermatify
+description: "A new Flutter project."
+
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  cupertino_icons: ^1.0.8
+  dio: ^5.8.0+1
+  fl_chart: ^0.71.0
+  flutter:
+    sdk: flutter
+  flutter_carousel_widget: ^3.1.0
+  flutter_secure_storage: ^9.2.4
+  flutter_spinkit: ^5.2.1
+  flutter_svg: ^2.2.0
+  get: ^4.7.2
+  google_fonts: ^6.2.1
+  http: ^1.4.0
+  iconly: ^1.0.1
+  image_picker: ^1.1.2
+  intl: ^0.20.2
+  pretty_dio_logger: ^1.4.0
+  shared_preferences: ^2.5.3
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
