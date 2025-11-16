@@ -7,6 +7,14 @@ abstract class Routes {
   static const LOGIN = _Paths.LOGIN;
   static const REGISTER = _Paths.REGISTER;
   static const DASHBOARD = _Paths.DASHBOARD;
+  static const SPLASH = _Paths.SPLASH;
+  static const CHAT = _Paths.CHAT;
+  static const PROFILE = _Paths.PROFILE;
+  static const KUESIONER = _Paths.KUESIONER;
+  static const FAQ = _Paths.FAQ;
+  static const PAPERLINK = _Paths.PAPERLINK;
+  static const COMPLINK = _Paths.COMPLINK;
+  static const SOURCELINK = _Paths.SOURCELINK;
 }
 
 abstract class _Paths {
@@ -15,4 +23,12 @@ abstract class _Paths {
   static const LOGIN = '/login';
   static const REGISTER = '/register';
   static const DASHBOARD = '/dashboard';
+  static const SPLASH = '/splash';
+  static const CHAT = '/chat';
+  static const PROFILE = '/profile';
+  static const KUESIONER = '/kuesioner';
+  static const FAQ = '/faq';
+  static const PAPERLINK = '/paperlink';
+  static const COMPLINK = '/complink';
+  static const SOURCELINK = '/sourcelink';
 }

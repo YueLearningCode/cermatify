@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 /// [AppColors] adalah kelas yang menyediakan berbagai warna custom
 class AppColors {
   AppColors._();
-  static const Color primaryColor = Color(0xFF000101);
+  static const Color primaryColor = Color(0xFF1E88E5);
+  static const Color lightPrimaryColor = Color(0xFF64B5F6);
+  static const Color darkPrimaryColor = Color(0xFF1565C0);
   static const Color secondaryColor = Color(0xFFFFF2F0);
   static const Color tertiaryColor = Color(0xFF9E9BC7);
   static const Color thirdColor = Color(0xFFEFF7EE);
   static const Color fourthColor = Color(0xFFFFF2F0);
-  static const Color bgColor = Color(0xfff4f9fd);
+  static const Color bgColor = Color(0xFFF9FAFB);
   static const Color blueColor = Color(0xFF007FFD);
   static const Color redColor = Color(0xFFF74849);
   static const Color blackColor = Color(0xFF000000);
@@ -34,4 +36,17 @@ class AppColors {
   static const Color grey2Color = Color(0xffB3B3B3);
   static const Color black414 = Color(0xFF141414);
   static const Color blackF45 = Color(0xFF353F45);
+
+  // Aliases for compatibility
+  static const Color background = bgColor;
+  static const Color textPrimary = black414;
+  static const Color textSecondary = greyTextSecondaryColor;
+  static const Color surface = whiteColor;
+  static const Color border = borderColor;
+  static const Color textLight = grey2Color;
+  static const Color primary = primaryColor;
+  static const Color primaryLight = lightPrimaryColor;
+  static const Color primaryDark = darkPrimaryColor;
+  static const Color error = redColor;
+  static const Color success = greenColor;
 }
