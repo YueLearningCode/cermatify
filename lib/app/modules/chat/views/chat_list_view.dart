@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/models/chat_model.dart';
-import 'package:cermatify/app/modules/paperlink/views/list_mentor_view.dart';
 import '../controllers/chat_controller.dart';
 import 'chat_room_view.dart';
 import '../../home/controllers/home_controller.dart';
@@ -97,8 +96,17 @@ class ChatListView extends GetView<ChatController> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Get.to(() => ChatRoomView(mentorId: partnerId));
+          onTap: () async {
+            // For mentors, partnerId is customerId
+            // For customers, partnerId is mentorId
+            if (controller.isMentor) {
+              // Mentor chatting with customer
+              await controller.createOrGetChatRoom(mentorId: partnerId);
+              Get.to(() => ChatRoomView(mentorId: partnerId));
+            } else {
+              // Customer chatting with mentor
+              Get.to(() => ChatRoomView(mentorId: partnerId));
+            }
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -195,71 +203,6 @@ class ChatListView extends GetView<ChatController> {
             'Mulai percakapan dengan mentor untuk mendapatkan bantuan belajar',
             style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          // Hide "Temukan Mentor" button when embedded in Home for mentors
-          embed
-              ? SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () => _showNewChatDialog(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.surface,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 2,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.add_rounded, size: 20),
-                        const SizedBox(width: 8),
-                        Text('Temukan Mentor', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16)),
-                      ],
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(),
-        ],
-      ),
-    );
-  }
-
-  void _showNewChatDialog() {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          "Mulai Percakapan Baru",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 18),
-        ),
-        content: Text(
-          "Pilih mentor untuk memulai percakapan",
-          style: GoogleFonts.poppins(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              "Batal",
-              style: GoogleFonts.poppins(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              // Navigate to mentor list without preset filters;
-              // user can pick a mentor and start a chat from their detail page.
-              Get.to(() => const ListMentorView());
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text("Cari Mentor", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -374,16 +317,6 @@ class ChatListView extends GetView<ChatController> {
         ],
       ),
       body: _buildBody(),
-      floatingActionButton: isMentor
-          ? null
-          : FloatingActionButton(
-              onPressed: _showNewChatDialog,
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.surface,
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.chat_rounded, size: 24),
-            ),
     );
   }
 }

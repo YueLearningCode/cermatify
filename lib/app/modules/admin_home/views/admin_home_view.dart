@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import '../controllers/admin_home_controller.dart';
 import '../../admin_dashboard/controllers/admin_dashboard_controller.dart';
+import '../../admin_orders/views/admin_orders_view.dart';
+import '../../admin_orders/bindings/admin_orders_binding.dart';
 
 class AdminHomeView extends GetView<AdminHomeController> {
   const AdminHomeView({super.key});
@@ -84,7 +86,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                       children: [
                         Expanded(
                           child: _buildStatCard(
-                            title: "Total Users",
+                            title: "Jumlah Users",
                             value: controller.totalUsers.value.toString(),
                             icon: Icons.people_outlined,
                             color: AppColors.primary,
@@ -106,7 +108,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                       children: [
                         Expanded(
                           child: _buildStatCard(
-                            title: "Active",
+                            title: "Aktif",
                             value: "100%",
                             icon: Icons.check_circle_outline,
                             color: AppColors.greenColor,
@@ -145,7 +147,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                       children: [
                         _buildActionCard(
                           title: "Manage Users",
-                          subtitle: "View & Edit",
+                          subtitle: "Lihat & Edit",
                           icon: Icons.people_rounded,
                           color: AppColors.primary,
                           onTap: () {
@@ -157,7 +159,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                         ),
                         _buildActionCard(
                           title: "Master Data",
-                          subtitle: "View & Edit",
+                          subtitle: "Lihat & Edit",
                           icon: Icons.storage_rounded,
                           color: AppColors.greenColor,
                           onTap: () {
@@ -165,6 +167,16 @@ class AdminHomeView extends GetView<AdminHomeController> {
                             if (Get.isRegistered<AdminDashboardController>()) {
                               Get.find<AdminDashboardController>().changeTab(2);
                             }
+                          },
+                        ),
+                        _buildActionCard(
+                          title: "Orders",
+                          subtitle: "Mengelola Order",
+                          icon: Icons.shopping_bag_rounded,
+                          color: AppColors.orangeColor,
+                          onTap: () {
+                            // Navigate to Orders view with binding
+                            Get.to(() => const AdminOrdersView(), binding: AdminOrdersBinding());
                           },
                         ),
                         // _buildActionCard(

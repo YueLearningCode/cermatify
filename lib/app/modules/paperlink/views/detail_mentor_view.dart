@@ -214,12 +214,12 @@ class DetailMentorView extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    // Check if user has approved order for this mentor
+                    // Check if user has order in progress for this mentor
                     final orderHistoryController = Get.put(OrderHistoryController());
-                    final hasApproved = await orderHistoryController.hasApprovedOrder(mentor.id);
+                    final hasProgress = await orderHistoryController.hasProgressOrder(mentor.id);
 
-                    if (hasApproved) {
-                      // User has approved order, proceed to chat
+                    if (hasProgress) {
+                      // User has order in progress, proceed to chat
                       final ChatController chatController = Get.isRegistered<ChatController>()
                           ? Get.find<ChatController>()
                           : Get.put(ChatController());
@@ -234,7 +234,8 @@ class DetailMentorView extends StatelessWidget {
                           : 'Layanan';
 
                       // Show order dialog
-                      final result = await Get.dialog(
+                      // Navigation to order history is handled inside the dialog
+                      await Get.dialog(
                         OrderDialogView(
                           mentorId: mentor.id,
                           mentorName: mentor.name,
@@ -244,11 +245,6 @@ class DetailMentorView extends StatelessWidget {
                         ),
                         barrierDismissible: false,
                       );
-
-                      // If order was created successfully, navigate to order history
-                      if (result == true) {
-                        Get.offNamed(Routes.ORDER_HISTORY);
-                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(

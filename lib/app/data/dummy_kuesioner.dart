@@ -29,7 +29,7 @@ final List<Kuesioner> dummyKuesioner = [
       ),
       QuestionAnswer(
         question: 'Fitur apa yang paling sering Anda gunakan?',
-        answer: 'Saya paling sering menggunakan fitur PaperLink untuk bimbingan penulisan paper.',
+        answer: 'Saya paling sering menggunakan fitur Cermat Paper untuk bimbingan penulisan paper.',
       ),
       QuestionAnswer(
         question: 'Apakah ada saran untuk pengembangan platform?',

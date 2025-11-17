@@ -21,27 +21,116 @@ class OrderHistoryController extends GetxController {
     try {
       isLoading.value = true;
       final User? user = _auth.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        orders.value = [];
+        return;
+      }
 
-      final querySnapshot = await _firestore
-          .collection('orders')
-          .where('userId', isEqualTo: user.uid)
-          .orderBy('createdAt', descending: true)
-          .get();
+      List<Map<String, dynamic>> ordersList;
 
-      orders.value = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return {'id': doc.id, ...data};
-      }).toList();
+      try {
+        // Try with orderBy first
+        final querySnapshot = await _firestore
+            .collection('orders')
+            .where('userId', isEqualTo: user.uid)
+            .orderBy('createdAt', descending: true)
+            .get();
+
+        ordersList = querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          return {'id': doc.id, ...data};
+        }).toList();
+      } catch (e) {
+        // If orderBy fails (might need composite index), fetch without orderBy
+        print('Error with orderBy, trying without: $e');
+        final querySnapshot = await _firestore.collection('orders').where('userId', isEqualTo: user.uid).get();
+
+        ordersList = querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          return {'id': doc.id, ...data};
+        }).toList();
+
+        // Sort manually by createdAt
+        ordersList.sort((a, b) {
+          final aTime = a['createdAt'];
+          final bTime = b['createdAt'];
+          if (aTime == null && bTime == null) return 0;
+          if (aTime == null) return 1;
+          if (bTime == null) return -1;
+          if (aTime is Timestamp && bTime is Timestamp) {
+            return bTime.compareTo(aTime); // Descending
+          }
+          return 0;
+        });
+      }
+
+      // Fetch mentor and layanan names for each order
+      for (var order in ordersList) {
+        final mentorId = order['mentorId']?.toString();
+        final layananId = order['layananId']?.toString();
+
+        // Fetch mentor name
+        if (mentorId != null && mentorId.isNotEmpty) {
+          try {
+            final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+            if (mentorDoc.exists) {
+              final mentorData = mentorDoc.data();
+              order['mentorName'] = mentorData?['nama'] ?? mentorData?['name'] ?? 'Unknown Mentor';
+            } else {
+              order['mentorName'] = 'Unknown Mentor';
+            }
+          } catch (e) {
+            print('Error fetching mentor name: $e');
+            order['mentorName'] = 'Unknown Mentor';
+          }
+        } else {
+          order['mentorName'] = 'Unknown Mentor';
+        }
+
+        // Fetch layanan name
+        if (layananId != null && layananId.isNotEmpty) {
+          try {
+            final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+            if (layananDoc.exists) {
+              final layananData = layananDoc.data();
+              order['layananName'] = layananData?['name'] ?? 'Unknown Layanan';
+            } else {
+              order['layananName'] = 'Unknown Layanan';
+            }
+          } catch (e) {
+            print('Error fetching layanan name: $e');
+            order['layananName'] = 'Unknown Layanan';
+          }
+        } else {
+          order['layananName'] = 'Unknown Layanan';
+        }
+      }
+
+      // Sort by newest (most recent first) after fetching all data
+      ordersList.sort((a, b) {
+        final aTime = a['createdAt'];
+        final bTime = b['createdAt'];
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        if (aTime is Timestamp && bTime is Timestamp) {
+          return bTime.compareTo(aTime); // Descending (newest first)
+        }
+        return 0;
+      });
+
+      orders.value = ordersList;
+      print('Fetched ${orders.length} orders'); // Debug
     } catch (e) {
       print('Error fetching orders: $e');
+      orders.value = [];
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Check if user has approved order for a mentor
-  Future<bool> hasApprovedOrder(String mentorId) async {
+  // Check if user has order in progress for a mentor
+  Future<bool> hasProgressOrder(String mentorId) async {
     try {
       final User? user = _auth.currentUser;
       if (user == null) return false;
@@ -50,42 +139,52 @@ class OrderHistoryController extends GetxController {
           .collection('orders')
           .where('userId', isEqualTo: user.uid)
           .where('mentorId', isEqualTo: mentorId)
-          .where('status', isEqualTo: 'approved')
+          .where('status', isEqualTo: 'progress')
           .limit(1)
           .get();
 
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print('Error checking approved order: $e');
+      print('Error checking progress order: $e');
       return false;
     }
   }
 
   Color getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
+    switch (status.toLowerCase()) {
+      case 'waiting verification':
         return AppColors.yellow2Color;
-      case 'approved':
+      case 'progress':
         return AppColors.greenColor;
       case 'rejected':
         return AppColors.redColor;
       case 'completed':
         return AppColors.primary;
+      // Legacy support for old status names
+      case 'pending':
+        return AppColors.yellow2Color;
+      case 'approved':
+        return AppColors.greenColor;
       default:
         return AppColors.textSecondary;
     }
   }
 
   String getStatusText(String status) {
-    switch (status) {
-      case 'pending':
-        return 'Pending';
-      case 'approved':
-        return 'Approved';
+    switch (status.toLowerCase()) {
+      case 'waiting verification':
+        return 'Waiting Verification';
+      case 'progress':
+        return 'In Progress';
       case 'rejected':
         return 'Rejected';
       case 'completed':
         return 'Completed';
+      // Legacy support for old status names
+      case 'pending':
+        return 'Waiting Verification';
+      case 'approved':
+        return 'In Progress';
       default:
         return status;
     }

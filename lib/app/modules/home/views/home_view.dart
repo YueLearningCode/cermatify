@@ -81,40 +81,40 @@ class HomeContent extends GetView<HomeController> {
               ],
             ),
             const SizedBox(height: 20),
-            // Search Bar
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 2)),
-                ],
-              ),
-              child: TextField(
-                readOnly: true,
-                onTap: () {
-                  // Buka daftar mentor tanpa filter (tampilkan semua mentor)
-                  Get.to(() => const ListMentorView());
-                },
-                decoration: InputDecoration(
-                  hintText: "Cari mentor atau topik...",
-                  hintStyle: GoogleFonts.poppins(color: AppColors.textLight),
-                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            // // Search Bar
+            // Container(
+            //   decoration: BoxDecoration(
+            //     borderRadius: BorderRadius.circular(14),
+            //     boxShadow: [
+            //       BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 2)),
+            //     ],
+            //   ),
+            //   child: TextField(
+            //     readOnly: true,
+            //     onTap: () {
+            //       // Buka daftar mentor tanpa filter (tampilkan semua mentor)
+            //       Get.to(() => const ListMentorView());
+            //     },
+            //     decoration: InputDecoration(
+            //       hintText: "Cari mentor atau topik...",
+            //       hintStyle: GoogleFonts.poppins(color: AppColors.textLight),
+            //       prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary),
+            //       filled: true,
+            //       fillColor: AppColors.surface,
+            //       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            //       enabledBorder: OutlineInputBorder(
+            //         borderRadius: BorderRadius.circular(14),
+            //         borderSide: BorderSide.none,
+            //       ),
+            //       focusedBorder: OutlineInputBorder(
+            //         borderRadius: BorderRadius.circular(14),
+            //         borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
             // Carousel Banner dengan auto slide
             Column(
               children: [
@@ -184,19 +184,19 @@ class HomeContent extends GetView<HomeController> {
               padding: EdgeInsets.zero,
               children: const [
                 FeatureCard(
-                  title: "PaperLink",
+                  title: "Cermat Paper",
                   subtitle: "Bimbingan Paper",
                   icon: Icons.description_rounded,
                   color: AppColors.primaryLight,
                 ),
                 FeatureCard(
-                  title: "CompLink",
+                  title: "Cermat Competition",
                   subtitle: "Kompetisi & Beasiswa",
                   icon: Icons.school_rounded,
                   color: AppColors.primary,
                 ),
                 FeatureCard(
-                  title: "SourceLink",
+                  title: "Cermat Kuesioner",
                   subtitle: "Sumber Belajar",
                   icon: Icons.library_books_rounded,
                   color: AppColors.primaryDark,
@@ -229,13 +229,13 @@ class FeatureCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         switch (title) {
-          case "PaperLink":
+          case "Cermat Paper":
             Get.toNamed(Routes.PAPERLINK);
             break;
-          case "CompLink":
+          case "Cermat Competition":
             Get.toNamed(Routes.COMPLINK);
             break;
-          case "SourceLink":
+          case "Cermat Kuesioner":
             Get.toNamed(Routes.SOURCELINK);
             break;
           case "Order History":
@@ -271,13 +271,13 @@ class FeatureCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             onTap: () {
               switch (title) {
-                case "PaperLink":
+                case "Cermat Paper":
                   Get.toNamed(Routes.PAPERLINK);
                   break;
-                case "CompLink":
+                case "Cermat Competition":
                   Get.toNamed(Routes.COMPLINK);
                   break;
-                case "SourceLink":
+                case "Cermat Kuesioner":
                   Get.toNamed(Routes.SOURCELINK);
                   break;
                 case "Order History":

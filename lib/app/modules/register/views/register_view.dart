@@ -28,7 +28,7 @@ class RegisterView extends GetView<RegisterController> {
                   children: [
                     const SizedBox(height: 20),
                     Center(
-                      child: Hero(tag: 'logo', child: Image.asset('assets/images/logo.png', height: 150)),
+                      child: Hero(tag: 'logo', child: Image.asset('assets/images/logo.jpeg', height: 150)),
                     ),
                     const SizedBox(height: 40),
                     Obx(
@@ -339,7 +339,7 @@ class RegisterView extends GetView<RegisterController> {
                                       return DropdownMenuItem<String>(
                                         value: role,
                                         child: Text(
-                                          role == 'complink' ? 'CompLink' : 'PaperLink',
+                                          role == 'complink' ? 'Cermat Competition' : 'Cermat Paper',
                                           style: AppStyles.body1(color: AppColors.black414),
                                         ),
                                       );

@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 class FaqController extends GetxController {
   final List<Map<String, String>> faqs = const [
     {
-      'question': 'Apa itu program mentoring PaperLink?',
+      'question': 'Apa itu program mentoring Cermat Paper?',
       'answer':
-          'PaperLink adalah program mentoring yang membantu mahasiswa dan peneliti mengembangkan karya ilmiah dengan bimbingan mentor berpengalaman.',
+          'Cermat Paper adalah program mentoring yang membantu mahasiswa dan peneliti mengembangkan karya ilmiah dengan bimbingan mentor berpengalaman.',
     },
     {
       'question': 'Bagaimana cara saya menemukan mentor yang sesuai?',
@@ -15,7 +15,7 @@ class FaqController extends GetxController {
     {
       'question': 'Apakah program ini gratis?',
       'answer':
-          'Sebagian fitur PaperLink dapat diakses secara gratis, namun beberapa mentor mungkin memiliki tarif mentoring yang ditentukan secara individual.',
+          'Sebagian fitur Cermat Paper dapat diakses secara gratis, namun beberapa mentor mungkin memiliki tarif mentoring yang ditentukan secara individual.',
     },
     {
       'question': 'Bagaimana cara mengisi kuesioner setelah sesi mentoring?',

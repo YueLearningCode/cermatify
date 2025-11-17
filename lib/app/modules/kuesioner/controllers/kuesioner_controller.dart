@@ -83,6 +83,8 @@ class KuesionerController extends GetxController {
       }).toList();
 
       if (!hasRespondenData.value || respondenData.isEmpty) {
+        // Sort by newest (most recent first)
+        all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         kuesionerList.value = all;
         return;
       }
@@ -116,6 +118,8 @@ class KuesionerController extends GetxController {
           })
           .toList();
 
+      // Sort by newest (most recent first)
+      filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       kuesionerList.value = filtered;
     } catch (_) {
       // fallback to dummy if collection doesn't exist

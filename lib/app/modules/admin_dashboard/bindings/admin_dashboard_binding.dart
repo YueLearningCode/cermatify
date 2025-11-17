@@ -5,6 +5,7 @@ import '../../admin_home/controllers/admin_home_controller.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../users/controllers/users_controller.dart';
 import '../../master_data/controllers/master_data_controller.dart';
+import '../../admin_orders/controllers/admin_orders_controller.dart';
 
 class AdminDashboardBinding extends Bindings {
   @override
@@ -14,5 +15,6 @@ class AdminDashboardBinding extends Bindings {
     Get.lazyPut<ProfileController>(() => ProfileController());
     Get.lazyPut<UsersController>(() => UsersController());
     Get.lazyPut<MasterDataController>(() => MasterDataController());
+    Get.lazyPut<AdminOrdersController>(() => AdminOrdersController());
   }
 }

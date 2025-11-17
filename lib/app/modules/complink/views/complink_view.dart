@@ -112,7 +112,7 @@ class ComplinkView extends GetView<ComplinkController> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          "CompLink",
+          "Cermat Competition",
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: AppColors.surface, fontSize: 18),
         ),
         centerTitle: true,

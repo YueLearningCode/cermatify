@@ -5,6 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
 import '../controllers/order_history_controller.dart';
+import '../../chat/controllers/chat_controller.dart';
+import '../../chat/views/chat_room_view.dart';
+import 'package:cermatify/app/data/models/mentor_model.dart';
 
 class OrderHistoryView extends GetView<OrderHistoryController> {
   const OrderHistoryView({super.key});
@@ -15,12 +18,30 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          'Order History',
+          'Riwayat Order',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
+        actions: [
+          Obx(
+            () => IconButton(
+              icon: controller.isLoading.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
+                      ),
+                    )
+                  : const Icon(Icons.refresh_rounded),
+              onPressed: controller.isLoading.value ? null : () => controller.fetchOrders(),
+              tooltip: 'Refresh',
+            ),
+          ),
+        ],
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -35,12 +56,12 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                 Icon(Icons.shopping_bag_outlined, size: 80, color: AppColors.textSecondary),
                 const SizedBox(height: 16),
                 Text(
-                  'No orders yet',
+                  'Belum ada order',
                   style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your order history will appear here',
+                  'Riwayat order akan muncul di sini',
                   style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
                 ),
               ],
@@ -67,8 +88,8 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
     final status = order['status']?.toString() ?? 'pending';
     final price = order['price'] as int? ?? 0;
     final createdAt = order['createdAt'] as Timestamp?;
-    final mentorId = order['mentorId']?.toString() ?? '';
-    final layananId = order['layananId']?.toString() ?? '';
+    final mentorName = order['mentorName']?.toString() ?? order['mentorId']?.toString() ?? 'Unknown Mentor';
+    final layananName = order['layananName']?.toString() ?? order['layananId']?.toString() ?? 'Unknown Layanan';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -111,15 +132,15 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow('Mentor ID', mentorId.substring(0, mentorId.length > 8 ? 8 : mentorId.length)),
+                _buildDetailRow('Mentor', mentorName),
                 const SizedBox(height: 8),
-                _buildDetailRow('Layanan ID', layananId.substring(0, layananId.length > 8 ? 8 : layananId.length)),
+                _buildDetailRow('Layanan', layananName),
                 const SizedBox(height: 8),
-                _buildDetailRow('Price', AppFormats.hargaPendek(price)),
+                _buildDetailRow('Harga', AppFormats.hargaPendek(price)),
                 if (createdAt != null) ...[
                   const SizedBox(height: 8),
                   _buildDetailRow(
-                    'Date',
+                    'Tanggal',
                     '${createdAt.toDate().day}/${createdAt.toDate().month}/${createdAt.toDate().year}',
                   ),
                 ],
@@ -136,7 +157,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppBar(
-                                  title: const Text('Payment Proof'),
+                                  title: const Text('Bukti Pembayaran'),
                                   actions: [IconButton(icon: const Icon(Icons.close), onPressed: () => Get.back())],
                                 ),
                                 Expanded(child: Image.network(order['paymentProofUrl'], fit: BoxFit.contain)),
@@ -158,7 +179,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                           Icon(Icons.image, color: AppColors.primary, size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            'View Payment Proof',
+                            'Lihat Bukti Pembayaran',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -166,6 +187,78 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                ],
+                // Chat button for orders in progress
+                if (status.toLowerCase() == 'progress' || status.toLowerCase() == 'approved') ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final mentorId = order['mentorId']?.toString();
+                        if (mentorId != null && mentorId.isNotEmpty) {
+                          try {
+                            // Fetch mentor data from Firestore
+                            final mentorDoc = await FirebaseFirestore.instance.collection('users').doc(mentorId).get();
+
+                            if (!mentorDoc.exists) {
+                              Get.snackbar(
+                                'Error',
+                                'Mentor tidak ditemukan',
+                                backgroundColor: AppColors.redColor,
+                                colorText: AppColors.surface,
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                              return;
+                            }
+
+                            final mentorData = mentorDoc.data()!;
+
+                            // Create Mentor object from Firestore data
+                            final mentor = Mentor(
+                              id: mentorId,
+                              name: mentorData['nama'] ?? mentorData['name'] ?? 'Unknown Mentor',
+                              kampus: mentorData['kampus']?.toString() ?? '',
+                              jurusan: mentorData['jurusan']?.toString() ?? '',
+                              layanan: mentorData['layanan']?.toString() ?? '',
+                              image: mentorData['image']?.toString() ?? '',
+                              email: mentorData['email']?.toString() ?? '',
+                              bio: mentorData['bio']?.toString() ?? '',
+                              rating: (mentorData['rating'] as num?)?.toDouble() ?? 0.0,
+                              totalSessions: mentorData['totalSessions'] as int? ?? 0,
+                            );
+
+                            // Get or create ChatController
+                            final ChatController chatController = Get.isRegistered<ChatController>()
+                                ? Get.find<ChatController>()
+                                : Get.put(ChatController());
+
+                            // Create or get chat room
+                            await chatController.createOrGetChatRoom(mentorId: mentorId);
+
+                            // Navigate to chat room with mentor data
+                            Get.to(() => ChatRoomView(mentorId: mentorId, mentor: mentor));
+                          } catch (e) {
+                            Get.snackbar(
+                              'Error',
+                              'Gagal membuka chat: ${e.toString()}',
+                              backgroundColor: AppColors.redColor,
+                              colorText: AppColors.surface,
+                              snackPosition: SnackPosition.BOTTOM,
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.chat, size: 18),
+                      label: Text('Chat Mentor', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.greenColor,
+                        foregroundColor: AppColors.surface,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
                   ),
@@ -200,15 +293,20 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
+    switch (status.toLowerCase()) {
+      case 'waiting verification':
         return AppColors.yellow2Color;
-      case 'approved':
+      case 'progress':
         return AppColors.greenColor;
       case 'rejected':
         return AppColors.redColor;
       case 'completed':
         return AppColors.primary;
+      // Legacy support for old status names
+      case 'pending':
+        return AppColors.yellow2Color;
+      case 'approved':
+        return AppColors.greenColor;
       default:
         return AppColors.textSecondary;
     }

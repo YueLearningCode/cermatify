@@ -32,7 +32,7 @@ class LoginView extends GetView<LoginController> {
                           children: [
                             const SizedBox(height: 40),
                             Center(
-                              child: Hero(tag: 'logo', child: Image.asset('assets/images/logo.png', height: 150)),
+                              child: Hero(tag: 'logo', child: Image.asset('assets/images/logo.jpeg', height: 150)),
                             ),
                             const SizedBox(height: 40),
                             Text(

@@ -76,7 +76,7 @@ class KuesionerView extends GetView<KuesionerController> {
             child: Obx(
               () => Row(
                 children: [
-                  _buildSegment("Direkomendasikan", 0),
+                  _buildSegment("Rekomendasi", 0),
                   const SizedBox(width: 8),
                   _buildSegment("Dibuat Saya", 1),
                   const SizedBox(width: 8),

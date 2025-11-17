@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/models/chat_model.dart';
+import '../../home/controllers/home_controller.dart';
 
 class ChatController extends GetxController {
   final TextEditingController searchController = TextEditingController();
@@ -56,12 +57,33 @@ class ChatController extends GetxController {
     scrollController.dispose();
     focusNode.dispose();
     _roomsSubscription?.cancel();
+    _ordersSubscription?.cancel();
     super.onClose();
   }
 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _roomsSubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _ordersSubscription;
+
+  // Check if current user is a mentor
+  bool get isMentor {
+    try {
+      return Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
+    } catch (_) {
+      return false;
+    }
+  }
 
   void loadChats() {
+    if (isMentor) {
+      // For mentors: load customers from orders in progress
+      _loadMentorChats();
+    } else {
+      // For customers: load existing chat rooms
+      _loadCustomerChats();
+    }
+  }
+
+  void _loadCustomerChats() {
     _roomsSubscription?.cancel();
     _roomsSubscription = _firestore
         .collection('chatRooms')
@@ -91,6 +113,81 @@ class ChatController extends GetxController {
               })
               .where((c) => c.message.isNotEmpty)
               .toList();
+
+          allChats.value = chats;
+          chatRoomCount.value = chats.length;
+          _hydratePartnerNames(chats);
+          _applySearchFilter();
+        });
+  }
+
+  void _loadMentorChats() {
+    _ordersSubscription?.cancel();
+    // Load orders for this mentor (filter status client-side to avoid composite index)
+    _ordersSubscription = _firestore
+        .collection('orders')
+        .where('mentorId', isEqualTo: currentUserId)
+        .snapshots()
+        .listen((snapshot) async {
+          final Set<String> customerIds = {};
+          final Map<String, DateTime> customerLastUpdate = {};
+          final Map<String, String> customerOrderIds = {};
+
+          // Get unique customer IDs from orders with status 'progress'
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            final String status = data['status']?.toString() ?? '';
+            // Filter for 'progress' status client-side
+            if (status.toLowerCase() != 'progress' && status.toLowerCase() != 'approved') {
+              continue;
+            }
+            final String customerId = data['userId']?.toString() ?? '';
+            if (customerId.isNotEmpty && customerId != currentUserId) {
+              customerIds.add(customerId);
+              final updatedAt = (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+              if (!customerLastUpdate.containsKey(customerId) || updatedAt.isAfter(customerLastUpdate[customerId]!)) {
+                customerLastUpdate[customerId] = updatedAt;
+                customerOrderIds[customerId] = doc.id;
+              }
+            }
+          }
+
+          // Create ChatMessage objects for each customer
+          final List<ChatMessage> chats = [];
+          for (var customerId in customerIds) {
+            // Try to get last message from chat room
+            final String roomId = buildRoomId(customerId);
+            final roomDoc = await _firestore.collection('chatRooms').doc(roomId).get();
+
+            String lastMessage = '';
+            String lastSenderId = '';
+            DateTime timestamp = customerLastUpdate[customerId] ?? DateTime.now();
+
+            if (roomDoc.exists) {
+              final roomData = roomDoc.data();
+              lastMessage = roomData?['lastMessage']?.toString() ?? '';
+              lastSenderId = roomData?['lastSenderId']?.toString() ?? '';
+              final roomUpdatedAt = (roomData?['updatedAt'] as Timestamp?)?.toDate();
+              if (roomUpdatedAt != null && roomUpdatedAt.isAfter(timestamp)) {
+                timestamp = roomUpdatedAt;
+              }
+            }
+
+            // If no message yet, show default message
+            if (lastMessage.isEmpty) {
+              lastMessage = 'Order sedang berlangsung';
+            }
+
+            chats.add(
+              ChatMessage(
+                id: customerOrderIds[customerId] ?? roomId,
+                senderId: lastSenderId.isNotEmpty ? lastSenderId : customerId,
+                receiverId: customerId,
+                message: lastMessage,
+                timestamp: timestamp,
+              ),
+            );
+          }
 
           allChats.value = chats;
           chatRoomCount.value = chats.length;

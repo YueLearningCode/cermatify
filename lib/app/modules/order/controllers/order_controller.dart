@@ -73,19 +73,12 @@ class OrderController extends GetxController {
         'layananId': layananId,
         'price': price,
         'paymentProofUrl': secureUrl,
-        'status': 'pending', // pending, approved, rejected, completed
+        'status': 'waiting verification', // waiting verification, progress, rejected, completed
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
       await _firestore.collection('orders').add(orderData);
-
-      CustomSnackbar.show(
-        title: 'Success',
-        message: 'Order created successfully. Waiting for approval.',
-        backgroundColor: AppColors.greenColor,
-        isNav: false,
-      );
 
       return true;
     } catch (e) {

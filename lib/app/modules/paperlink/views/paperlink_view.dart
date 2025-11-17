@@ -117,7 +117,7 @@ class PaperlinkView extends GetView<PaperlinkController> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          "PaperLink",
+          "Cermat Paper",
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: AppColors.surface, fontSize: 18),
         ),
         centerTitle: true,
@@ -157,7 +157,7 @@ class PaperlinkView extends GetView<PaperlinkController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Temukan Mentor PaperLink",
+                          "Temukan Mentor Cermat Paper",
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,

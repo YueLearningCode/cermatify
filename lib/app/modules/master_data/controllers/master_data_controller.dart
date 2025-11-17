@@ -86,10 +86,37 @@ class MasterDataController extends GetxController {
   Future<void> fetchKampus() async {
     try {
       isLoading.value = true;
-      final snapshot = await _firestore.collection('kampus').orderBy('name').get();
-      kampusList.value = snapshot.docs.map((doc) => MasterDataItem.fromFirestore(doc)).toList();
+      QuerySnapshot<Map<String, dynamic>> snapshot;
+      try {
+        // Try with orderBy createdAt first
+        snapshot = await _firestore.collection('kampus').orderBy('createdAt', descending: true).get();
+      } catch (e) {
+        // If orderBy fails, fetch without orderBy
+        print('Error with orderBy createdAt, trying without: $e');
+        snapshot = await _firestore.collection('kampus').get();
+      }
+
+      // Map to items and sort by createdAt
+      final items = snapshot.docs.map((doc) {
+        final item = MasterDataItem.fromFirestore(doc);
+        final data = doc.data();
+        return {'item': item, 'createdAt': data['createdAt'] as Timestamp?};
+      }).toList();
+
+      // Sort by createdAt (newest first)
+      items.sort((a, b) {
+        final aTime = a['createdAt'] as Timestamp?;
+        final bTime = b['createdAt'] as Timestamp?;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        return bTime.compareTo(aTime); // Descending (newest first)
+      });
+
+      kampusList.value = items.map((e) => e['item'] as MasterDataItem).toList();
     } catch (e) {
       print('Error fetching kampus: $e');
+      kampusList.value = [];
     } finally {
       isLoading.value = false;
     }
@@ -98,10 +125,37 @@ class MasterDataController extends GetxController {
   Future<void> fetchJurusan() async {
     try {
       isLoading.value = true;
-      final snapshot = await _firestore.collection('jurusan').orderBy('name').get();
-      jurusanList.value = snapshot.docs.map((doc) => MasterDataItem.fromFirestore(doc)).toList();
+      QuerySnapshot<Map<String, dynamic>> snapshot;
+      try {
+        // Try with orderBy createdAt first
+        snapshot = await _firestore.collection('jurusan').orderBy('createdAt', descending: true).get();
+      } catch (e) {
+        // If orderBy fails, fetch without orderBy
+        print('Error with orderBy createdAt, trying without: $e');
+        snapshot = await _firestore.collection('jurusan').get();
+      }
+
+      // Map to items and sort by createdAt
+      final items = snapshot.docs.map((doc) {
+        final item = MasterDataItem.fromFirestore(doc);
+        final data = doc.data();
+        return {'item': item, 'createdAt': data['createdAt'] as Timestamp?};
+      }).toList();
+
+      // Sort by createdAt (newest first)
+      items.sort((a, b) {
+        final aTime = a['createdAt'] as Timestamp?;
+        final bTime = b['createdAt'] as Timestamp?;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        return bTime.compareTo(aTime); // Descending (newest first)
+      });
+
+      jurusanList.value = items.map((e) => e['item'] as MasterDataItem).toList();
     } catch (e) {
       print('Error fetching jurusan: $e');
+      jurusanList.value = [];
     } finally {
       isLoading.value = false;
     }
@@ -110,10 +164,37 @@ class MasterDataController extends GetxController {
   Future<void> fetchLayanan() async {
     try {
       isLoading.value = true;
-      final snapshot = await _firestore.collection('layanan').orderBy('name').get();
-      layananList.value = snapshot.docs.map((doc) => MasterDataItem.fromFirestore(doc)).toList();
+      QuerySnapshot<Map<String, dynamic>> snapshot;
+      try {
+        // Try with orderBy createdAt first
+        snapshot = await _firestore.collection('layanan').orderBy('createdAt', descending: true).get();
+      } catch (e) {
+        // If orderBy fails, fetch without orderBy
+        print('Error with orderBy createdAt, trying without: $e');
+        snapshot = await _firestore.collection('layanan').get();
+      }
+
+      // Map to items and sort by createdAt
+      final items = snapshot.docs.map((doc) {
+        final item = MasterDataItem.fromFirestore(doc);
+        final data = doc.data();
+        return {'item': item, 'createdAt': data['createdAt'] as Timestamp?};
+      }).toList();
+
+      // Sort by createdAt (newest first)
+      items.sort((a, b) {
+        final aTime = a['createdAt'] as Timestamp?;
+        final bTime = b['createdAt'] as Timestamp?;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        return bTime.compareTo(aTime); // Descending (newest first)
+      });
+
+      layananList.value = items.map((e) => e['item'] as MasterDataItem).toList();
     } catch (e) {
       print('Error fetching layanan: $e');
+      layananList.value = [];
     } finally {
       isLoading.value = false;
     }
@@ -135,6 +216,7 @@ class MasterDataController extends GetxController {
   List<MasterDataItem> getCurrentList() {
     switch (selectedTab.value) {
       case 0:
+        // Show all kampus, already sorted by newest
         return kampusList;
       case 1:
         return _getFilteredJurusan();
@@ -149,14 +231,20 @@ class MasterDataController extends GetxController {
     if (selectedKampus.value.isEmpty) {
       return [];
     }
+    // Filter by kampus and maintain sort order (already sorted by newest)
     return jurusanList.where((item) => item.kampusId == selectedKampus.value).toList();
   }
 
   List<MasterDataItem> _getFilteredLayanan() {
+    // Always show all layanan, sorted by newest (filter dropdown is for filtering, but default shows all)
+    // The layananList is already sorted by newest from fetchLayanan()
     if (selectedLayananFilter.value == 'all') {
-      return layananList;
+      // Show all layanan
+      return List<MasterDataItem>.from(layananList);
+    } else {
+      // Filter by type but maintain sort order (already sorted by newest)
+      return layananList.where((item) => item.type == selectedLayananFilter.value).toList();
     }
-    return layananList.where((item) => item.type == selectedLayananFilter.value).toList();
   }
 
   Future<void> createItem(String name, {String? type, String? kampusId, int? harga}) async {
@@ -195,7 +283,7 @@ class MasterDataController extends GetxController {
 
       isSaving.value = true;
       final collection = getCollectionName();
-      final data = <String, dynamic>{'name': name.trim()};
+      final data = <String, dynamic>{'name': name.trim(), 'createdAt': FieldValue.serverTimestamp()};
       if (type != null) {
         data['type'] = type;
       }

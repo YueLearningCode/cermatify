@@ -243,7 +243,7 @@ class EditProfileView extends GetView<ProfileController> {
                               return DropdownMenuItem<String>(
                                 value: role,
                                 child: Text(
-                                  role == 'complink' ? 'CompLink' : 'PaperLink',
+                                  role == 'complink' ? 'Cermat Competition' : 'Cermat Paper',
                                   style: AppStyles.body1(color: AppColors.black414),
                                 ),
                               );

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import '../controllers/order_controller.dart';
 
 class OrderDialogView extends StatelessWidget {
@@ -216,7 +217,22 @@ class OrderDialogView extends StatelessWidget {
                                   price: price,
                                 );
                                 if (success) {
-                                  Get.back(result: true); // Close dialog and return true to indicate success
+                                  // Close dialog first
+                                  Get.back(result: true);
+                                  // Show success snackbar
+                                  Get.snackbar(
+                                    'Success',
+                                    'Order created successfully. Waiting for approval.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: AppColors.greenColor,
+                                    colorText: AppColors.surface,
+                                    borderRadius: 12,
+                                    margin: const EdgeInsets.all(16),
+                                    duration: const Duration(seconds: 2),
+                                  );
+                                  // Navigate to order history after a short delay
+                                  await Future.delayed(const Duration(milliseconds: 500));
+                                  Get.offNamed(Routes.ORDER_HISTORY);
                                 }
                               },
                         style: ElevatedButton.styleFrom(

@@ -141,8 +141,8 @@ class MasterDataView extends GetView<MasterDataController> {
                               underline: const SizedBox(),
                               items: const [
                                 DropdownMenuItem(value: 'all', child: Text('All')),
-                                DropdownMenuItem(value: 'complink', child: Text('CompLink')),
-                                DropdownMenuItem(value: 'paperlink', child: Text('PaperLink')),
+                                DropdownMenuItem(value: 'complink', child: Text('Cermat Competition')),
+                                DropdownMenuItem(value: 'paperlink', child: Text('Cermat Paper')),
                               ],
                               onChanged: (value) {
                                 if (value != null) {
@@ -326,7 +326,9 @@ class MasterDataView extends GetView<MasterDataController> {
               if (isLayanan && isEdit) ...[
                 const SizedBox(height: 16),
                 Obx(() {
-                  final selectedTypeName = controller.typeController.value == 'complink' ? 'CompLink' : 'PaperLink';
+                  final selectedTypeName = controller.typeController.value == 'complink'
+                      ? 'Cermat Competition'
+                      : 'Cermat Paper';
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -393,7 +395,9 @@ class MasterDataView extends GetView<MasterDataController> {
               if (isLayanan && !isEdit) ...[
                 const SizedBox(height: 16),
                 Obx(() {
-                  final selectedTypeName = controller.typeController.value == 'complink' ? 'CompLink' : 'PaperLink';
+                  final selectedTypeName = controller.typeController.value == 'complink'
+                      ? 'Cermat Competition'
+                      : 'Cermat Paper';
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -655,7 +659,7 @@ class MasterDataView extends GetView<MasterDataController> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      item.type == 'complink' ? 'CompLink' : 'PaperLink',
+                      item.type == 'complink' ? 'Cermat Competition' : 'Cermat Paper',
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,

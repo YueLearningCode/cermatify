@@ -37,7 +37,7 @@ class SourcelinkView extends GetView<SourcelinkController> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'SourceLink',
+                      'Cermat Kuesioner',
                       style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
                     ),
                   ],
