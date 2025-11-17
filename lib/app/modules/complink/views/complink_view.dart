@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import '../controllers/complink_controller.dart';
 import '../../paperlink/views/list_mentor_view.dart';
@@ -8,9 +9,32 @@ import '../../paperlink/views/list_mentor_view.dart';
 class ComplinkView extends GetView<ComplinkController> {
   const ComplinkView({super.key});
 
-  void _searchMentors() {
+  void _searchMentors() async {
     if (controller.isFilterComplete) {
-      Get.to(() => ListMentorView(layanan: controller.selectedCabang.value));
+      // Fetch layanan price from Firestore
+      int? layananPrice;
+      if (controller.selectedCabang.value.isNotEmpty) {
+        try {
+          final layananDoc = await FirebaseFirestore.instance
+              .collection('layanan')
+              .doc(controller.selectedCabang.value)
+              .get();
+          if (layananDoc.exists) {
+            final data = layananDoc.data();
+            layananPrice = data?['harga'] as int?;
+          }
+        } catch (e) {
+          print('Error fetching layanan price: $e');
+        }
+      }
+
+      Get.to(
+        () => ListMentorView(
+          layanan: controller.selectedCabangName,
+          layananId: controller.selectedCabang.value,
+          layananPrice: layananPrice,
+        ),
+      );
     } else {
       Get.snackbar(
         'Perhatian',
@@ -31,6 +55,7 @@ class ComplinkView extends GetView<ComplinkController> {
   Widget _buildDropdown({
     required String label,
     required List<String> items,
+    required List<String> itemIds,
     required String? value,
     required Function(String?) onChanged,
     required IconData icon,
@@ -60,18 +85,19 @@ class ComplinkView extends GetView<ComplinkController> {
         ),
         dropdownColor: AppColors.surface,
         style: GoogleFonts.poppins(color: AppColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 14),
-        items: items
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
-                child: Text(
-                  e,
-                  style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            )
-            .toList(),
+        items: items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final name = entry.value;
+          final id = itemIds[index];
+          return DropdownMenuItem(
+            value: id,
+            child: Text(
+              name,
+              style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList(),
         value: value,
         onChanged: onChanged,
         icon: Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
@@ -181,7 +207,8 @@ class ComplinkView extends GetView<ComplinkController> {
                     Obx(
                       () => _buildDropdown(
                         label: "Cabang Lomba Akademik",
-                        items: controller.listCabang,
+                        items: controller.filteredLayanan.map((l) => l['name'] ?? '').toList(),
+                        itemIds: controller.filteredLayanan.map((l) => l['id'] ?? '').toList(),
                         value: controller.selectedCabang.value.isEmpty ? null : controller.selectedCabang.value,
                         onChanged: (val) => controller.selectedCabang.value = val ?? '',
                         icon: Icons.emoji_events_rounded,

@@ -201,6 +201,12 @@ class HomeContent extends GetView<HomeController> {
                   icon: Icons.library_books_rounded,
                   color: AppColors.primaryDark,
                 ),
+                FeatureCard(
+                  title: "Order History",
+                  subtitle: "Riwayat Pesanan",
+                  icon: Icons.shopping_bag_rounded,
+                  color: AppColors.primaryLight,
+                ),
               ],
             ),
           ],
@@ -231,6 +237,9 @@ class FeatureCard extends StatelessWidget {
             break;
           case "SourceLink":
             Get.toNamed(Routes.SOURCELINK);
+            break;
+          case "Order History":
+            Get.toNamed(Routes.ORDER_HISTORY);
             break;
           default:
             Get.snackbar(
@@ -270,6 +279,9 @@ class FeatureCard extends StatelessWidget {
                   break;
                 case "SourceLink":
                   Get.toNamed(Routes.SOURCELINK);
+                  break;
+                case "Order History":
+                  Get.toNamed(Routes.ORDER_HISTORY);
                   break;
                 default:
                   Get.snackbar(

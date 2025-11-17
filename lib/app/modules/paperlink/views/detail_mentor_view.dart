@@ -5,11 +5,16 @@ import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/models/mentor_model.dart';
 import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
 import 'package:cermatify/app/modules/chat/views/chat_room_view.dart';
+import 'package:cermatify/app/modules/order/views/order_dialog_view.dart';
+import 'package:cermatify/app/modules/order/controllers/order_history_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 
 class DetailMentorView extends StatelessWidget {
   final Mentor mentor;
+  final String? layananId; // Layanan ID from filter
+  final int? layananPrice; // Layanan price from filter (null means use default 100000)
 
-  const DetailMentorView({super.key, required this.mentor});
+  const DetailMentorView({super.key, required this.mentor, this.layananId, this.layananPrice});
 
   List<Widget> _buildChips(String csv) {
     final items = csv.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
@@ -209,12 +214,42 @@ class DetailMentorView extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final ChatController chatController = Get.isRegistered<ChatController>()
-                        ? Get.find<ChatController>()
-                        : Get.put(ChatController());
-                    await chatController.createOrGetChatRoom(mentorId: mentor.id);
-                    // Navigate to chat room with mentor data for proper header display
-                    Get.to(() => ChatRoomView(mentorId: mentor.id, mentor: mentor));
+                    // Check if user has approved order for this mentor
+                    final orderHistoryController = Get.put(OrderHistoryController());
+                    final hasApproved = await orderHistoryController.hasApprovedOrder(mentor.id);
+
+                    if (hasApproved) {
+                      // User has approved order, proceed to chat
+                      final ChatController chatController = Get.isRegistered<ChatController>()
+                          ? Get.find<ChatController>()
+                          : Get.put(ChatController());
+                      await chatController.createOrGetChatRoom(mentorId: mentor.id);
+                      Get.to(() => ChatRoomView(mentorId: mentor.id, mentor: mentor));
+                    } else {
+                      // No approved order, show order dialog
+                      final String finalLayananId = layananId ?? '';
+                      final int finalPrice = layananPrice ?? 100000; // Default to 100000 if no filter
+                      final String layananName = mentor.layanan.isNotEmpty
+                          ? mentor.layanan.split(',').first.trim()
+                          : 'Layanan';
+
+                      // Show order dialog
+                      final result = await Get.dialog(
+                        OrderDialogView(
+                          mentorId: mentor.id,
+                          mentorName: mentor.name,
+                          layananId: finalLayananId,
+                          layananName: layananName,
+                          price: finalPrice,
+                        ),
+                        barrierDismissible: false,
+                      );
+
+                      // If order was created successfully, navigate to order history
+                      if (result == true) {
+                        Get.offNamed(Routes.ORDER_HISTORY);
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),

@@ -32,88 +32,114 @@ class ProfileController extends GetxController {
   final userLayanan = <String>[].obs;
   final isLoading = false.obs;
 
-  // Dropdown lists for edit profile
-  final List<String> listKampus = [
-    'Universitas Indonesia (UI)',
-    'Institut Teknologi Bandung (ITB)',
-    'Universitas Gadjah Mada (UGM)',
-    'Institut Teknologi Sepuluh Nopember (ITS)',
-    'Universitas Padjadjaran (UNPAD)',
-    'Universitas Brawijaya (UB)',
-    'Universitas Diponegoro (UNDIP)',
-    'Universitas Airlangga (UNAIR)',
-    'Universitas Hasanuddin (UNHAS)',
-    'Universitas Sumatera Utara (USU)',
-  ];
-
-  final List<String> listJurusan = [
-    'Teknik Informatika',
-    'Teknik Elektro',
-    'Teknik Mesin',
-    'Teknik Sipil',
-    'Manajemen',
-    'Akuntansi',
-    'Kedokteran',
-    'Hukum',
-    'Psikologi',
-    'Komunikasi',
-  ];
+  // Dropdown lists for edit profile - fetched from Firebase
+  final listKampus = <Map<String, String>>[].obs; // [{id: '...', name: '...'}]
+  final listJurusan = <Map<String, String>>[].obs; // [{id: '...', name: '...', kampusId: '...'}]
 
   final List<String> listSemester = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
   // Mentor role dropdown (only for mentors)
   final List<String> listMentorRole = ['complink', 'paperlink'];
 
-  // Layanan (services) for mentors only
-  final List<String> paperlinkLayanan = [
-    "Bimbingan Penulisan Paper Ilmiah",
-    "Bimbingan Skripsi/Tesis/Disertasi",
-    "Bimbingan Publikasi Jurnal Scopus",
-    "Bimbingan Publikasi Jurnal Sinta",
-    "Bimbingan Riset Eksperimen (Lab)",
-    "Bimbingan Analisis Data Kuantitatif",
-    "Bimbingan Analisis Data Kualitatif",
-    "Bimbingan Proposal Penelitian",
-    "Bimbingan Lomba Karya Ilmiah (PKM, ONMIPA)",
-    "Bimbingan Turnitin & Parafrase",
-  ];
-  final List<String> complinkLayanan = const [
-    'Business Plan Competition',
-    'Startup Competition',
-    'Olimpiade Mahasiswa',
-    'Data Science Competition',
-    'Programming Competition',
-    'Debat Mahasiswa',
-  ];
-  List<String> get availableLayanan => selectedMentorRole.value == 'complink' ? complinkLayanan : paperlinkLayanan;
+  // Layanan (services) for mentors only - fetched from Firebase
+  final listLayanan = <Map<String, String>>[].obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
 
-  // Selected values for dropdowns in edit profile
-  var selectedKampus = ''.obs;
-  var selectedJurusan = ''.obs;
-  var selectedSemester = ''.obs;
-  var selectedMentorRole = ''.obs;
-  var selectedLayanan = <String>[].obs;
-
-  // Initialize dropdown values from user data
-  void initializeEditProfileValues() {
-    selectedKampus.value = userKampus.value;
-    selectedJurusan.value = userJurusan.value;
-    selectedSemester.value = userSemester.value;
-    selectedMentorRole.value = userMentorRole.value;
-    selectedLayanan.value = List<String>.from(userLayanan);
+  // Get available layanan filtered by mentor role
+  List<Map<String, String>> get availableLayanan {
+    if (selectedMentorRole.value.isEmpty) return [];
+    return listLayanan.where((layanan) => layanan['type'] == selectedMentorRole.value).toList();
   }
 
-  void toggleLayanan(String layanan) {
-    if (selectedLayanan.contains(layanan)) {
-      selectedLayanan.remove(layanan);
+  // Selected values for dropdowns in edit profile
+  var selectedKampus = ''.obs; // Store kampus ID
+  var selectedJurusan = ''.obs; // Store jurusan ID
+  var selectedSemester = ''.obs;
+  var selectedMentorRole = ''.obs;
+  var selectedLayanan = <String>[].obs; // Store layanan IDs
+
+  // Get filtered jurusan list based on selected kampus
+  List<Map<String, String>> get filteredJurusan {
+    if (selectedKampus.value.isEmpty) return [];
+    return listJurusan.where((jurusan) => jurusan['kampusId'] == selectedKampus.value).toList();
+  }
+
+  // Initialize dropdown values from user data
+  void initializeEditProfileValues() async {
+    // Fetch master data first
+    await fetchMasterData();
+
+    // Find kampus ID from name
+    final kampusMap = listKampus.firstWhereOrNull((k) => k['name'] == userKampus.value);
+    selectedKampus.value = kampusMap?['id'] ?? '';
+
+    // Find jurusan ID from name
+    final jurusanMap = listJurusan.firstWhereOrNull((j) => j['name'] == userJurusan.value);
+    selectedJurusan.value = jurusanMap?['id'] ?? '';
+
+    selectedSemester.value = userSemester.value;
+    selectedMentorRole.value = userMentorRole.value;
+
+    // Find layanan IDs from names
+    selectedLayanan.value = userLayanan
+        .map((name) {
+          return listLayanan.firstWhereOrNull((l) => l['name'] == name)?['id'] ?? '';
+        })
+        .where((id) => id.isNotEmpty)
+        .toList();
+  }
+
+  // Fetch master data from Firebase
+  Future<void> fetchMasterData() async {
+    try {
+      // Fetch kampus
+      final kampusSnapshot = await _firestore.collection('kampus').get();
+      listKampus.value = kampusSnapshot.docs
+          .map((doc) {
+            return {'id': doc.id, 'name': doc.data()['name']?.toString() ?? ''};
+          })
+          .toList()
+          .cast<Map<String, String>>();
+
+      // Fetch all jurusan
+      final jurusanSnapshot = await _firestore.collection('jurusan').get();
+      listJurusan.value = jurusanSnapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            return {
+              'id': doc.id,
+              'name': data['name']?.toString() ?? '',
+              'kampusId': data['kampusId']?.toString() ?? '',
+            };
+          })
+          .toList()
+          .cast<Map<String, String>>();
+
+      // Fetch layanan
+      final layananSnapshot = await _firestore.collection('layanan').get();
+      listLayanan.value = layananSnapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            return {'id': doc.id, 'name': data['name']?.toString() ?? '', 'type': data['type']?.toString() ?? ''};
+          })
+          .toList()
+          .cast<Map<String, String>>();
+    } catch (e) {
+      print('Error fetching master data: $e');
+    }
+  }
+
+  void toggleLayanan(String layananId) {
+    if (selectedLayanan.contains(layananId)) {
+      selectedLayanan.remove(layananId);
     } else {
-      selectedLayanan.add(layanan);
+      selectedLayanan.add(layananId);
     }
   }
 
   @override
   void onInit() {
     super.onInit();
+    fetchMasterData();
     fetchUserData();
   }
 
@@ -163,20 +189,33 @@ class ProfileController extends GetxController {
 
   Future<bool> updateProfile({
     required String nama,
-    required String kampus,
-    required String jurusan,
+    required String kampusId,
+    required String jurusanId,
     required String semester,
     String? mentorRole,
-    List<String>? layanan,
+    List<String>? layananIds,
   }) async {
     try {
       isLoading.value = true;
       final User? user = _auth.currentUser;
       if (user != null) {
+        // Get kampus and jurusan names from IDs
+        final kampusName = listKampus.firstWhereOrNull((k) => k['id'] == kampusId)?['name'] ?? kampusId;
+        final jurusanName = filteredJurusan.firstWhereOrNull((j) => j['id'] == jurusanId)?['name'] ?? jurusanId;
+
+        // Get layanan names from IDs
+        final layananNames =
+            layananIds?.map((id) {
+              return availableLayanan.firstWhereOrNull((l) => l['id'] == id)?['name'] ?? id;
+            }).toList() ??
+            [];
+
         final Map<String, dynamic> updateData = {
           'nama': nama,
-          'kampus': kampus,
-          'jurusan': jurusan,
+          'kampus': kampusName,
+          'kampusId': kampusId,
+          'jurusan': jurusanName,
+          'jurusanId': jurusanId,
           'semester': semester,
         };
 
@@ -185,8 +224,9 @@ class ProfileController extends GetxController {
           if (mentorRole != null && mentorRole.isNotEmpty) {
             updateData['mentorRole'] = mentorRole;
           }
-          if (layanan != null && layanan.isNotEmpty) {
-            updateData['layanan'] = layanan;
+          if (layananNames.isNotEmpty) {
+            updateData['layanan'] = layananNames;
+            updateData['layananIds'] = layananIds;
           }
         }
 

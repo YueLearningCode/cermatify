@@ -1,0 +1,139 @@
+import 'dart:io';
+import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudinary/cloudinary.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+
+class OrderController extends GetxController {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ImagePicker _imagePicker = ImagePicker();
+
+  // Konfigurasi Cloudinary untuk upload gambar
+  final cloudinary = Cloudinary.signedConfig(
+    apiKey: '885241489685565',
+    apiSecret: 'Eo2Man-3sLzp9sCyYwslSXZFFtQ',
+    cloudName: 'dvxsmpz3m',
+  );
+
+  final isLoading = false.obs;
+  final paymentProofImage = Rxn<File>();
+  final paymentProofUrl = ''.obs;
+
+  // Create order with payment proof
+  Future<bool> createOrder({required String mentorId, required String layananId, required int price}) async {
+    try {
+      if (paymentProofImage.value == null) {
+        CustomSnackbar.show(
+          title: 'Error',
+          message: 'Please upload payment proof',
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return false;
+      }
+
+      isLoading.value = true;
+
+      final User? user = _auth.currentUser;
+      if (user == null) {
+        CustomSnackbar.show(
+          title: 'Error',
+          message: 'User tidak ditemukan',
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return false;
+      }
+
+      // Upload payment proof image to Cloudinary
+      final File imageFile = paymentProofImage.value!;
+      if (!imageFile.existsSync()) {
+        throw Exception('File does not exist');
+      }
+
+      final cloudinaryResponse = await cloudinary.upload(
+        fileBytes: imageFile.readAsBytesSync(),
+        fileName: 'payment_proof_${user.uid}_${DateTime.now().millisecondsSinceEpoch}',
+        resourceType: CloudinaryResourceType.image,
+      );
+
+      final String? secureUrl = cloudinaryResponse.secureUrl;
+      if (secureUrl == null) {
+        throw Exception('Failed to get image URL from Cloudinary');
+      }
+
+      // Create order document in Firestore
+      final orderData = {
+        'userId': user.uid,
+        'mentorId': mentorId,
+        'layananId': layananId,
+        'price': price,
+        'paymentProofUrl': secureUrl,
+        'status': 'pending', // pending, approved, rejected, completed
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      await _firestore.collection('orders').add(orderData);
+
+      CustomSnackbar.show(
+        title: 'Success',
+        message: 'Order created successfully. Waiting for approval.',
+        backgroundColor: AppColors.greenColor,
+        isNav: false,
+      );
+
+      return true;
+    } catch (e) {
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Failed to create order: ${e.toString()}',
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Pick payment proof image
+  Future<void> pickPaymentProofImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
+      if (pickedFile != null) {
+        paymentProofImage.value = File(pickedFile.path);
+        paymentProofUrl.value = ''; // Clear previous URL if any
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Failed to pick image: ${e.toString()}',
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
+    }
+  }
+
+  // Remove payment proof image
+  void removePaymentProofImage() {
+    paymentProofImage.value = null;
+    paymentProofUrl.value = '';
+  }
+
+  @override
+  void onClose() {
+    paymentProofImage.value = null;
+    super.onClose();
+  }
+}

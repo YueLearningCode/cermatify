@@ -86,11 +86,11 @@ class EditProfileView extends GetView<ProfileController> {
                     focusedBorder: InputBorder.none,
                   ),
                   style: AppStyles.body1(color: AppColors.black414),
-                  items: controller.listKampus.map((String kampus) {
+                  items: controller.listKampus.map((Map<String, String> kampus) {
                     return DropdownMenuItem<String>(
-                      value: kampus,
+                      value: kampus['id'],
                       child: Text(
-                        kampus,
+                        kampus['name'] ?? '',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: AppStyles.body1(color: AppColors.black414),
@@ -99,6 +99,7 @@ class EditProfileView extends GetView<ProfileController> {
                   }).toList(),
                   onChanged: (String? newValue) {
                     controller.selectedKampus.value = newValue ?? '';
+                    controller.selectedJurusan.value = ''; // Reset jurusan when kampus changes
                   },
                   icon: Icon(
                     Icons.arrow_drop_down,
@@ -135,11 +136,11 @@ class EditProfileView extends GetView<ProfileController> {
                     focusedBorder: InputBorder.none,
                   ),
                   style: AppStyles.body1(color: AppColors.black414),
-                  items: controller.listJurusan.map((String jurusan) {
+                  items: controller.filteredJurusan.map((Map<String, String> jurusan) {
                     return DropdownMenuItem<String>(
-                      value: jurusan,
+                      value: jurusan['id'],
                       child: Text(
-                        jurusan,
+                        jurusan['name'] ?? '',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: AppStyles.body1(color: AppColors.black414),
@@ -288,16 +289,17 @@ class EditProfileView extends GetView<ProfileController> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              ...controller.availableLayanan.map((layanan) {
+                              ...controller.availableLayanan.map((Map<String, String> layanan) {
+                                final layananId = layanan['id'] ?? '';
                                 return Obx(
                                   () => CheckboxListTile(
-                                    value: controller.selectedLayanan.contains(layanan),
-                                    onChanged: (value) => controller.toggleLayanan(layanan),
+                                    value: controller.selectedLayanan.contains(layananId),
+                                    onChanged: (value) => controller.toggleLayanan(layananId),
                                     title: Text(
-                                      layanan,
+                                      layanan['name'] ?? '',
                                       style: AppStyles.body2(
                                         color: AppColors.black414,
-                                        fontWeight: controller.selectedLayanan.contains(layanan)
+                                        fontWeight: controller.selectedLayanan.contains(layananId)
                                             ? FontWeight.w600
                                             : FontWeight.normal,
                                       ),
@@ -326,13 +328,13 @@ class EditProfileView extends GetView<ProfileController> {
                       : () async {
                           final success = await controller.updateProfile(
                             nama: nameController.text.trim(),
-                            kampus: controller.selectedKampus.value,
-                            jurusan: controller.selectedJurusan.value,
+                            kampusId: controller.selectedKampus.value,
+                            jurusanId: controller.selectedJurusan.value,
                             semester: controller.selectedSemester.value,
                             mentorRole: controller.userRole.value == 'mentor'
                                 ? controller.selectedMentorRole.value
                                 : null,
-                            layanan: controller.userRole.value == 'mentor' && controller.selectedLayanan.isNotEmpty
+                            layananIds: controller.userRole.value == 'mentor' && controller.selectedLayanan.isNotEmpty
                                 ? controller.selectedLayanan.toList()
                                 : null,
                           );

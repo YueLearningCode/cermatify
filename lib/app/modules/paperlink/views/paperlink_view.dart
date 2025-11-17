@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import '../controllers/paperlink_controller.dart';
 import 'list_mentor_view.dart';
@@ -8,13 +9,32 @@ import 'list_mentor_view.dart';
 class PaperlinkView extends GetView<PaperlinkController> {
   const PaperlinkView({super.key});
 
-  void _searchMentors() {
+  void _searchMentors() async {
     if (controller.isFilterComplete) {
+      // Fetch layanan price from Firestore
+      int? layananPrice;
+      if (controller.selectedLayanan.value.isNotEmpty) {
+        try {
+          final layananDoc = await FirebaseFirestore.instance
+              .collection('layanan')
+              .doc(controller.selectedLayanan.value)
+              .get();
+          if (layananDoc.exists) {
+            final data = layananDoc.data();
+            layananPrice = data?['harga'] as int?;
+          }
+        } catch (e) {
+          print('Error fetching layanan price: $e');
+        }
+      }
+
       Get.to(
         () => ListMentorView(
-          kampus: controller.selectedUniversitas.value,
-          jurusan: controller.selectedJurusan.value,
-          layanan: controller.selectedLayanan.value,
+          kampus: controller.selectedUniversitasName,
+          jurusan: controller.selectedJurusanName,
+          layanan: controller.selectedLayananName,
+          layananId: controller.selectedLayanan.value,
+          layananPrice: layananPrice,
         ),
       );
     } else {
@@ -37,6 +57,7 @@ class PaperlinkView extends GetView<PaperlinkController> {
   Widget _buildDropdown({
     required String label,
     required List<String> items,
+    required List<String> itemIds,
     required String? value,
     required Function(String?) onChanged,
     required IconData icon,
@@ -64,22 +85,23 @@ class PaperlinkView extends GetView<PaperlinkController> {
         ),
         dropdownColor: AppColors.surface,
         style: GoogleFonts.poppins(color: AppColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 14),
-        items: items
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
-                child: Container(
-                  width: double.infinity,
-                  child: Text(
-                    e,
-                    style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
+        items: items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final name = entry.value;
+          final id = itemIds[index];
+          return DropdownMenuItem(
+            value: id,
+            child: Container(
+              width: double.infinity,
+              child: Text(
+                name,
+                style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-            )
-            .toList(),
+            ),
+          );
+        }).toList(),
         value: value,
         onChanged: onChanged,
         icon: Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
@@ -173,7 +195,8 @@ class PaperlinkView extends GetView<PaperlinkController> {
             Obx(
               () => _buildDropdown(
                 label: "Pilih Universitas",
-                items: controller.listUniversitas,
+                items: controller.listKampus.map((k) => k['name'] ?? '').toList(),
+                itemIds: controller.listKampus.map((k) => k['id'] ?? '').toList(),
                 value: controller.selectedUniversitas.value.isEmpty ? null : controller.selectedUniversitas.value,
                 onChanged: (val) => controller.selectedUniversitas.value = val ?? '',
                 icon: Icons.account_balance_rounded,
@@ -184,7 +207,8 @@ class PaperlinkView extends GetView<PaperlinkController> {
             Obx(
               () => _buildDropdown(
                 label: "Pilih Jurusan",
-                items: controller.listJurusan,
+                items: controller.filteredJurusan.map((j) => j['name'] ?? '').toList(),
+                itemIds: controller.filteredJurusan.map((j) => j['id'] ?? '').toList(),
                 value: controller.selectedJurusan.value.isEmpty ? null : controller.selectedJurusan.value,
                 onChanged: (val) => controller.selectedJurusan.value = val ?? '',
                 icon: Icons.menu_book_rounded,
@@ -195,7 +219,8 @@ class PaperlinkView extends GetView<PaperlinkController> {
             Obx(
               () => _buildDropdown(
                 label: "Pilih Layanan Riset/Publikasi",
-                items: controller.listLayanan,
+                items: controller.filteredLayanan.map((l) => l['name'] ?? '').toList(),
+                itemIds: controller.filteredLayanan.map((l) => l['id'] ?? '').toList(),
                 value: controller.selectedLayanan.value.isEmpty ? null : controller.selectedLayanan.value,
                 onChanged: (val) => controller.selectedLayanan.value = val ?? '',
                 icon: Icons.analytics_rounded,

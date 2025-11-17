@@ -1,18 +1,24 @@
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ComplinkController extends GetxController {
-  // Single filter: Cabang Lomba Akademik
-  var selectedCabang = ''.obs;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Fixed options shown in dropdown (as per design)
-  final List<String> listCabang = const [
-    'Business Plan Competition',
-    'Startup Competition',
-    'Olimpiade Mahasiswa',
-    'Data Science Competition',
-    'Programming Competition',
-    'Debat Mahasiswa',
-  ];
+  // Single filter: Cabang Lomba Akademik - store ID
+  var selectedCabang = ''.obs; // Store layanan ID
+
+  // Lists from Firebase
+  final listLayanan = <Map<String, String>>[].obs; // [{id: '...', name: '...', type: 'complink'}]
+
+  // Get filtered layanan for complink only
+  List<Map<String, String>> get filteredLayanan {
+    return listLayanan.where((layanan) => layanan['type'] == 'complink').toList();
+  }
+
+  // Get name for display (for passing to ListMentorView)
+  String get selectedCabangName {
+    return filteredLayanan.firstWhereOrNull((l) => l['id'] == selectedCabang.value)?['name'] ?? selectedCabang.value;
+  }
 
   // Check if all filters are selected
   bool get isFilterComplete => selectedCabang.isNotEmpty;
@@ -20,6 +26,7 @@ class ComplinkController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    fetchMasterData();
   }
 
   @override
@@ -30,6 +37,23 @@ class ComplinkController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+  }
+
+  // Fetch master data from Firebase
+  Future<void> fetchMasterData() async {
+    try {
+      // Fetch layanan filtered by complink type
+      final layananSnapshot = await _firestore.collection('layanan').where('type', isEqualTo: 'complink').get();
+      listLayanan.value = layananSnapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            return {'id': doc.id, 'name': data['name']?.toString() ?? '', 'type': data['type']?.toString() ?? ''};
+          })
+          .toList()
+          .cast<Map<String, String>>();
+    } catch (e) {
+      print('Error fetching master data: $e');
+    }
   }
 
   void resetFilters() {

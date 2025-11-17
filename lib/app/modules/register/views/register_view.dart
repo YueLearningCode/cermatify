@@ -166,11 +166,11 @@ class RegisterView extends GetView<RegisterController> {
                             focusedBorder: InputBorder.none,
                           ),
                           style: AppStyles.body1(color: AppColors.black414),
-                          items: controller.listKampus.map((String kampus) {
+                          items: controller.listKampus.map((Map<String, String> kampus) {
                             return DropdownMenuItem<String>(
-                              value: kampus,
+                              value: kampus['id'],
                               child: Text(
-                                kampus,
+                                kampus['name'] ?? '',
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: AppStyles.body1(color: AppColors.black414),
@@ -220,11 +220,11 @@ class RegisterView extends GetView<RegisterController> {
                             focusedBorder: InputBorder.none,
                           ),
                           style: AppStyles.body1(color: AppColors.black414),
-                          items: controller.listJurusan.map((String jurusan) {
+                          items: controller.filteredJurusan.map((Map<String, String> jurusan) {
                             return DropdownMenuItem<String>(
-                              value: jurusan,
+                              value: jurusan['id'],
                               child: Text(
-                                jurusan,
+                                jurusan['name'] ?? '',
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: AppStyles.body1(color: AppColors.black414),
@@ -406,16 +406,17 @@ class RegisterView extends GetView<RegisterController> {
                                           ),
                                         ),
                                       const SizedBox(height: 12),
-                                      ...controller.availableLayanan.map((layanan) {
+                                      ...controller.availableLayanan.map((Map<String, String> layanan) {
+                                        final layananId = layanan['id'] ?? '';
                                         return Obx(
                                           () => CheckboxListTile(
-                                            value: controller.selectedLayanan.contains(layanan),
-                                            onChanged: (value) => controller.toggleLayanan(layanan),
+                                            value: controller.selectedLayanan.contains(layananId),
+                                            onChanged: (value) => controller.toggleLayanan(layananId),
                                             title: Text(
-                                              layanan,
+                                              layanan['name'] ?? '',
                                               style: AppStyles.body2(
                                                 color: AppColors.black414,
-                                                fontWeight: controller.selectedLayanan.contains(layanan)
+                                                fontWeight: controller.selectedLayanan.contains(layananId)
                                                     ? FontWeight.w600
                                                     : FontWeight.normal,
                                               ),

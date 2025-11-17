@@ -64,6 +64,8 @@ class LoginController extends GetxController {
         Get.offAllNamed(Routes.DASHBOARD);
       } else if (userRole == 'mentor') {
         Get.offAllNamed(Routes.DASHBOARD);
+      } else if (userRole == 'admin') {
+        Get.offAllNamed(Routes.ADMIN_DASHBOARD);
       } else {
         CustomSnackbar.show(
           title: 'Error',
@@ -103,6 +105,8 @@ class LoginController extends GetxController {
             // Navigate to dashboard based on role
             if (userRole == 'customer' || userRole == 'mentor') {
               Get.offAllNamed(Routes.DASHBOARD);
+            } else if (userRole == 'admin') {
+              Get.offAllNamed(Routes.ADMIN_DASHBOARD);
             } else {
               // Invalid role, sign out and show login
               await _auth.signOut();

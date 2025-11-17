@@ -18,35 +18,13 @@ class RegisterController extends GetxController {
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController noTelpController = TextEditingController();
 
-  // Kampus dropdown
-  final List<String> listKampus = [
-    'Universitas Indonesia (UI)',
-    'Institut Teknologi Bandung (ITB)',
-    'Universitas Gadjah Mada (UGM)',
-    'Institut Teknologi Sepuluh Nopember (ITS)',
-    'Universitas Padjadjaran (UNPAD)',
-    'Universitas Brawijaya (UB)',
-    'Universitas Diponegoro (UNDIP)',
-    'Universitas Airlangga (UNAIR)',
-    'Universitas Hasanuddin (UNHAS)',
-    'Universitas Sumatera Utara (USU)',
-  ];
-  var selectedKampus = ''.obs;
+  // Kampus dropdown - fetched from Firebase
+  final listKampus = <Map<String, String>>[].obs; // [{id: '...', name: '...'}]
+  var selectedKampus = ''.obs; // Store kampus ID
 
-  // Jurusan dropdown
-  final List<String> listJurusan = [
-    'Teknik Informatika',
-    'Teknik Elektro',
-    'Teknik Mesin',
-    'Teknik Sipil',
-    'Manajemen',
-    'Akuntansi',
-    'Kedokteran',
-    'Hukum',
-    'Psikologi',
-    'Komunikasi',
-  ];
-  var selectedJurusan = ''.obs;
+  // Jurusan dropdown - fetched from Firebase, filtered by kampus
+  final listJurusan = <Map<String, String>>[].obs; // [{id: '...', name: '...', kampusId: '...'}]
+  var selectedJurusan = ''.obs; // Store jurusan ID
 
   // Semester dropdown (available for all users)
   final List<String> listSemester = ['1', '2', '3', '4', '5', '6', '7', '8'];
@@ -56,29 +34,15 @@ class RegisterController extends GetxController {
   final List<String> listMentorRole = ['complink', 'paperlink'];
   var selectedMentorRole = ''.obs;
 
-  // Layanan (services) for mentors only
-  final List<String> paperlinkLayanan = [
-    "Bimbingan Penulisan Paper Ilmiah",
-    "Bimbingan Skripsi/Tesis/Disertasi",
-    "Bimbingan Publikasi Jurnal Scopus",
-    "Bimbingan Publikasi Jurnal Sinta",
-    "Bimbingan Riset Eksperimen (Lab)",
-    "Bimbingan Analisis Data Kuantitatif",
-    "Bimbingan Analisis Data Kualitatif",
-    "Bimbingan Proposal Penelitian",
-    "Bimbingan Lomba Karya Ilmiah (PKM, ONMIPA)",
-    "Bimbingan Turnitin & Parafrase",
-  ];
-  final List<String> complinkLayanan = const [
-    'Business Plan Competition',
-    'Startup Competition',
-    'Olimpiade Mahasiswa',
-    'Data Science Competition',
-    'Programming Competition',
-    'Debat Mahasiswa',
-  ];
-  List<String> get availableLayanan => selectedMentorRole.value == 'complink' ? complinkLayanan : paperlinkLayanan;
-  var selectedLayanan = <String>[].obs;
+  // Layanan (services) for mentors only - fetched from Firebase
+  final listLayanan = <Map<String, String>>[].obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
+  var selectedLayanan = <String>[].obs; // Store layanan IDs
+
+  // Get available layanan filtered by mentor role
+  List<Map<String, String>> get availableLayanan {
+    if (selectedMentorRole.value.isEmpty) return [];
+    return listLayanan.where((layanan) => layanan['type'] == selectedMentorRole.value).toList();
+  }
 
   var agreeToTerms = false.obs;
   var isFormValid = false.obs;
@@ -93,6 +57,9 @@ class RegisterController extends GetxController {
       userRole.value = 'mentor';
     }
 
+    // Fetch master data from Firebase
+    fetchMasterData();
+
     // Add listeners to all text controllers to trigger validation check
     namaController.addListener(_checkFormValidity);
     emailController.addListener(_checkFormValidity);
@@ -101,12 +68,71 @@ class RegisterController extends GetxController {
     noTelpController.addListener(_checkFormValidity);
     // Listen to observable changes
     ever(agreeToTerms, (_) => _checkFormValidity());
-    ever(selectedKampus, (_) => _checkFormValidity());
+    ever(selectedKampus, (_) {
+      _checkFormValidity();
+      _filterJurusanByKampus();
+    });
     ever(selectedJurusan, (_) => _checkFormValidity());
     ever(selectedSemester, (_) => _checkFormValidity());
-    ever(selectedMentorRole, (_) => _checkFormValidity());
+    ever(selectedMentorRole, (_) {
+      _checkFormValidity();
+      selectedLayanan.clear(); // Clear selected layanan when role changes
+    });
     ever(selectedLayanan, (_) => _checkFormValidity());
     ever(userRole, (_) => _checkFormValidity());
+  }
+
+  // Fetch master data from Firebase
+  Future<void> fetchMasterData() async {
+    try {
+      // Fetch kampus
+      final kampusSnapshot = await _firestore.collection('kampus').get();
+      listKampus.value = kampusSnapshot.docs
+          .map((doc) {
+            return {'id': doc.id, 'name': doc.data()['name']?.toString() ?? ''};
+          })
+          .toList()
+          .cast<Map<String, String>>();
+
+      // Fetch all jurusan
+      final jurusanSnapshot = await _firestore.collection('jurusan').get();
+      listJurusan.value = jurusanSnapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            return {
+              'id': doc.id,
+              'name': data['name']?.toString() ?? '',
+              'kampusId': data['kampusId']?.toString() ?? '',
+            };
+          })
+          .toList()
+          .cast<Map<String, String>>();
+
+      // Fetch layanan
+      final layananSnapshot = await _firestore.collection('layanan').get();
+      listLayanan.value = layananSnapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            return {'id': doc.id, 'name': data['name']?.toString() ?? '', 'type': data['type']?.toString() ?? ''};
+          })
+          .toList()
+          .cast<Map<String, String>>();
+    } catch (e) {
+      print('Error fetching master data: $e');
+    }
+  }
+
+  // Filter jurusan by selected kampus
+  void _filterJurusanByKampus() {
+    if (selectedKampus.value.isEmpty) {
+      selectedJurusan.value = '';
+    }
+  }
+
+  // Get filtered jurusan list based on selected kampus
+  List<Map<String, String>> get filteredJurusan {
+    if (selectedKampus.value.isEmpty) return [];
+    return listJurusan.where((jurusan) => jurusan['kampusId'] == selectedKampus.value).toList();
   }
 
   @override
@@ -185,11 +211,11 @@ class RegisterController extends GetxController {
     isFormValid.value = true;
   }
 
-  void toggleLayanan(String layanan) {
-    if (selectedLayanan.contains(layanan)) {
-      selectedLayanan.remove(layanan);
+  void toggleLayanan(String layananId) {
+    if (selectedLayanan.contains(layananId)) {
+      selectedLayanan.remove(layananId);
     } else {
-      selectedLayanan.add(layanan);
+      selectedLayanan.add(layananId);
     }
   }
 
@@ -234,14 +260,27 @@ class RegisterController extends GetxController {
       // Mengambil ID pengguna yang baru dibuat
       final userId = userCredential.user?.uid;
 
+      // Get kampus and jurusan names from IDs
+      final kampusName =
+          listKampus.firstWhereOrNull((k) => k['id'] == selectedKampus.value)?['name'] ?? selectedKampus.value;
+      final jurusanName =
+          filteredJurusan.firstWhereOrNull((j) => j['id'] == selectedJurusan.value)?['name'] ?? selectedJurusan.value;
+
+      // Get layanan names from IDs
+      final layananNames = selectedLayanan.map((id) {
+        return availableLayanan.firstWhereOrNull((l) => l['id'] == id)?['name'] ?? id;
+      }).toList();
+
       // Menyimpan data pengguna di Firestore
       final userData = {
         'id': userId,
         'nama': namaController.text.trim(),
         'email': emailController.text.trim(),
         'noTelp': noTelpController.text.trim(),
-        'kampus': selectedKampus.value,
-        'jurusan': selectedJurusan.value,
+        'kampus': kampusName,
+        'kampusId': selectedKampus.value,
+        'jurusan': jurusanName,
+        'jurusanId': selectedJurusan.value,
         'semester': selectedSemester.value,
         'image': 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500',
         'role': userRole.value,
@@ -254,8 +293,9 @@ class RegisterController extends GetxController {
         if (selectedMentorRole.value.isNotEmpty) {
           userData['mentorRole'] = selectedMentorRole.value;
         }
-        if (selectedLayanan.isNotEmpty) {
-          userData['layanan'] = selectedLayanan;
+        if (layananNames.isNotEmpty) {
+          userData['layanan'] = layananNames;
+          userData['layananIds'] = selectedLayanan;
         }
       }
 

@@ -9,8 +9,10 @@ class ListMentorView extends StatelessWidget {
   final String? kampus;
   final String? jurusan;
   final String? layanan;
+  final String? layananId; // Layanan ID from filter
+  final int? layananPrice; // Layanan price from filter
 
-  const ListMentorView({super.key, this.kampus, this.jurusan, this.layanan});
+  const ListMentorView({super.key, this.kampus, this.jurusan, this.layanan, this.layananId, this.layananPrice});
 
   String _toText(dynamic value) {
     if (value == null) return '-';
@@ -62,6 +64,7 @@ class ListMentorView extends StatelessWidget {
     Query<Map<String, dynamic>> baseQuery = FirebaseFirestore.instance
         .collection('users')
         .where('role', isEqualTo: 'mentor');
+    // Note: isActive filtering is done client-side to avoid composite index requirements
     if (kampusFilter != null && kampusFilter.isNotEmpty) {
       baseQuery = baseQuery.where('kampus', isEqualTo: kampusFilter);
     }
@@ -135,21 +138,28 @@ class ListMentorView extends StatelessWidget {
                   );
                 }
                 final docs = snapshot.data?.docs ?? [];
-                final mentors = docs.map((d) {
-                  final data = d.data();
-                  return Mentor(
-                    id: d.id,
-                    name: _toText(data['nama'] ?? data['name'] ?? 'Mentor'),
-                    kampus: _toText(data['kampus']),
-                    jurusan: _toText(data['jurusan']),
-                    layanan: _toText(data['layanan']),
-                    image: _toText(data['image']) == '-' ? '' : _toText(data['image']),
-                    email: _toText(data['email']) == '-' ? '' : _toText(data['email']),
-                    bio: _toText(data['bio']) == '-' ? '' : _toText(data['bio']),
-                    rating: (data['rating'] is num) ? (data['rating'] as num).toDouble() : 0.0,
-                    totalSessions: (data['totalSessions'] is num) ? (data['totalSessions'] as num).toInt() : 0,
-                  );
-                }).toList();
+                final mentors = docs
+                    .map((d) {
+                      final data = d.data();
+                      // Filter out inactive mentors (isActive == false)
+                      final isActive = data['isActive'] ?? true; // Default to true if not set
+                      if (isActive == false) return null;
+
+                      return Mentor(
+                        id: d.id,
+                        name: _toText(data['nama'] ?? data['name'] ?? 'Mentor'),
+                        kampus: _toText(data['kampus']),
+                        jurusan: _toText(data['jurusan']),
+                        layanan: _toText(data['layanan']),
+                        image: _toText(data['image']) == '-' ? '' : _toText(data['image']),
+                        email: _toText(data['email']) == '-' ? '' : _toText(data['email']),
+                        bio: _toText(data['bio']) == '-' ? '' : _toText(data['bio']),
+                        rating: (data['rating'] is num) ? (data['rating'] as num).toDouble() : 0.0,
+                        totalSessions: (data['totalSessions'] is num) ? (data['totalSessions'] as num).toInt() : 0,
+                      );
+                    })
+                    .whereType<Mentor>()
+                    .toList();
 
                 // Client-side layanan filter (case-insensitive, tolerant to joined strings)
                 List<Mentor> filteredMentors = mentors;
@@ -216,7 +226,10 @@ class ListMentorView extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => DetailMentorView(mentor: mentor)),
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    DetailMentorView(mentor: mentor, layananId: layananId, layananPrice: layananPrice),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
