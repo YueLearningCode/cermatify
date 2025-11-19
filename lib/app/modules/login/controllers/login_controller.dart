@@ -1,5 +1,6 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
+import 'package:cermatify/app/data/widgets/verification_status_dialog.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,7 +46,71 @@ class LoginController extends GetxController {
           .doc(userCredential.user!.uid)
           .get();
 
-      String userRole = userDoc['role'];
+      if (!userDoc.exists) {
+        await _auth.signOut();
+        await _clearLoginData();
+        CustomSnackbar.show(
+          title: 'Error',
+          message: "Data pengguna tidak ditemukan",
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return;
+      }
+
+      final userData = userDoc.data() as Map<String, dynamic>?;
+      if (userData == null) {
+        await _auth.signOut();
+        await _clearLoginData();
+        CustomSnackbar.show(
+          title: 'Error',
+          message: "Data pengguna tidak valid",
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return;
+      }
+
+      String? userRole = userData['role']?.toString();
+      if (userRole == null || userRole.isEmpty) {
+        await _auth.signOut();
+        await _clearLoginData();
+        CustomSnackbar.show(
+          title: 'Error',
+          message: "Role pengguna tidak ditemukan",
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return;
+      }
+
+      // Only check verification status for mentors
+      if (userRole == 'mentor') {
+        String? verificationStatus = userData['verificationStatus']?.toString();
+
+        // Block login only if verification status is null or 'pending'
+        if (verificationStatus == null || verificationStatus == 'pending') {
+          // Sign out the user since they can't login
+          await _auth.signOut();
+          await _clearLoginData();
+
+          // Show error message
+          CustomSnackbar.show(
+            title: 'Akun Belum Terverifikasi',
+            message: "Akun mentor Anda sedang dalam proses verifikasi. Silakan tunggu hingga akun Anda terverifikasi.",
+            backgroundColor: AppColors.redColor,
+            isNav: false,
+          );
+
+          // Show verification dialog after a short delay
+          Future.delayed(const Duration(milliseconds: 500), () {
+            VerificationStatusDialog.show(context: Get.context!);
+          });
+
+          return;
+        }
+        // If verificationStatus is 'verified' or any other value, continue to login
+      }
 
       // Save login status and role to SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -95,7 +160,46 @@ class LoginController extends GetxController {
           DocumentSnapshot userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
 
           if (userDoc.exists) {
-            String userRole = userDoc['role'] ?? 'customer';
+            final userData = userDoc.data() as Map<String, dynamic>?;
+            if (userData == null) {
+              await _auth.signOut();
+              await _clearLoginData();
+              return;
+            }
+
+            String? userRole = userData['role']?.toString() ?? 'customer';
+            if (userRole.isEmpty) {
+              userRole = 'customer';
+            }
+
+            // Only check verification status for mentors
+            if (userRole == 'mentor') {
+              String? verificationStatus = userData['verificationStatus']?.toString();
+
+              // Block auto-login only if verification status is null or 'pending'
+              if (verificationStatus == null || verificationStatus == 'pending') {
+                // Sign out the user since they can't login
+                await _auth.signOut();
+                await _clearLoginData();
+
+                // Show error message
+                CustomSnackbar.show(
+                  title: 'Akun Belum Terverifikasi',
+                  message:
+                      "Akun mentor Anda sedang dalam proses verifikasi. Silakan tunggu hingga akun Anda terverifikasi.",
+                  backgroundColor: AppColors.redColor,
+                  isNav: false,
+                );
+
+                // Show verification dialog after a short delay
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  VerificationStatusDialog.show(context: Get.context!);
+                });
+
+                return;
+              }
+              // If verificationStatus is 'verified' or any other value, continue to auto-login
+            }
 
             // Save login status and role to SharedPreferences for consistency
             SharedPreferences prefs = await SharedPreferences.getInstance();

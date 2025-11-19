@@ -140,10 +140,43 @@ class AdminOrdersController extends GetxController {
     try {
       isUpdating.value = true;
 
+      // Get current order data to check previous status and get price/mentorId
+      final orderDoc = await _firestore.collection('orders').doc(orderId).get();
+      if (!orderDoc.exists) {
+        throw Exception('Order not found');
+      }
+
+      final orderData = orderDoc.data() as Map<String, dynamic>;
+      final currentStatus = orderData['status']?.toString() ?? '';
+      final mentorId = orderData['mentorId']?.toString();
+      final price = (orderData['price'] as int?) ?? 0;
+
+      // Update order status
       await _firestore.collection('orders').doc(orderId).update({
         'status': newStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      // If status changed to 'progress' (approved) and it wasn't already approved, add price to mentor saldo
+      if ((newStatus.toLowerCase() == 'progress' || newStatus.toLowerCase() == 'approved') &&
+          mentorId != null &&
+          mentorId.isNotEmpty &&
+          price > 0 &&
+          currentStatus.toLowerCase() != 'progress' &&
+          currentStatus.toLowerCase() != 'approved') {
+        // Get current mentor saldo
+        final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+        if (mentorDoc.exists) {
+          final mentorData = mentorDoc.data() as Map<String, dynamic>;
+          final currentSaldo = (mentorData['saldo'] as int?) ?? 0;
+          final newSaldo = currentSaldo + price;
+
+          // Update mentor saldo
+          await _firestore.collection('users').doc(mentorId).update({'saldo': newSaldo});
+
+          print('Added $price to mentor $mentorId saldo. New saldo: $newSaldo');
+        }
+      }
 
       // Refresh orders list
       await fetchOrders();

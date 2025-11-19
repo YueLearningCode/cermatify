@@ -214,19 +214,25 @@ class UsersView extends GetView<UsersController> {
                     const SizedBox(height: 6),
                     Obx(() {
                       final mentor = controller.mentorsList.firstWhereOrNull((m) => m.id == user.id);
-                      final isActive = mentor?.isActive ?? user.isActive ?? true;
+                      final verificationStatus = mentor?.verificationStatus ?? user.verificationStatus;
+                      final isVerified = verificationStatus == 'verified';
+                      final statusText = isVerified
+                          ? 'Verified'
+                          : (verificationStatus == 'pending' ? 'Pending' : 'Pending');
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isActive ? AppColors.greenColor.withOpacity(0.1) : AppColors.redColor.withOpacity(0.1),
+                          color: isVerified
+                              ? AppColors.greenColor.withOpacity(0.1)
+                              : AppColors.redColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          isActive ? 'Active' : 'Inactive',
+                          statusText,
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: isActive ? AppColors.greenColor : AppColors.redColor,
+                            color: isVerified ? AppColors.greenColor : AppColors.redColor,
                           ),
                         ),
                       );
@@ -239,13 +245,14 @@ class UsersView extends GetView<UsersController> {
             if (isMentor)
               Obx(() {
                 final mentor = controller.mentorsList.firstWhereOrNull((m) => m.id == user.id);
-                final isActive = mentor?.isActive ?? user.isActive ?? true;
+                final verificationStatus = mentor?.verificationStatus ?? user.verificationStatus;
+                final isVerified = verificationStatus == 'verified';
                 return Switch(
-                  value: isActive,
+                  value: isVerified,
                   onChanged: controller.isUpdating.value
                       ? null
                       : (value) {
-                          controller.toggleMentorStatus(user.id, isActive);
+                          controller.toggleMentorStatus(user.id, verificationStatus);
                         },
                   activeColor: AppColors.greenColor,
                   inactiveThumbColor: AppColors.redColor,

@@ -9,9 +9,16 @@ class UserData {
   final String email;
   final String? image;
   final String role;
-  final bool? isActive; // For mentors only
+  final String? verificationStatus; // For mentors only
 
-  UserData({required this.id, required this.name, required this.email, this.image, required this.role, this.isActive});
+  UserData({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.image,
+    required this.role,
+    this.verificationStatus,
+  });
 
   factory UserData.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -21,7 +28,7 @@ class UserData {
       email: data['email'] ?? '',
       image: data['image'] ?? data['foto'],
       role: data['role'] ?? 'customer',
-      isActive: data['isActive'] ?? true, // Default to active
+      verificationStatus: data['verificationStatus'] as String?, // null or 'pending' or 'verified'
     );
   }
 }
@@ -88,11 +95,16 @@ class UsersController extends GetxController {
     }
   }
 
-  Future<void> toggleMentorStatus(String mentorId, bool currentStatus) async {
+  Future<void> toggleMentorStatus(String mentorId, String? currentStatus) async {
     try {
       isUpdating.value = true;
 
-      await _firestore.collection('users').doc(mentorId).update({'isActive': !currentStatus});
+      // Toggle between 'pending' and 'verified'
+      // If currentStatus is 'verified', change to 'pending'
+      // If currentStatus is 'pending' or null, change to 'verified'
+      final newStatus = (currentStatus == 'verified') ? 'pending' : 'verified';
+
+      await _firestore.collection('users').doc(mentorId).update({'verificationStatus': newStatus});
 
       // Update local list
       final index = mentorsList.indexWhere((mentor) => mentor.id == mentorId);
@@ -103,22 +115,22 @@ class UsersController extends GetxController {
           email: mentorsList[index].email,
           image: mentorsList[index].image,
           role: mentorsList[index].role,
-          isActive: !currentStatus,
+          verificationStatus: newStatus,
         );
         mentorsList.refresh();
       }
 
       CustomSnackbar.show(
         title: 'Success',
-        message: !currentStatus ? 'Mentor activated successfully' : 'Mentor deactivated successfully',
+        message: newStatus == 'verified' ? 'Mentor verified successfully' : 'Mentor verification set to pending',
         backgroundColor: AppColors.greenColor,
         isNav: false,
       );
     } catch (e) {
-      print('Error updating mentor status: $e');
+      print('Error updating mentor verification status: $e');
       CustomSnackbar.show(
         title: 'Error',
-        message: 'Failed to update mentor status: $e',
+        message: 'Failed to update mentor verification status: $e',
         backgroundColor: AppColors.redColor,
         isNav: false,
       );
@@ -129,5 +141,19 @@ class UsersController extends GetxController {
 
   void changeTab(int index) {
     selectedTab.value = index;
+  }
+
+  // Fetch full mentor data from Firestore
+  Future<Map<String, dynamic>?> fetchMentorFullData(String mentorId) async {
+    try {
+      final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+      if (mentorDoc.exists) {
+        return mentorDoc.data();
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching mentor full data: $e');
+      return null;
+    }
   }
 }

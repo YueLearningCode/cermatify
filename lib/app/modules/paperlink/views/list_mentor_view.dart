@@ -141,9 +141,9 @@ class ListMentorView extends StatelessWidget {
                 final mentors = docs
                     .map((d) {
                       final data = d.data();
-                      // Filter out inactive mentors (isActive == false)
-                      final isActive = data['isActive'] ?? true; // Default to true if not set
-                      if (isActive == false) return null;
+                      // Filter to show only verified mentors (verificationStatus == 'verified')
+                      final verificationStatus = data['verificationStatus'] as String?;
+                      if (verificationStatus != 'verified') return null;
 
                       return Mentor(
                         id: d.id,

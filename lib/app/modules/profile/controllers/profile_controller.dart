@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,6 +32,9 @@ class ProfileController extends GetxController {
   final userMentorRole = ''.obs;
   final userLayanan = <String>[].obs;
   final isLoading = false.obs;
+  final mentorOrders = <Map<String, dynamic>>[].obs;
+  final isLoadingOrders = false.obs;
+  final saldo = 0.obs;
 
   // Dropdown lists for edit profile - fetched from Firebase
   final listKampus = <Map<String, String>>[].obs; // [{id: '...', name: '...'}]
@@ -150,8 +154,11 @@ class ProfileController extends GetxController {
 
   @override
   void onClose() {
+    _saldoSubscription?.cancel();
     super.onClose();
   }
+
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _saldoSubscription;
 
   Future<void> fetchUserData() async {
     try {
@@ -175,9 +182,20 @@ class ProfileController extends GetxController {
           } else {
             userLayanan.value = <String>[];
           }
+
+          // Fetch saldo and mentor orders if user is a mentor
+          if (userRole.value == 'mentor') {
+            // Get saldo from user document
+            saldo.value = (data['saldo'] as int?) ?? 0;
+            fetchMentorOrders();
+            setupSaldoListener();
+          } else {
+            saldo.value = 0;
+          }
         } else {
           userName.value = user.displayName ?? 'User';
           userEmail.value = user.email ?? '';
+          saldo.value = 0;
         }
       }
     } catch (e) {
@@ -185,6 +203,109 @@ class ProfileController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> fetchMentorOrders() async {
+    try {
+      isLoadingOrders.value = true;
+      final User? user = _auth.currentUser;
+      if (user == null) {
+        mentorOrders.value = [];
+        return;
+      }
+
+      // Query orders where mentorId equals current user ID and status is 'progress'
+      final querySnapshot = await _firestore
+          .collection('orders')
+          .where('mentorId', isEqualTo: user.uid)
+          .where('status', isEqualTo: 'progress')
+          .get();
+
+      List<Map<String, dynamic>> ordersList = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {'id': doc.id, ...data};
+      }).toList();
+
+      // Fetch customer and layanan names for each order
+      for (var order in ordersList) {
+        final customerId = order['userId']?.toString();
+        final layananId = order['layananId']?.toString();
+
+        // Fetch customer name
+        if (customerId != null && customerId.isNotEmpty) {
+          try {
+            final customerDoc = await _firestore.collection('users').doc(customerId).get();
+            if (customerDoc.exists) {
+              final customerData = customerDoc.data();
+              order['customerName'] = customerData?['nama'] ?? customerData?['name'] ?? 'Unknown Customer';
+            } else {
+              order['customerName'] = 'Unknown Customer';
+            }
+          } catch (e) {
+            print('Error fetching customer name: $e');
+            order['customerName'] = 'Unknown Customer';
+          }
+        } else {
+          order['customerName'] = 'Unknown Customer';
+        }
+
+        // Fetch layanan name
+        if (layananId != null && layananId.isNotEmpty) {
+          try {
+            final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+            if (layananDoc.exists) {
+              final layananData = layananDoc.data();
+              order['layananName'] = layananData?['name'] ?? 'Unknown Layanan';
+            } else {
+              order['layananName'] = 'Unknown Layanan';
+            }
+          } catch (e) {
+            print('Error fetching layanan name: $e');
+            order['layananName'] = 'Unknown Layanan';
+          }
+        } else {
+          order['layananName'] = 'Unknown Layanan';
+        }
+      }
+
+      // Sort by createdAt (newest first)
+      ordersList.sort((a, b) {
+        final aTime = a['createdAt'];
+        final bTime = b['createdAt'];
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        if (aTime is Timestamp && bTime is Timestamp) {
+          return bTime.compareTo(aTime); // Descending (newest first)
+        }
+        return 0;
+      });
+
+      mentorOrders.value = ordersList;
+    } catch (e) {
+      print('Error fetching mentor orders: $e');
+      mentorOrders.value = [];
+    } finally {
+      isLoadingOrders.value = false;
+    }
+  }
+
+  void setupSaldoListener() {
+    final User? user = _auth.currentUser;
+    if (user == null) return;
+
+    // Cancel existing subscription
+    _saldoSubscription?.cancel();
+
+    // Set up real-time listener for user document to update saldo
+    _saldoSubscription = _firestore.collection('users').doc(user.uid).snapshots().listen((snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data();
+        if (data != null) {
+          saldo.value = (data['saldo'] as int?) ?? 0;
+        }
+      }
+    });
   }
 
   Future<bool> updateProfile({

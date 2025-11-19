@@ -17,6 +17,7 @@ class RegisterController extends GetxController {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController noTelpController = TextEditingController();
+  TextEditingController linkedinController = TextEditingController();
 
   // Kampus dropdown - fetched from Firebase
   final listKampus = <Map<String, String>>[].obs; // [{id: '...', name: '...'}]
@@ -66,6 +67,7 @@ class RegisterController extends GetxController {
     passwordController.addListener(_checkFormValidity);
     confirmPasswordController.addListener(_checkFormValidity);
     noTelpController.addListener(_checkFormValidity);
+    linkedinController.addListener(_checkFormValidity);
     // Listen to observable changes
     ever(agreeToTerms, (_) => _checkFormValidity());
     ever(selectedKampus, (_) {
@@ -80,6 +82,9 @@ class RegisterController extends GetxController {
     });
     ever(selectedLayanan, (_) => _checkFormValidity());
     ever(userRole, (_) => _checkFormValidity());
+
+    // Initial validation check
+    Future.microtask(() => _checkFormValidity());
   }
 
   // Fetch master data from Firebase
@@ -142,11 +147,13 @@ class RegisterController extends GetxController {
     passwordController.removeListener(_checkFormValidity);
     confirmPasswordController.removeListener(_checkFormValidity);
     noTelpController.removeListener(_checkFormValidity);
+    linkedinController.removeListener(_checkFormValidity);
     namaController.dispose();
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     noTelpController.dispose();
+    linkedinController.dispose();
     super.onClose();
   }
 
@@ -206,6 +213,28 @@ class RegisterController extends GetxController {
     if (userRole.value == 'mentor' && selectedLayanan.isEmpty) {
       isFormValid.value = false;
       return;
+    }
+
+    // Check LinkedIn validation (required for mentors only)
+    if (userRole.value == 'mentor') {
+      final linkedin = linkedinController.text.trim();
+      if (linkedin.isEmpty) {
+        isFormValid.value = false;
+        return;
+      }
+      // Validate LinkedIn URL format - accept various LinkedIn URL formats
+      // Just check that it's a valid URL containing linkedin.com
+      final lowerLinkedin = linkedin.toLowerCase();
+      if (!lowerLinkedin.contains('linkedin.com')) {
+        isFormValid.value = false;
+        return;
+      }
+      // Check if it's a valid URL format
+      final urlPattern = RegExp(r'^https?://[^\s/$.?#].[^\s]*$', caseSensitive: false);
+      if (!urlPattern.hasMatch(linkedin)) {
+        isFormValid.value = false;
+        return;
+      }
     }
 
     isFormValid.value = true;
@@ -288,7 +317,7 @@ class RegisterController extends GetxController {
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-      // Add mentorRole and layanan only for mentors
+      // Add mentorRole, layanan, LinkedIn, and verificationStatus only for mentors
       if (userRole.value == 'mentor') {
         if (selectedMentorRole.value.isNotEmpty) {
           userData['mentorRole'] = selectedMentorRole.value;
@@ -297,6 +326,11 @@ class RegisterController extends GetxController {
           userData['layanan'] = layananNames;
           userData['layananIds'] = selectedLayanan;
         }
+        if (linkedinController.text.trim().isNotEmpty) {
+          userData['linkedin'] = linkedinController.text.trim();
+        }
+        // Set verification status to pending for new mentors
+        userData['verificationStatus'] = 'pending';
       }
 
       await _firestore.collection('users').doc(userId).set(userData);

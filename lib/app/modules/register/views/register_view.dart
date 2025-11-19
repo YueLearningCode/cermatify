@@ -362,6 +362,31 @@ class RegisterView extends GetView<RegisterController> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
+                                CustomTextField(
+                                  controller: controller.linkedinController,
+                                  hintText: "Link LinkedIn",
+                                  icon: Icons.link_outlined,
+                                  keyboardType: TextInputType.url,
+                                  validator: (value) {
+                                    if (controller.userRole.value == 'mentor') {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Link LinkedIn tidak boleh kosong';
+                                      }
+                                      // Validate LinkedIn URL format - accept various LinkedIn URL formats
+                                      final lowerValue = value.toLowerCase();
+                                      if (!lowerValue.contains('linkedin.com')) {
+                                        return 'Link harus mengandung linkedin.com';
+                                      }
+                                      // Check if it's a valid URL format
+                                      final urlPattern = RegExp(r'^https?://[^\s/$.?#].[^\s]*$', caseSensitive: false);
+                                      if (!urlPattern.hasMatch(value)) {
+                                        return 'Masukkan link LinkedIn yang valid\nContoh: https://linkedin.com/in/username';
+                                      }
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 20),
                                 // Layanan Section
                                 Container(
                                   padding: const EdgeInsets.all(16),
