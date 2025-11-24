@@ -28,6 +28,8 @@ import '../modules/admin_dashboard/bindings/admin_dashboard_binding.dart';
 import '../modules/admin_dashboard/views/admin_dashboard_view.dart';
 import '../modules/order/bindings/order_binding.dart';
 import '../modules/order/views/order_history_view.dart';
+import '../modules/admin_kuesioner/bindings/admin_kuesioner_binding.dart';
+import '../modules/admin_kuesioner/views/admin_kuesioner_view.dart';
 
 part 'app_routes.dart';
 
@@ -51,5 +53,6 @@ class AppPages {
     GetPage(name: _Paths.COMPLINK, page: () => const ComplinkView(), binding: ComplinkBinding()),
     GetPage(name: _Paths.SOURCELINK, page: () => const SourcelinkView(), binding: SourcelinkBinding()),
     GetPage(name: _Paths.ORDER_HISTORY, page: () => const OrderHistoryView(), binding: OrderBinding()),
+    GetPage(name: _Paths.ADMIN_KUESIONER, page: () => const AdminKuesionerView(), binding: AdminKuesionerBinding()),
   ];
 }

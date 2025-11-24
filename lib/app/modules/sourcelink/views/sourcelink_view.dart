@@ -305,7 +305,10 @@ class SourcelinkView extends GetView<SourcelinkController> {
           elevation: 2,
           shadowColor: AppColors.primary.withOpacity(0.3),
         ),
-        onPressed: () {
+        onPressed: () async {
+          // Save criteria to local storage before navigating
+          // All dropdowns have values (even if default), so we can always proceed
+          await controller.saveCriteria();
           Get.to(() => const SourcelinkSubmitView());
         },
         child: Row(

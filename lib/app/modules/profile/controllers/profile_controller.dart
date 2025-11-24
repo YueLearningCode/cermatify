@@ -183,14 +183,13 @@ class ProfileController extends GetxController {
             userLayanan.value = <String>[];
           }
 
-          // Fetch saldo and mentor orders if user is a mentor
+          // Fetch saldo for all users
+          saldo.value = (data['saldo'] as int?) ?? 0;
+          setupSaldoListener();
+
+          // Fetch mentor orders if user is a mentor
           if (userRole.value == 'mentor') {
-            // Get saldo from user document
-            saldo.value = (data['saldo'] as int?) ?? 0;
             fetchMentorOrders();
-            setupSaldoListener();
-          } else {
-            saldo.value = 0;
           }
         } else {
           userName.value = user.displayName ?? 'User';
@@ -450,6 +449,52 @@ class ProfileController extends GetxController {
       );
     } catch (e) {
       CustomSnackbar.show(title: 'Error', message: 'Gagal logout: $e', backgroundColor: AppColors.redColor);
+    }
+  }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    try {
+      isLoading.value = true;
+      final User? user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        CustomSnackbar.show(title: 'Error', message: 'User tidak ditemukan', backgroundColor: AppColors.redColor);
+        return false;
+      }
+      final credential = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+      CustomSnackbar.show(
+        title: 'Sukses',
+        message: 'Kata sandi berhasil diubah',
+        backgroundColor: AppColors.greenColor,
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'wrong-password':
+          message = 'Kata sandi saat ini salah';
+          break;
+        case 'weak-password':
+          message = 'Kata sandi baru terlalu lemah';
+          break;
+        case 'requires-recent-login':
+          message = 'Silakan login ulang untuk mengubah kata sandi';
+          break;
+        default:
+          message = 'Gagal mengubah kata sandi: ${e.message ?? e.code}';
+      }
+      CustomSnackbar.show(title: 'Error', message: message, backgroundColor: AppColors.redColor);
+      return false;
+    } catch (e) {
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Gagal mengubah kata sandi: $e',
+        backgroundColor: AppColors.redColor,
+      );
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 }

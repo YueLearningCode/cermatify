@@ -27,7 +27,7 @@ class KuesionerController extends GetxController {
     _ensureSignedIn();
     loadKuesioner();
     _loadResponden();
-    _loadCreatedByMe();
+    loadCreatedByMe();
     _loadSignedByMe();
   }
 
@@ -46,6 +46,18 @@ class KuesionerController extends GetxController {
     _loadKuesionerFiltered();
   }
 
+  Future<void> reloadRespondenData() async {
+    await _loadResponden();
+    loadKuesioner();
+  }
+
+  Future<void> refreshAll() async {
+    await _loadResponden();
+    loadKuesioner();
+    await loadCreatedByMe();
+    await _loadSignedByMe();
+  }
+
   Future<void> _loadResponden() async {
     try {
       final String uid = _auth.currentUser?.uid ?? '';
@@ -54,11 +66,16 @@ class KuesionerController extends GetxController {
         respondenData.clear();
         return;
       }
-      final doc = await _firestore.collection('users').doc(uid).get();
-      final data = doc.data();
-      final Map<String, dynamic>? responden = (data?['responden'] as Map<String, dynamic>?);
-      if (responden != null && responden.isNotEmpty) {
-        respondenData.assignAll(responden);
+      // Load from data_diri collection instead of users.responden
+      final doc = await _firestore.collection('data_diri').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        respondenData.assignAll({
+          'rentangUsia': data['rentangUsia'],
+          'jenisKelamin': data['jenisKelamin'],
+          'tingkatPenghasilan': data['tingkatPenghasilan'],
+          'pendidikanTerakhir': data['pendidikanTerakhir'],
+        });
         hasRespondenData.value = true;
       } else {
         hasRespondenData.value = false;
@@ -72,26 +89,53 @@ class KuesionerController extends GetxController {
 
   Future<void> _loadKuesionerFiltered() async {
     try {
+      if (!hasRespondenData.value || respondenData.isEmpty) {
+        // If user hasn't set data tambahan, don't show any recommended kuesioners
+        // because filtering is based on demographic data
+        kuesionerList.value = [];
+        return;
+      }
+
+      // Only fetch approved kuesioners
       final QuerySnapshot<Map<String, dynamic>> snapshot = await _firestore
           .collection('kuesioners')
+          .where('status', isEqualTo: 'approved')
           .orderBy('createdAt', descending: true)
           .get();
-      final List<Kuesioner> all = snapshot.docs.map((doc) {
-        final data = doc.data();
-        final DateTime created = (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return Kuesioner(id: doc.id, createdAt: created, answers: const []);
-      }).toList();
 
-      if (!hasRespondenData.value || respondenData.isEmpty) {
-        // Sort by newest (most recent first)
-        all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        kuesionerList.value = all;
-        return;
+      // Normalize income values for matching
+      String? normalizeIncome(String? value) {
+        if (value == null || value.isEmpty) return null;
+        // Map different income formats to a common format
+        if (value.contains('< Rp 2.000.000') || value.contains('Rp 0 - Rp 2.000.000')) {
+          return 'Rp 0 - Rp 2.000.000';
+        }
+        if (value.contains('Rp 2.000.000 - Rp 5.000.000')) {
+          return 'Rp 2.000.000 - Rp 5.000.000';
+        }
+        if (value.contains('Rp 5.000.000 - Rp 10.000.000')) {
+          return 'Rp 5.000.000 - Rp 10.000.000';
+        }
+        if (value.contains('Rp 10.000.000 - Rp 20.000.000')) {
+          return 'Rp 10.000.000 - Rp 20.000.000';
+        }
+        if (value.contains('> Rp 20.000.000') || value.contains('Rp 20.000.001')) {
+          return '> Rp 20.000.000';
+        }
+        return value; // Return as-is if no match
       }
 
       bool match(dynamic target, String? userVal) {
         if (userVal == null || userVal.isEmpty) return true;
         if (target == null) return true; // no targeting = open to all
+
+        // Special handling for income to normalize different formats
+        if (target is String && target.contains('Rp') && userVal.contains('Rp')) {
+          final normalizedTarget = normalizeIncome(target);
+          final normalizedUser = normalizeIncome(userVal);
+          return normalizedTarget == normalizedUser;
+        }
+
         if (target is String) return target == userVal;
         if (target is List) return target.map((e) => e?.toString()).contains(userVal);
         return true;
@@ -102,19 +146,53 @@ class KuesionerController extends GetxController {
       final String? penghasilan = respondenData['tingkatPenghasilan'] as String?;
       final String? pendidikan = respondenData['pendidikanTerakhir'] as String?;
 
+      // Get current user ID to filter out kuesioners they've already signed up for
+      final String currentUid = _auth.currentUser?.uid ?? '';
+
       final filtered = snapshot.docs
           .where((doc) {
             final data = doc.data();
-            return match(data['rentangUsia'], usia) &&
-                match(data['jenisKelamin'], kelamin) &&
-                match(data['tingkatPenghasilan'], penghasilan) &&
-                match(data['pendidikanTerakhir'], pendidikan);
+
+            // Check if user is already a respondent
+            final List<dynamic> signedBy = (data['signedBy'] as List<dynamic>?) ?? [];
+            final bool alreadyRespondent =
+                currentUid.isNotEmpty && signedBy.map((e) => e.toString()).contains(currentUid);
+
+            // Exclude kuesioners where user is already a respondent from recommendations
+            if (alreadyRespondent) {
+              return false;
+            }
+
+            // Check if user is the creator
+            final String userId = data['userId'] as String? ?? '';
+            final bool isCreator = currentUid.isNotEmpty && currentUid == userId;
+
+            // Exclude kuesioners created by the user from recommendations
+            if (isCreator) {
+              return false;
+            }
+
+            // Match demographic criteria
+            final bool usiaMatch = match(data['rentangUsia'], usia);
+            final bool kelaminMatch = match(data['jenisKelamin'], kelamin);
+            final bool penghasilanMatch = match(data['tingkatPenghasilan'], penghasilan);
+            final bool pendidikanMatch = match(data['pendidikanTerakhir'], pendidikan);
+
+            final bool allMatch = usiaMatch && kelaminMatch && penghasilanMatch && pendidikanMatch;
+
+            // Debug logging (can be removed in production)
+            if (!allMatch) {
+              print('Kuesioner ${doc.id} filtered out:');
+              print('  Usia: ${data['rentangUsia']} vs $usia -> $usiaMatch');
+              print('  Kelamin: ${data['jenisKelamin']} vs $kelamin -> $kelaminMatch');
+              print('  Penghasilan: ${data['tingkatPenghasilan']} vs $penghasilan -> $penghasilanMatch');
+              print('  Pendidikan: ${data['pendidikanTerakhir']} vs $pendidikan -> $pendidikanMatch');
+            }
+
+            return allMatch;
           })
           .map((doc) {
-            final data = doc.data();
-            final DateTime created =
-                (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return Kuesioner(id: doc.id, createdAt: created, answers: const []);
+            return Kuesioner.fromJson(doc.data(), doc.id);
           })
           .toList();
 
@@ -127,7 +205,7 @@ class KuesionerController extends GetxController {
     }
   }
 
-  Future<void> _loadCreatedByMe() async {
+  Future<void> loadCreatedByMe() async {
     try {
       await _ensureSignedIn();
       final String uid = _auth.currentUser?.uid ?? '';
@@ -135,11 +213,9 @@ class KuesionerController extends GetxController {
         createdByMeList.clear();
         return;
       }
-      final snapshot = await _firestore.collection('kuesioners').where('createdBy', isEqualTo: uid).get();
+      final snapshot = await _firestore.collection('kuesioners').where('userId', isEqualTo: uid).get();
       final items = snapshot.docs.map((doc) {
-        final data = doc.data();
-        final DateTime created = (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return Kuesioner(id: doc.id, createdAt: created, answers: const []);
+        return Kuesioner.fromJson(doc.data(), doc.id);
       }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       createdByMeList.value = items;
     } catch (_) {
@@ -157,9 +233,7 @@ class KuesionerController extends GetxController {
       }
       final snapshot = await _firestore.collection('kuesioners').where('signedBy', arrayContains: uid).get();
       final items = snapshot.docs.map((doc) {
-        final data = doc.data();
-        final DateTime created = (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return Kuesioner(id: doc.id, createdAt: created, answers: const []);
+        return Kuesioner.fromJson(doc.data(), doc.id);
       }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       signedByMeList.value = items;
     } catch (_) {

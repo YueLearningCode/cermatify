@@ -2,45 +2,262 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/theme/app_formats.dart';
+import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
+import 'package:cermatify/app/data/dummy_sourcelink.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudinary/cloudinary.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../controllers/sourcelink_controller.dart';
+import '../../kuesioner/controllers/create_kuesioner_controller.dart';
 
 class SourcelinkSubmitView extends GetView<SourcelinkController> {
   const SourcelinkSubmitView({super.key});
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: Get.context!,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.check_circle, color: AppColors.success, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              "Berhasil!",
-              style: GoogleFonts.poppins(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 18),
-            ),
-          ],
-        ),
-        content: Text(
-          "Link berhasil disebar ke peserta kuesioner. Anda akan menerima notifikasi ketika responden mulai mengisi.",
-          style: GoogleFonts.poppins(color: AppColors.textSecondary, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Get.back();
-              Get.back();
-            },
-            child: Text(
-              "Kembali ke Beranda",
-              style: GoogleFonts.poppins(color: AppColors.primary, fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
-    );
+  @override
+  Widget build(BuildContext context) {
+    // Load saved criteria when view is built
+    controller.loadSavedCriteria();
+
+    return _SourcelinkSubmitViewStateful(controller: controller);
+  }
+}
+
+class _SourcelinkSubmitViewStateful extends StatefulWidget {
+  final SourcelinkController controller;
+
+  const _SourcelinkSubmitViewStateful({required this.controller});
+
+  @override
+  State<_SourcelinkSubmitViewStateful> createState() => _SourcelinkSubmitViewStatefulState();
+}
+
+class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStateful> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ImagePicker _imagePicker = ImagePicker();
+  final cloudinary = Cloudinary.signedConfig(
+    apiKey: '885241489685565',
+    apiSecret: 'Eo2Man-3sLzp9sCyYwslSXZFFtQ',
+    cloudName: 'dvxsmpz3m',
+  );
+
+  final isLoading = false.obs;
+  final paymentProofImage = Rxn<File>();
+
+  Future<void> _createOrderAndKuesioner() async {
+    try {
+      // Validate link
+      if (widget.controller.linkController.text.trim().isEmpty) {
+        CustomSnackbar.show(
+          title: 'Perhatian',
+          message: 'Masukkan link terlebih dahulu',
+          backgroundColor: AppColors.error,
+          isNav: false,
+        );
+        return;
+      }
+
+      // Validate payment proof
+      if (paymentProofImage.value == null) {
+        CustomSnackbar.show(
+          title: 'Perhatian',
+          message: 'Upload bukti pembayaran terlebih dahulu',
+          backgroundColor: AppColors.error,
+          isNav: false,
+        );
+        return;
+      }
+
+      isLoading.value = true;
+
+      final User? user = _auth.currentUser;
+      if (user == null) {
+        CustomSnackbar.show(
+          title: 'Error',
+          message: 'User tidak ditemukan',
+          backgroundColor: AppColors.error,
+          isNav: false,
+        );
+        return;
+      }
+
+      // Upload payment proof image to Cloudinary
+      final File imageFile = paymentProofImage.value!;
+      if (!imageFile.existsSync()) {
+        throw Exception('File does not exist');
+      }
+
+      final cloudinaryResponse = await cloudinary.upload(
+        fileBytes: imageFile.readAsBytesSync(),
+        fileName: 'kuesioner_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}',
+        resourceType: CloudinaryResourceType.image,
+      );
+
+      final String? secureUrl = cloudinaryResponse.secureUrl;
+      if (secureUrl == null) {
+        throw Exception('Failed to get image URL from Cloudinary');
+      }
+
+      // Find admin user for mentorId
+      String? adminMentorId;
+      try {
+        final adminSnapshot = await _firestore.collection('users').where('role', isEqualTo: 'admin').limit(1).get();
+        if (adminSnapshot.docs.isNotEmpty) {
+          adminMentorId = adminSnapshot.docs.first.id;
+        }
+      } catch (e) {
+        print('Error finding admin: $e');
+      }
+
+      // Create order for kuesioner (25000)
+      final orderData = {
+        'userId': user.uid,
+        'mentorId': adminMentorId ?? 'system',
+        'layananId': 'kuesioner',
+        'layananType': 'kuesioner',
+        'price': 25000,
+        'paymentProofUrl': secureUrl,
+        'status': 'waiting verification',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      final DocumentReference orderRef = await _firestore.collection('orders').add(orderData);
+      final String orderId = orderRef.id;
+
+      // Map criteria from sourcelink format to kuesioner format
+      final createController = Get.put(CreateKuesionerController());
+      final usiaValue = widget.controller.selectedUsia.value;
+      final kelaminValue = widget.controller.selectedKelamin.value;
+      final penghasilanValue = widget.controller.selectedPenghasilan.value;
+      final pendidikanValue = widget.controller.selectedPendidikan.value;
+
+      // Map criteria - check if value exists in create_kuesioner options
+      String? mappedUsia;
+      if (createController.rentangUsiaOptions.contains(usiaValue)) {
+        mappedUsia = usiaValue;
+      } else if (usiaValue != dummyRentangUsia.first) {
+        // Try to map similar values
+        if (usiaValue.contains('56') || usiaValue.contains('65')) {
+          mappedUsia = '56 tahun ke atas';
+        }
+      }
+
+      String? mappedKelamin;
+      if (createController.jenisKelaminOptions.contains(kelaminValue)) {
+        mappedKelamin = kelaminValue;
+      }
+
+      String? mappedPenghasilan;
+      if (createController.tingkatPenghasilanOptions.contains(penghasilanValue)) {
+        mappedPenghasilan = penghasilanValue;
+      } else if (penghasilanValue != dummyTingkatPenghasilan.first) {
+        // Try to map similar values
+        if (penghasilanValue.contains('0 - 2.000.000')) {
+          mappedPenghasilan = '< Rp 2.000.000';
+        } else if (penghasilanValue.contains('2.000.000 - 5.000.000')) {
+          mappedPenghasilan = 'Rp 2.000.000 - Rp 5.000.000';
+        } else if (penghasilanValue.contains('5.000.000 - 10.000.000')) {
+          mappedPenghasilan = 'Rp 5.000.000 - Rp 10.000.000';
+        } else if (penghasilanValue.contains('10.000.000 - 20.000.000')) {
+          mappedPenghasilan = 'Rp 10.000.000 - Rp 20.000.000';
+        } else if (penghasilanValue.contains('20.000.000')) {
+          mappedPenghasilan = '> Rp 20.000.000';
+        }
+      }
+
+      String? mappedPendidikan;
+      if (createController.pendidikanTerakhirOptions.contains(pendidikanValue)) {
+        mappedPendidikan = pendidikanValue;
+      } else if (pendidikanValue != dummyPendidikanTerakhir.first) {
+        // Try to map similar values
+        if (pendidikanValue.contains('Diploma')) {
+          mappedPendidikan = 'D1/D2/D3';
+        } else if (pendidikanValue == 'S1') {
+          mappedPendidikan = 'S1/D4';
+        }
+      }
+
+      // Check if at least one criteria is selected
+      if (mappedUsia == null && mappedKelamin == null && mappedPenghasilan == null && mappedPendidikan == null) {
+        CustomSnackbar.show(
+          title: 'Error',
+          message: 'Pilih minimal satu kriteria responden',
+          backgroundColor: AppColors.error,
+          isNav: false,
+        );
+        return;
+      }
+
+      // Create kuesioner document
+      final kuesionerData = {
+        'userId': user.uid,
+        'orderId': orderId,
+        'link': widget.controller.linkController.text.trim(),
+        'status': 'waiting verification',
+        'rentangUsia': mappedUsia,
+        'jenisKelamin': mappedKelamin,
+        'tingkatPenghasilan': mappedPenghasilan,
+        'pendidikanTerakhir': mappedPendidikan,
+        'answers': [],
+        'signedBy': [],
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      await _firestore.collection('kuesioners').add(kuesionerData);
+
+      // Clear saved criteria after successful creation
+      await widget.controller.clearSavedCriteria();
+
+      // Show success snackbar
+      CustomSnackbar.show(
+        title: 'Berhasil',
+        message: 'Pembuatan kuesioner berhasil. Menunggu verifikasi admin.',
+        backgroundColor: AppColors.greenColor,
+        isNav: false,
+      );
+
+      // Navigate to dashboard and clear navigation stack
+      Get.offAllNamed(Routes.DASHBOARD);
+    } catch (e) {
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Gagal membuat kuesioner: ${e.toString()}',
+        backgroundColor: AppColors.error,
+        isNav: false,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _pickPaymentProof(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          paymentProofImage.value = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Gagal memilih gambar: ${e.toString()}',
+        backgroundColor: AppColors.error,
+        isNav: false,
+      );
+    }
   }
 
   @override
@@ -150,7 +367,7 @@ class SourcelinkSubmitView extends GetView<SourcelinkController> {
                         ),
                         const SizedBox(height: 8),
                         TextField(
-                          controller: controller.linkController,
+                          controller: widget.controller.linkController,
                           style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: "https://forms.gle/abcd1234xyz",
@@ -179,38 +396,212 @@ class SourcelinkSubmitView extends GetView<SourcelinkController> {
                           style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
                         ),
                         const SizedBox(height: 32),
-                        // Button sebarkan
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                              elevation: 2,
-                              shadowColor: AppColors.primary.withOpacity(0.3),
-                            ),
-                            onPressed: () async {
-                              if (controller.linkController.text.isEmpty) {
-                                Get.snackbar(
-                                  'Perhatian',
-                                  'Masukkan link terlebih dahulu',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: AppColors.error,
-                                  colorText: Colors.white,
-                                  borderRadius: 8,
-                                  margin: const EdgeInsets.all(16),
-                                  icon: const Icon(Icons.error_outline, color: Colors.white, size: 20),
-                                );
-                                return;
-                              }
-                              await controller.createKuesioner();
-                              _showSuccessDialog();
-                            },
-                            child: Obx(
-                              () => controller.isSubmitting.value
-                                  ? SizedBox(
+                        // QRIS Section
+                        Text(
+                          "QRIS Pembayaran",
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Column(
+                            children: [
+                              // QR Code Image from Assets
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Image.asset(
+                                  'assets/images/qrqris.jpeg',
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              // Price display
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.background,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        'Rp',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      AppFormats.hargaPendek(25000),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        // Payment Proof Section
+                        Text(
+                          "Bukti Pembayaran",
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Obx(
+                          () => paymentProofImage.value != null
+                              ? Column(
+                                  children: [
+                                    Container(
+                                      height: 200,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: AppColors.border),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.file(paymentProofImage.value!, fit: BoxFit.cover),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () => _pickPaymentProof(ImageSource.gallery),
+                                            icon: const Icon(Icons.edit, size: 18),
+                                            label: Text('Ganti', style: GoogleFonts.poppins()),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: AppColors.primary,
+                                              side: const BorderSide(color: AppColors.primary),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () {
+                                              setState(() {
+                                                paymentProofImage.value = null;
+                                              });
+                                            },
+                                            icon: const Icon(Icons.delete_outline, size: 18),
+                                            label: Text('Hapus', style: GoogleFonts.poppins()),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: AppColors.error,
+                                              side: const BorderSide(color: AppColors.error),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    Container(
+                                      height: 200,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.background,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.image_outlined, size: 48, color: AppColors.textLight),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            'Belum ada bukti pembayaran',
+                                            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textLight),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () => _pickPaymentProof(ImageSource.camera),
+                                            icon: const Icon(Icons.camera_alt, size: 18),
+                                            label: Text('Kamera', style: GoogleFonts.poppins()),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: AppColors.primary,
+                                              side: const BorderSide(color: AppColors.primary),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: () => _pickPaymentProof(ImageSource.gallery),
+                                            icon: const Icon(Icons.photo_library, size: 18),
+                                            label: Text('Galeri', style: GoogleFonts.poppins()),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: AppColors.primary,
+                                              side: const BorderSide(color: AppColors.primary),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                        ),
+                        const SizedBox(height: 32),
+                        // Button submit
+                        Obx(
+                          () => SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                elevation: 2,
+                                shadowColor: AppColors.primary.withOpacity(0.3),
+                              ),
+                              onPressed: isLoading.value ? null : () => _createOrderAndKuesioner(),
+                              child: isLoading.value
+                                  ? const SizedBox(
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
@@ -222,10 +613,10 @@ class SourcelinkSubmitView extends GetView<SourcelinkController> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.share_rounded, size: 18),
+                                        const Icon(Icons.check_circle, size: 18),
                                         const SizedBox(width: 8),
                                         Text(
-                                          "Sebarkan Link",
+                                          "Buat Kuesioner",
                                           style: GoogleFonts.poppins(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,

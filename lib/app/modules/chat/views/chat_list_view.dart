@@ -99,13 +99,14 @@ class ChatListView extends GetView<ChatController> {
           onTap: () async {
             // For mentors, partnerId is customerId
             // For customers, partnerId is mentorId
+            final orderId = chat.orderId;
             if (controller.isMentor) {
               // Mentor chatting with customer
-              await controller.createOrGetChatRoom(mentorId: partnerId);
-              Get.to(() => ChatRoomView(mentorId: partnerId));
+              await controller.createOrGetChatRoom(mentorId: partnerId, orderId: orderId);
+              Get.to(() => ChatRoomView(mentorId: partnerId, orderId: orderId));
             } else {
               // Customer chatting with mentor
-              Get.to(() => ChatRoomView(mentorId: partnerId));
+              Get.to(() => ChatRoomView(mentorId: partnerId, orderId: orderId));
             }
           },
           child: Padding(

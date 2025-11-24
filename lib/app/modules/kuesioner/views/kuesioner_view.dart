@@ -23,6 +23,15 @@ class KuesionerView extends GetView<KuesionerController> {
         elevation: 0,
         centerTitle: true,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () {
+              controller.refreshAll();
+            },
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -60,7 +69,9 @@ class KuesionerView extends GetView<KuesionerController> {
                       ),
                       Obx(
                         () => Text(
-                          "${controller.kuesionerList.length} kuesioner menunggu",
+                          controller.hasRespondenData.value
+                              ? "${controller.kuesionerList.length} kuesioner menunggu"
+                              : "Lengkapi data tambahan untuk melihat kuesioner",
                           style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withOpacity(0.9)),
                         ),
                       ),
@@ -94,6 +105,79 @@ class KuesionerView extends GetView<KuesionerController> {
                   : tab == 1
                   ? controller.createdByMeList
                   : controller.signedByMeList;
+
+              // Show empty state if user hasn't set data tambahan and on Rekomendasi tab
+              if (tab == 0 && !controller.hasRespondenData.value) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_add_outlined, size: 64, color: AppColors.textSecondary),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Lengkapi Data Tambahan',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Untuk melihat kuesioner yang sesuai dengan profil Anda, lengkapi data tambahan terlebih dahulu',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Get.to(() => const DataUserKuesionerView());
+                          },
+                          icon: const Icon(Icons.person_add_rounded),
+                          label: Text(
+                            'Lengkapi Data Tambahan',
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.surface,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Show empty state if no items
+              if (items.isEmpty) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.assignment_outlined, size: 64, color: AppColors.textSecondary),
+                        const SizedBox(height: 16),
+                        Text(
+                          tab == 1 ? 'Belum ada kuesioner yang Anda buat' : 'Belum ada kuesioner yang Anda ikuti',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ListView.builder(
@@ -166,13 +250,21 @@ class KuesionerView extends GetView<KuesionerController> {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                "Kuesioner ${index + 1}",
-                                                style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 16,
-                                                  color: AppColors.textPrimary,
-                                                ),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      "Kuesioner ${index + 1}",
+                                                      style: GoogleFonts.poppins(
+                                                        fontWeight: FontWeight.w700,
+                                                        fontSize: 16,
+                                                        color: AppColors.textPrimary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  // Status Badge
+                                                  _buildStatusBadge(kuesioner.status),
+                                                ],
                                               ),
                                               const SizedBox(height: 6),
                                               Text(
@@ -258,9 +350,9 @@ class KuesionerView extends GetView<KuesionerController> {
           foregroundColor: AppColors.surface,
           elevation: 6,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          icon: const Icon(Icons.people_alt_rounded),
+          icon: Icon(hasData ? Icons.edit_rounded : Icons.people_alt_rounded),
           label: Text(
-            hasData ? "Edit Data" : "Data Tambahan",
+            hasData ? "Edit Data Diri" : "Data Tambahan",
             style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
           ),
         );
@@ -299,5 +391,61 @@ class KuesionerView extends GetView<KuesionerController> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildStatusBadge(String? status) {
+    if (status == null || status.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    Color backgroundColor;
+    Color textColor;
+    String statusText;
+    IconData icon;
+
+    switch (status.toLowerCase()) {
+      case 'approved':
+      case 'disetujui':
+        backgroundColor = AppColors.success.withOpacity(0.15);
+        textColor = AppColors.success;
+        statusText = 'Disetujui';
+        icon = Icons.check_circle_rounded;
+        break;
+      case 'rejected':
+      case 'ditolak':
+        backgroundColor = AppColors.error.withOpacity(0.15);
+        textColor = AppColors.error;
+        statusText = 'Ditolak';
+        icon = Icons.cancel_rounded;
+        break;
+      case 'waiting verification':
+      case 'menunggu verifikasi':
+      default:
+        backgroundColor = AppColors.yellowColor.withOpacity(0.15);
+        textColor = AppColors.yellow2Color;
+        statusText = 'Menunggu';
+        icon = Icons.pending_rounded;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: textColor.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textColor),
+          const SizedBox(width: 4),
+          Text(
+            statusText,
+            style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -491,9 +491,7 @@ class RegisterView extends GetView<RegisterController> {
                         text: controller.isLoading.value
                             ? "Memproses..."
                             : (controller.userRole.value == 'mentor' ? "Daftar Mentor" : "Daftar"),
-                        onPressed: (controller.isLoading.value || !controller.isFormValid.value)
-                            ? null
-                            : () => controller.register(),
+                        onPressed: controller.isLoading.value ? null : () => controller.register(),
                       ),
                     ),
                     const SizedBox(height: 30),

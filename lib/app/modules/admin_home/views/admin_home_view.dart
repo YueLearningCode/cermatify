@@ -6,6 +6,10 @@ import '../controllers/admin_home_controller.dart';
 import '../../admin_dashboard/controllers/admin_dashboard_controller.dart';
 import '../../admin_orders/views/admin_orders_view.dart';
 import '../../admin_orders/bindings/admin_orders_binding.dart';
+import '../../admin_withdraw/views/admin_withdraw_view.dart';
+import '../../admin_withdraw/bindings/admin_withdraw_binding.dart';
+import '../../admin_kuesioner/views/admin_kuesioner_view.dart';
+import '../../admin_kuesioner/bindings/admin_kuesioner_binding.dart';
 
 class AdminHomeView extends GetView<AdminHomeController> {
   const AdminHomeView({super.key});
@@ -177,6 +181,24 @@ class AdminHomeView extends GetView<AdminHomeController> {
                           onTap: () {
                             // Navigate to Orders view with binding
                             Get.to(() => const AdminOrdersView(), binding: AdminOrdersBinding());
+                          },
+                        ),
+                        _buildActionCard(
+                          title: "Withdraw",
+                          subtitle: "Kelola Withdraw",
+                          icon: Icons.account_balance_wallet_rounded,
+                          color: AppColors.primaryDark,
+                          onTap: () {
+                            Get.to(() => const AdminWithdrawView(), binding: AdminWithdrawBinding());
+                          },
+                        ),
+                        _buildActionCard(
+                          title: "Kuesioner",
+                          subtitle: "Kelola Kuesioner",
+                          icon: Icons.assignment_rounded,
+                          color: AppColors.yellowColor,
+                          onTap: () {
+                            Get.to(() => const AdminKuesionerView(), binding: AdminKuesionerBinding());
                           },
                         ),
                         // _buildActionCard(

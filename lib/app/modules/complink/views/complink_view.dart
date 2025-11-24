@@ -33,6 +33,7 @@ class ComplinkView extends GetView<ComplinkController> {
           layanan: controller.selectedCabangName,
           layananId: controller.selectedCabang.value,
           layananPrice: layananPrice,
+          layananType: 'complink', // This is complink view
         ),
       );
     } else {

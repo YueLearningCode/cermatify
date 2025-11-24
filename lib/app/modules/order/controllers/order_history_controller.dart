@@ -129,24 +129,95 @@ class OrderHistoryController extends GetxController {
     }
   }
 
-  // Check if user has order in progress for a mentor
-  Future<bool> hasProgressOrder(String mentorId) async {
+  // Check if user has order in progress for a mentor with specific layanan type
+  // Only checks for 'progress' or 'approved' status (not 'waiting verification')
+  Future<bool> hasProgressOrder(String mentorId, {String? layananType}) async {
     try {
       final User? user = _auth.currentUser;
       if (user == null) return false;
 
+      // Check for orders with status 'progress' or 'approved' only
       final querySnapshot = await _firestore
           .collection('orders')
           .where('userId', isEqualTo: user.uid)
           .where('mentorId', isEqualTo: mentorId)
-          .where('status', isEqualTo: 'progress')
-          .limit(1)
           .get();
 
-      return querySnapshot.docs.isNotEmpty;
+      // Filter client-side for status and layanan type
+      final hasOrder = querySnapshot.docs.any((doc) {
+        final data = doc.data();
+        final status = data['status']?.toString().toLowerCase() ?? '';
+        final orderLayananType = data['layananType']?.toString() ?? '';
+
+        // Check status - only 'progress' or 'approved' (not 'waiting verification')
+        final validStatus = status == 'progress' || status == 'approved';
+
+        // If layananType is provided, also check if it matches
+        if (layananType != null && layananType.isNotEmpty) {
+          return validStatus && orderLayananType.toLowerCase() == layananType.toLowerCase();
+        }
+
+        return validStatus;
+      });
+
+      return hasOrder;
     } catch (e) {
       print('Error checking progress order: $e');
       return false;
+    }
+  }
+
+  // Get orderId from progress order for a mentor with specific layanan type
+  // (returns the most recent one)
+  // Only includes orders with status 'progress' or 'approved' (not 'waiting verification')
+  Future<String?> getProgressOrderId(String mentorId, {String? layananType}) async {
+    try {
+      final User? user = _auth.currentUser;
+      if (user == null) return null;
+
+      // Get all orders for this mentor
+      final querySnapshot = await _firestore
+          .collection('orders')
+          .where('userId', isEqualTo: user.uid)
+          .where('mentorId', isEqualTo: mentorId)
+          .get();
+
+      // Filter for valid statuses and layanan type, then sort by createdAt
+      final validOrders = querySnapshot.docs.where((doc) {
+        final data = doc.data();
+        final status = data['status']?.toString().toLowerCase() ?? '';
+        final orderLayananType = data['layananType']?.toString() ?? '';
+
+        // Check status - only 'progress' or 'approved' (not 'waiting verification')
+        final validStatus = status == 'progress' || status == 'approved';
+
+        // If layananType is provided, also check if it matches
+        if (layananType != null && layananType.isNotEmpty) {
+          return validStatus && orderLayananType.toLowerCase() == layananType.toLowerCase();
+        }
+
+        return validStatus;
+      }).toList();
+
+      if (validOrders.isEmpty) return null;
+
+      // Sort by createdAt descending (most recent first)
+      validOrders.sort((a, b) {
+        final aTime = a.data()['createdAt'];
+        final bTime = b.data()['createdAt'];
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        if (aTime is Timestamp && bTime is Timestamp) {
+          return bTime.compareTo(aTime); // Descending
+        }
+        return 0;
+      });
+
+      return validOrders.first.id;
+    } catch (e) {
+      print('Error getting progress orderId: $e');
+      return null;
     }
   }
 

@@ -24,7 +24,13 @@ class OrderController extends GetxController {
   final paymentProofUrl = ''.obs;
 
   // Create order with payment proof
-  Future<bool> createOrder({required String mentorId, required String layananId, required int price}) async {
+  // Returns orderId as String if successful, empty string if failed
+  Future<String> createOrder({
+    required String mentorId,
+    required String layananId,
+    required int price,
+    String? layananType,
+  }) async {
     try {
       if (paymentProofImage.value == null) {
         CustomSnackbar.show(
@@ -33,7 +39,7 @@ class OrderController extends GetxController {
           backgroundColor: AppColors.redColor,
           isNav: false,
         );
-        return false;
+        return '';
       }
 
       isLoading.value = true;
@@ -46,7 +52,7 @@ class OrderController extends GetxController {
           backgroundColor: AppColors.redColor,
           isNav: false,
         );
-        return false;
+        return '';
       }
 
       // Upload payment proof image to Cloudinary
@@ -66,11 +72,26 @@ class OrderController extends GetxController {
         throw Exception('Failed to get image URL from Cloudinary');
       }
 
+      // Get layanan type from layananId if not provided
+      String? finalLayananType = layananType;
+      if (finalLayananType == null || finalLayananType.isEmpty) {
+        try {
+          final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+          if (layananDoc.exists) {
+            final layananData = layananDoc.data();
+            finalLayananType = layananData?['type']?.toString();
+          }
+        } catch (e) {
+          print('Error fetching layanan type: $e');
+        }
+      }
+
       // Create order document in Firestore
       final orderData = {
         'userId': user.uid,
         'mentorId': mentorId,
         'layananId': layananId,
+        'layananType': finalLayananType, // Store layanan type (paperlink/complink)
         'price': price,
         'paymentProofUrl': secureUrl,
         'status': 'waiting verification', // waiting verification, progress, rejected, completed
@@ -78,9 +99,10 @@ class OrderController extends GetxController {
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore.collection('orders').add(orderData);
+      final DocumentReference orderRef = await _firestore.collection('orders').add(orderData);
 
-      return true;
+      // Return orderId for chat room creation
+      return orderRef.id;
     } catch (e) {
       CustomSnackbar.show(
         title: 'Error',
@@ -88,7 +110,7 @@ class OrderController extends GetxController {
         backgroundColor: AppColors.redColor,
         isNav: false,
       );
-      return false;
+      return '';
     } finally {
       isLoading.value = false;
     }

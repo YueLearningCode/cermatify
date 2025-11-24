@@ -4,6 +4,7 @@ class ChatMessage {
   final String receiverId;
   final String message;
   final DateTime timestamp;
+  final String? orderId; // Order ID for chat room identification
 
   ChatMessage({
     required this.id,
@@ -11,6 +12,7 @@ class ChatMessage {
     required this.receiverId,
     required this.message,
     required this.timestamp,
+    this.orderId,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {

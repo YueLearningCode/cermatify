@@ -259,9 +259,163 @@ class RegisterController extends GetxController {
   /// Fungsi untuk melakukan pendaftaran pengguna baru.
   /// Validasi dilakukan untuk memastikan semua field terisi sebelum melakukan registrasi.
   Future<void> register() async {
-    // Validate form first
-    if (!formKey.currentState!.validate()) {
+    // Validate nama
+    final nama = namaController.text.trim();
+    if (nama.isEmpty) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Nama tidak boleh kosong',
+        backgroundColor: AppColors.redColor,
+      );
       return;
+    }
+    if (nama.length < 3) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Nama minimal 3 karakter',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+
+    // Validate email
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Email tidak boleh kosong',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Masukkan email yang valid',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+
+    // Validate password
+    final password = passwordController.text.trim();
+    if (password.isEmpty) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Kata sandi tidak boleh kosong',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+    if (password.length < 6) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Kata sandi minimal 6 karakter',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+
+    // Validate confirm password
+    final confirmPassword = confirmPasswordController.text.trim();
+    if (confirmPassword.isEmpty) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Konfirmasi kata sandi tidak boleh kosong',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+    if (password != confirmPassword) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Kata sandi tidak cocok',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+
+    // Validate no telp (optional but if filled, must be valid)
+    final noTelp = noTelpController.text.trim();
+    if (noTelp.isNotEmpty) {
+      if (!RegExp(r'^[0-9]+$').hasMatch(noTelp)) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Nomor telepon harus berupa angka',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
+      if (noTelp.length < 10) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Nomor telepon minimal 10 digit',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
+    }
+
+    // Validate semester
+    if (selectedSemester.value.isEmpty) {
+      CustomSnackbar.show(
+        title: 'Validasi Error',
+        message: 'Semester harus dipilih',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
+
+    // Validate mentor-specific fields
+    if (userRole.value == 'mentor') {
+      // Validate mentor role
+      if (selectedMentorRole.value.isEmpty) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Role mentor harus dipilih',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
+
+      // Validate layanan
+      if (selectedLayanan.isEmpty) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Pilih minimal satu layanan',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
+
+      // Validate LinkedIn
+      final linkedin = linkedinController.text.trim();
+      if (linkedin.isEmpty) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Link LinkedIn tidak boleh kosong',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
+      final lowerLinkedin = linkedin.toLowerCase();
+      if (!lowerLinkedin.contains('linkedin.com')) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Link harus mengandung linkedin.com',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
+      final urlPattern = RegExp(r'^https?://[^\s/$.?#].[^\s]*$', caseSensitive: false);
+      if (!urlPattern.hasMatch(linkedin)) {
+        CustomSnackbar.show(
+          title: 'Validasi Error',
+          message: 'Masukkan link LinkedIn yang valid\nContoh: https://linkedin.com/in/username',
+          backgroundColor: AppColors.redColor,
+        );
+        return;
+      }
     }
 
     // Check if agree to terms is checked

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../controllers/kuesioner_controller.dart';
 
 class DataUserKuesionerView extends StatefulWidget {
   final String? initialUsia;
@@ -31,6 +32,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
   String? _selectedKelamin;
   String? _selectedPenghasilan;
   String? _selectedPendidikan;
+  bool _hasExistingData = false;
 
   // Dummy data untuk dropdown
   final List<String> _rentangUsia = ['18-25 tahun', '26-35 tahun', '36-45 tahun', '46-55 tahun', '56 tahun ke atas'];
@@ -63,6 +65,41 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
     _selectedKelamin = widget.initialKelamin;
     _selectedPenghasilan = widget.initialPenghasilan;
     _selectedPendidikan = widget.initialPendidikan;
+    // Check if we have initial values (means data exists)
+    if (_selectedUsia != null ||
+        _selectedKelamin != null ||
+        _selectedPenghasilan != null ||
+        _selectedPendidikan != null) {
+      _hasExistingData = true;
+    }
+    // Also try to load from data_diri collection if initial values are not provided
+    if (_selectedUsia == null &&
+        _selectedKelamin == null &&
+        _selectedPenghasilan == null &&
+        _selectedPendidikan == null) {
+      _loadExistingData();
+    }
+  }
+
+  Future<void> _loadExistingData() async {
+    try {
+      final String uid = _auth.currentUser?.uid ?? '';
+      if (uid.isEmpty) return;
+
+      final doc = await _firestore.collection('data_diri').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        setState(() {
+          _hasExistingData = true;
+          _selectedUsia = data['rentangUsia'] as String?;
+          _selectedKelamin = data['jenisKelamin'] as String?;
+          _selectedPenghasilan = data['tingkatPenghasilan'] as String?;
+          _selectedPendidikan = data['pendidikanTerakhir'] as String?;
+        });
+      }
+    } catch (e) {
+      // Silently fail if data doesn't exist
+    }
   }
 
   Future<void> _submitForm() async {
@@ -72,16 +109,24 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
       try {
         // Ensure user id
         final String uid = _auth.currentUser?.uid ?? (await _auth.signInAnonymously()).user!.uid;
-        // Save to users collection under 'responden' fields
-        await _firestore.collection('users').doc(uid).set({
-          'responden': {
-            'rentangUsia': _selectedUsia,
-            'jenisKelamin': _selectedKelamin,
-            'tingkatPenghasilan': _selectedPenghasilan,
-            'pendidikanTerakhir': _selectedPendidikan,
-            'updatedAt': FieldValue.serverTimestamp(),
-          },
+        // Save to data_diri collection with userId
+        await _firestore.collection('data_diri').doc(uid).set({
+          'userId': uid,
+          'rentangUsia': _selectedUsia,
+          'jenisKelamin': _selectedKelamin,
+          'tingkatPenghasilan': _selectedPenghasilan,
+          'pendidikanTerakhir': _selectedPendidikan,
+          'updatedAt': FieldValue.serverTimestamp(),
+          'createdAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+
+        // Reload kuesioner controller to refresh filtered list
+        try {
+          final controller = Get.find<KuesionerController>();
+          await controller.reloadRespondenData();
+        } catch (_) {
+          // Controller might not be initialized, ignore
+        }
 
         // Show success dialog
         // ignore: use_build_context_synchronously
@@ -408,7 +453,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Simpan Data Diri",
+                                    _hasExistingData ? "Update Data Diri" : "Simpan Data Diri",
                                     style: GoogleFonts.poppins(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -416,7 +461,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.check_rounded, size: 20),
+                                  Icon(_hasExistingData ? Icons.edit_rounded : Icons.check_rounded, size: 20),
                                 ],
                               ),
                             ),

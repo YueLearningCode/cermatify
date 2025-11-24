@@ -4,31 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
-import 'package:cermatify/app/routes/app_pages.dart';
-import '../controllers/order_controller.dart';
-import '../../chat/controllers/chat_controller.dart';
+import '../controllers/create_kuesioner_controller.dart';
 
-class OrderDialogView extends StatelessWidget {
-  final String mentorId;
-  final String mentorName;
-  final String layananId;
-  final String layananName;
-  final int price;
-  final String? layananType; // Layanan type: 'paperlink' or 'complink'
-
-  const OrderDialogView({
-    super.key,
-    required this.mentorId,
-    required this.mentorName,
-    required this.layananId,
-    required this.layananName,
-    required this.price,
-    this.layananType,
-  });
+class KuesionerPaymentDialogView extends StatelessWidget {
+  const KuesionerPaymentDialogView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final OrderController controller = Get.put(OrderController());
+    final CreateKuesionerController controller = Get.put(CreateKuesionerController());
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -45,8 +28,8 @@ class OrderDialogView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Create Order',
-                    style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    'Pembayaran Kuesioner',
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.textSecondary),
@@ -55,7 +38,7 @@ class OrderDialogView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              // Order Details
+              // Payment Details
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -67,7 +50,7 @@ class OrderDialogView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Order Details',
+                      'Detail Pembayaran',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -75,11 +58,9 @@ class OrderDialogView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _buildDetailRow('Mentor', mentorName),
+                    _buildDetailRow('Layanan', 'Kuesioner'),
                     const SizedBox(height: 8),
-                    _buildDetailRow('Layanan', layananName),
-                    const SizedBox(height: 8),
-                    _buildDetailRow('Price', AppFormats.hargaPendek(price)),
+                    _buildDetailRow('Harga', AppFormats.hargaPendek(25000)),
                   ],
                 ),
               ),
@@ -134,7 +115,7 @@ class OrderDialogView extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            AppFormats.hargaPendek(price),
+                            AppFormats.hargaPendek(25000),
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -278,39 +259,10 @@ class OrderDialogView extends StatelessWidget {
                         onPressed: controller.isLoading.value || controller.paymentProofImage.value == null
                             ? null
                             : () async {
-                                final orderId = await controller.createOrder(
-                                  mentorId: mentorId,
-                                  layananId: layananId,
-                                  price: price,
-                                  layananType: layananType,
-                                );
-                                if (orderId.isNotEmpty) {
-                                  // Create chat room with orderId
-                                  try {
-                                    final ChatController chatController = Get.isRegistered<ChatController>()
-                                        ? Get.find<ChatController>()
-                                        : Get.put(ChatController());
-                                    await chatController.createOrGetChatRoom(mentorId: mentorId, orderId: orderId);
-                                  } catch (e) {
-                                    print('Error creating chat room: $e');
-                                  }
-
-                                  // Close dialog first
-                                  Get.back(result: true);
-                                  // Show success snackbar
-                                  Get.snackbar(
-                                    'Success',
-                                    'Order created successfully. Waiting for approval.',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    backgroundColor: AppColors.greenColor,
-                                    colorText: AppColors.surface,
-                                    borderRadius: 12,
-                                    margin: const EdgeInsets.all(16),
-                                    duration: const Duration(seconds: 2),
-                                  );
-                                  // Navigate to order history after a short delay
-                                  await Future.delayed(const Duration(milliseconds: 500));
-                                  Get.offNamed(Routes.ORDER_HISTORY);
+                                final orderId = await controller.createOrder();
+                                if (orderId != null && orderId.isNotEmpty) {
+                                  // Return orderId to parent, don't create kuesioner yet
+                                  Get.back(result: orderId);
                                 }
                               },
                         style: ElevatedButton.styleFrom(
@@ -327,7 +279,7 @@ class OrderDialogView extends StatelessWidget {
                                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
                                 ),
                               )
-                            : Text('Create Order', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                            : Text('Continue', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],

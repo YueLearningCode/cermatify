@@ -10,8 +10,9 @@ import '../controllers/chat_controller.dart';
 class ChatRoomView extends GetView<ChatController> {
   final String mentorId;
   final Mentor? mentor;
+  final String? orderId;
 
-  const ChatRoomView({super.key, required this.mentorId, this.mentor});
+  const ChatRoomView({super.key, required this.mentorId, this.mentor, this.orderId});
 
   Widget _buildTypingIndicator() {
     return Align(
@@ -137,7 +138,7 @@ class ChatRoomView extends GetView<ChatController> {
   @override
   Widget build(BuildContext context) {
     // Load messages when view is created
-    controller.loadMessages(mentorId);
+    controller.loadMessages(mentorId, orderId: orderId);
     final String displayName = (mentor?.name.isNotEmpty == true ? mentor!.name : controller.getUserName(mentorId));
 
     return Scaffold(
@@ -310,7 +311,7 @@ class ChatRoomView extends GetView<ChatController> {
                       textCapitalization: TextCapitalization.sentences,
                       maxLines: 5,
                       minLines: 1,
-                      onSubmitted: (_) => controller.sendMessage(mentorId),
+                      onSubmitted: (_) => controller.sendMessage(mentorId, orderId: orderId),
                     ),
                   ),
                 ),
@@ -325,7 +326,9 @@ class ChatRoomView extends GetView<ChatController> {
                       ],
                     ),
                     child: IconButton(
-                      onPressed: controller.isSending.value ? null : () => controller.sendMessage(mentorId),
+                      onPressed: controller.isSending.value
+                          ? null
+                          : () => controller.sendMessage(mentorId, orderId: orderId),
                       icon: controller.isSending.value
                           ? SizedBox(
                               width: 20,

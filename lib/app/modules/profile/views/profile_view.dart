@@ -4,8 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
+import 'package:cermatify/app/data/models/mentor_model.dart';
+import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
+import 'package:cermatify/app/modules/chat/views/chat_room_view.dart';
 import '../controllers/profile_controller.dart';
 import 'edit_profile_view.dart';
+import 'withdraw_dialog_view.dart';
+import 'change_password_view.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -357,9 +363,21 @@ class ProfileView extends GetView<ProfileController> {
                         ),
                       ],
                     ),
-                    // Income Dashboard for Mentors
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: _buildActionButton(
+                        onPressed: () => Get.to(() => const ChangePasswordView()),
+                        icon: Icons.lock_reset_rounded,
+                        label: "Ubah Kata Sandi",
+                        backgroundColor: AppColors.surface,
+                        textColor: AppColors.primary,
+                        isOutlined: true,
+                      ),
+                    ),
+                    // Saldo for mentor and customer only
                     Obx(
-                      () => controller.userRole.value == 'mentor'
+                      () => controller.userRole.value != 'admin'
                           ? Column(
                               children: [
                                 const SizedBox(height: 30),
@@ -480,6 +498,104 @@ class ProfileView extends GetView<ProfileController> {
                                             ),
                                           ],
                                         ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Withdraw and Chat Admin Buttons
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ElevatedButton.icon(
+                                              onPressed: () {
+                                                Get.dialog(
+                                                  WithdrawDialogView(currentSaldo: controller.saldo.value),
+                                                  barrierDismissible: false,
+                                                );
+                                              },
+                                              icon: const Icon(Icons.account_balance_wallet_rounded, size: 18),
+                                              label: Text(
+                                                'Withdraw',
+                                                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.primary,
+                                                foregroundColor: AppColors.surface,
+                                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () async {
+                                                try {
+                                                  final adminQuery = await FirebaseFirestore.instance
+                                                      .collection('users')
+                                                      .where('role', isEqualTo: 'admin')
+                                                      .limit(1)
+                                                      .get();
+
+                                                  if (adminQuery.docs.isEmpty) {
+                                                    CustomSnackbar.show(
+                                                      title: 'Error',
+                                                      message: 'Admin tidak ditemukan',
+                                                      backgroundColor: AppColors.redColor,
+                                                      isNav: false,
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  final adminId = adminQuery.docs.first.id;
+                                                  final adminData = adminQuery.docs.first.data();
+                                                  final adminName = adminData['nama'] ?? 'Admin';
+
+                                                  final ChatController chatController =
+                                                      Get.isRegistered<ChatController>()
+                                                      ? Get.find<ChatController>()
+                                                      : Get.put(ChatController());
+
+                                                  await chatController.createOrGetChatRoom(mentorId: adminId);
+
+                                                  Get.to(
+                                                    () => ChatRoomView(
+                                                      mentorId: adminId,
+                                                      mentor: Mentor(
+                                                        id: adminId,
+                                                        name: adminName,
+                                                        image: adminData['image'] ?? '',
+                                                        kampus: '',
+                                                        jurusan: '',
+                                                        email: adminData['email'] ?? '',
+                                                        layanan: '',
+                                                        bio: '',
+                                                        rating: 0.0,
+                                                        totalSessions: 0,
+                                                      ),
+                                                    ),
+                                                  );
+                                                } catch (e) {
+                                                  CustomSnackbar.show(
+                                                    title: 'Error',
+                                                    message: 'Gagal membuka chat admin: ${e.toString()}',
+                                                    backgroundColor: AppColors.redColor,
+                                                    isNav: false,
+                                                  );
+                                                }
+                                              },
+                                              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                                              label: Text(
+                                                'Chat Admin',
+                                                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: AppColors.primary,
+                                                side: const BorderSide(color: AppColors.primary),
+                                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

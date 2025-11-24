@@ -11,8 +11,17 @@ class ListMentorView extends StatelessWidget {
   final String? layanan;
   final String? layananId; // Layanan ID from filter
   final int? layananPrice; // Layanan price from filter
+  final String? layananType; // Layanan type: 'paperlink' or 'complink'
 
-  const ListMentorView({super.key, this.kampus, this.jurusan, this.layanan, this.layananId, this.layananPrice});
+  const ListMentorView({
+    super.key,
+    this.kampus,
+    this.jurusan,
+    this.layanan,
+    this.layananId,
+    this.layananPrice,
+    this.layananType,
+  });
 
   String _toText(dynamic value) {
     if (value == null) return '-';
@@ -227,8 +236,12 @@ class ListMentorView extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    DetailMentorView(mentor: mentor, layananId: layananId, layananPrice: layananPrice),
+                                builder: (_) => DetailMentorView(
+                                  mentor: mentor,
+                                  layananId: layananId,
+                                  layananPrice: layananPrice,
+                                  layananType: layananType ?? 'paperlink', // Default to paperlink if not provided
+                                ),
                               ),
                             );
                           },

@@ -14,8 +14,9 @@ class DetailMentorView extends StatelessWidget {
   final Mentor mentor;
   final String? layananId; // Layanan ID from filter
   final int? layananPrice; // Layanan price from filter (null means use default 100000)
+  final String? layananType; // Layanan type: 'paperlink' or 'complink'
 
-  const DetailMentorView({super.key, required this.mentor, this.layananId, this.layananPrice});
+  const DetailMentorView({super.key, required this.mentor, this.layananId, this.layananPrice, this.layananType});
 
   List<Widget> _buildChips(String csv) {
     final items = csv.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
@@ -302,17 +303,44 @@ class DetailMentorView extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Check if user has order in progress for this mentor
+                        // Get layanan type - use provided or fetch from layananId
+                        String? finalLayananType = layananType;
+                        if (finalLayananType == null || finalLayananType.isEmpty) {
+                          final String? currentLayananId = layananId;
+                          if (currentLayananId != null && currentLayananId.isNotEmpty) {
+                            try {
+                              final layananDoc = await FirebaseFirestore.instance
+                                  .collection('layanan')
+                                  .doc(currentLayananId)
+                                  .get();
+                              if (layananDoc.exists) {
+                                final layananData = layananDoc.data();
+                                finalLayananType = layananData?['type']?.toString();
+                              }
+                            } catch (e) {
+                              print('Error fetching layanan type: $e');
+                            }
+                          }
+                        }
+
+                        // Check if user has order in progress for this mentor with this layanan type
                         final orderHistoryController = Get.put(OrderHistoryController());
-                        final hasProgress = await orderHistoryController.hasProgressOrder(mentor.id);
+                        final hasProgress = await orderHistoryController.hasProgressOrder(
+                          mentor.id,
+                          layananType: finalLayananType,
+                        );
 
                         if (hasProgress) {
-                          // User has order in progress, proceed to chat
+                          // User has order in progress, get orderId and proceed to chat
+                          final orderId = await orderHistoryController.getProgressOrderId(
+                            mentor.id,
+                            layananType: finalLayananType,
+                          );
                           final ChatController chatController = Get.isRegistered<ChatController>()
                               ? Get.find<ChatController>()
                               : Get.put(ChatController());
-                          await chatController.createOrGetChatRoom(mentorId: mentor.id);
-                          Get.to(() => ChatRoomView(mentorId: mentor.id, mentor: mentor));
+                          await chatController.createOrGetChatRoom(mentorId: mentor.id, orderId: orderId);
+                          Get.to(() => ChatRoomView(mentorId: mentor.id, mentor: mentor, orderId: orderId));
                         } else {
                           // No approved order, show order dialog
                           final String finalLayananId = layananId ?? '';
@@ -330,6 +358,7 @@ class DetailMentorView extends StatelessWidget {
                               layananId: finalLayananId,
                               layananName: layananName,
                               price: finalPrice,
+                              layananType: finalLayananType,
                             ),
                             barrierDismissible: false,
                           );

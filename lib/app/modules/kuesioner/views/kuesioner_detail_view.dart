@@ -71,9 +71,16 @@ class KuesionerDetailView extends StatelessWidget {
                         style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withOpacity(0.9)),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        "${kuesioner.answers.length} pertanyaan dijawab",
-                        style: GoogleFonts.poppins(fontSize: 13, color: AppColors.surface.withOpacity(0.8)),
+                      StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                        stream: FirebaseFirestore.instance.collection('kuesioners').doc(kuesioner.id).snapshots(),
+                        builder: (context, snapshot) {
+                          final List<dynamic> signedBy = (snapshot.data?.data()?['signedBy'] as List<dynamic>?) ?? [];
+                          final int jumlahResponden = signedBy.length;
+                          return Text(
+                            "Jumlah Responden: $jumlahResponden",
+                            style: GoogleFonts.poppins(fontSize: 13, color: AppColors.surface.withOpacity(0.8)),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -87,10 +94,10 @@ class KuesionerDetailView extends StatelessWidget {
             builder: (context, snapshot) {
               if (!snapshot.hasData || !snapshot.data!.exists) return const SizedBox.shrink();
               final data = snapshot.data!.data() ?? {};
-              final String createdBy = data['createdBy'] as String? ?? '';
+              final String userId = data['userId'] as String? ?? data['createdBy'] as String? ?? '';
               final String link = data['link'] as String? ?? '';
               final List<dynamic> signedBy = (data['signedBy'] as List<dynamic>?) ?? [];
-              final bool isCreator = currentUid.isNotEmpty && currentUid == createdBy;
+              final bool isCreator = currentUid.isNotEmpty && currentUid == userId;
               final bool alreadySigned =
                   currentUid.isNotEmpty && signedBy.map((e) => e.toString()).contains(currentUid);
 
@@ -128,17 +135,58 @@ class KuesionerDetailView extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () async {
                       if (currentUid.isEmpty) return;
-                      final docRef = firestore.collection('kuesioners').doc(kuesioner.id);
-                      await docRef.set({
-                        'signedBy': FieldValue.arrayUnion([currentUid]),
-                        'updatedAt': FieldValue.serverTimestamp(),
-                      }, SetOptions(merge: true));
-                      Get.snackbar(
-                        'Berhasil',
-                        'Anda terdaftar sebagai responden',
-                        backgroundColor: AppColors.primary,
-                        colorText: AppColors.surface,
-                      );
+
+                      try {
+                        // Check if user is already in signedBy to avoid duplicate rewards
+                        final kuesionerDoc = await firestore.collection('kuesioners').doc(kuesioner.id).get();
+                        final kuesionerData = kuesionerDoc.data();
+                        final List<dynamic> signedBy = (kuesionerData?['signedBy'] as List<dynamic>?) ?? [];
+                        final bool alreadySigned = signedBy.map((e) => e.toString()).contains(currentUid);
+
+                        if (alreadySigned) {
+                          Get.snackbar(
+                            'Info',
+                            'Anda sudah terdaftar sebagai responden',
+                            backgroundColor: AppColors.primary,
+                            colorText: AppColors.surface,
+                          );
+                          return;
+                        }
+
+                        // Add user to signedBy array
+                        final docRef = firestore.collection('kuesioners').doc(kuesioner.id);
+                        await docRef.set({
+                          'signedBy': FieldValue.arrayUnion([currentUid]),
+                          'updatedAt': FieldValue.serverTimestamp(),
+                        }, SetOptions(merge: true));
+
+                        // Update user's saldo - add Rp. 100 (only if not already signed)
+                        final userDocRef = firestore.collection('users').doc(currentUid);
+                        final userDoc = await userDocRef.get();
+
+                        if (userDoc.exists) {
+                          final userData = userDoc.data();
+                          final currentSaldo = (userData?['saldo'] as int?) ?? 0;
+                          final newSaldo = currentSaldo + 100;
+
+                          await userDocRef.update({'saldo': newSaldo, 'updatedAt': FieldValue.serverTimestamp()});
+                        }
+
+                        Get.snackbar(
+                          'Berhasil',
+                          'Anda terdaftar sebagai responden. Saldo bertambah Rp. 100',
+                          backgroundColor: AppColors.primary,
+                          colorText: AppColors.surface,
+                          duration: const Duration(seconds: 3),
+                        );
+                      } catch (e) {
+                        Get.snackbar(
+                          'Error',
+                          'Gagal mendaftar sebagai responden: ${e.toString()}',
+                          backgroundColor: AppColors.redColor,
+                          colorText: AppColors.surface,
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

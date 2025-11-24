@@ -35,7 +35,13 @@ class ChatController extends GetxController {
     }
   }
 
-  String buildRoomId(String mentorId) {
+  String buildRoomId(String mentorId, {String? orderId}) {
+    if (orderId != null && orderId.isNotEmpty) {
+      // Chat room based on orderId: userId_mentorId_orderId
+      final List<String> ids = [currentUserId, mentorId]..sort();
+      return '${ids[0]}_${ids[1]}_$orderId';
+    }
+    // Legacy: Chat room without orderId (for backward compatibility)
     final List<String> ids = [currentUserId, mentorId]..sort();
     return '${ids[0]}_${ids[1]}';
   }
@@ -103,12 +109,14 @@ class ChatController extends GetxController {
                     .map((e) => e.toString())
                     .firstWhere((id) => id != currentUserId, orElse: () => '');
                 final String receiverId = lastSenderId == currentUserId ? partnerId : currentUserId;
+                final String? orderId = data['orderId'] as String?;
                 return ChatMessage(
                   id: doc.id,
                   senderId: lastSenderId.isNotEmpty ? lastSenderId : partnerId,
                   receiverId: receiverId,
                   message: lastMessage,
                   timestamp: ts,
+                  orderId: orderId,
                 );
               })
               .where((c) => c.message.isNotEmpty)
@@ -235,8 +243,8 @@ class ChatController extends GetxController {
     }).toList();
   }
 
-  void loadMessages(String mentorId) {
-    final String roomId = buildRoomId(mentorId);
+  void loadMessages(String mentorId, {String? orderId}) {
+    final String roomId = buildRoomId(mentorId, orderId: orderId);
     // Bind realtime stream from Firestore
     _firestore.collection('chatRooms').doc(roomId).collection('messages').orderBy('timestamp').snapshots().listen((
       snapshot,
@@ -275,7 +283,7 @@ class ChatController extends GetxController {
     });
   }
 
-  Future<void> sendMessage(String mentorId) async {
+  Future<void> sendMessage(String mentorId, {String? orderId}) async {
     if (messageController.text.trim().isEmpty) return;
 
     final messageText = messageController.text.trim();
@@ -283,17 +291,24 @@ class ChatController extends GetxController {
 
     isSending.value = true;
 
-    final String roomId = buildRoomId(mentorId);
+    final String roomId = buildRoomId(mentorId, orderId: orderId);
     final DocumentReference<Map<String, dynamic>> roomRef = _firestore.collection('chatRooms').doc(roomId);
     // Ensure room exists
-    await roomRef.set({
+    final roomData = {
       'roomId': roomId,
       'users': [currentUserId, mentorId]..sort(),
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
       'lastMessage': messageText,
       'lastSenderId': currentUserId,
-    }, SetOptions(merge: true));
+    };
+
+    // Add orderId to room data if provided
+    if (orderId != null && orderId.isNotEmpty) {
+      roomData['orderId'] = orderId;
+    }
+
+    await roomRef.set(roomData, SetOptions(merge: true));
 
     // Save message
     final msgRef = roomRef.collection('messages').doc();
@@ -323,32 +338,39 @@ class ChatController extends GetxController {
     }
   }
 
-  Future<String> createOrGetChatRoom({required String mentorId}) async {
+  Future<String> createOrGetChatRoom({required String mentorId, String? orderId}) async {
     await ensureSignedIn();
     final String userId = currentUserId;
-    if (userId == mentorId) {
-      // Prevent creating a room with identical participants
-      // Developer note: ensure you are logged in as a different user than the mentor.
-      return '${userId}_$mentorId';
-    }
-    // Create deterministic room id by sorting ids
-    final List<String> ids = [userId, mentorId]..sort();
-    final String roomId = '${ids[0]}_${ids[1]}';
+    final String roomId = buildRoomId(mentorId, orderId: orderId);
 
     final DocumentReference<Map<String, dynamic>> roomRef = _firestore.collection('chatRooms').doc(roomId);
 
     final DocumentSnapshot<Map<String, dynamic>> snapshot = await roomRef.get();
+    final List<String> ids = [userId, mentorId]..sort();
+
+    final roomData = {
+      'roomId': roomId,
+      'users': ids,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'lastMessage': '',
+      'lastSenderId': '',
+    };
+
+    // Add orderId to room data if provided
+    if (orderId != null && orderId.isNotEmpty) {
+      roomData['orderId'] = orderId;
+    }
+
     if (!snapshot.exists) {
-      await roomRef.set({
-        'roomId': roomId,
-        'users': ids,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        'lastMessage': '',
-        'lastSenderId': '',
-      }, SetOptions(merge: true));
+      await roomRef.set(roomData, SetOptions(merge: true));
     } else {
-      await roomRef.update({'updatedAt': FieldValue.serverTimestamp()});
+      // Update orderId if it wasn't set before
+      if (orderId != null && orderId.isNotEmpty) {
+        await roomRef.update({'orderId': orderId, 'updatedAt': FieldValue.serverTimestamp()});
+      } else {
+        await roomRef.update({'updatedAt': FieldValue.serverTimestamp()});
+      }
     }
 
     return roomId;

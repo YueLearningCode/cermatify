@@ -35,6 +35,7 @@ class PaperlinkView extends GetView<PaperlinkController> {
           layanan: controller.selectedLayananName,
           layananId: controller.selectedLayanan.value,
           layananPrice: layananPrice,
+          layananType: 'paperlink', // This is paperlink view
         ),
       );
     } else {

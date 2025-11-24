@@ -17,6 +17,7 @@ abstract class Routes {
   static const COMPLINK = _Paths.COMPLINK;
   static const SOURCELINK = _Paths.SOURCELINK;
   static const ORDER_HISTORY = _Paths.ORDER_HISTORY;
+  static const ADMIN_KUESIONER = _Paths.ADMIN_KUESIONER;
 }
 
 abstract class _Paths {
@@ -35,4 +36,5 @@ abstract class _Paths {
   static const COMPLINK = '/complink';
   static const SOURCELINK = '/sourcelink';
   static const ORDER_HISTORY = '/order-history';
+  static const ADMIN_KUESIONER = '/admin-kuesioner';
 }
