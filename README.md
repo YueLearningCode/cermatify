@@ -154,6 +154,34 @@ Catatan release Android:
 - File `android/app/build.gradle.kts` membaca `android/key.properties` untuk signing release.
 - File `key.properties` tidak ada di repository ini. Jika ingin build release signed, buat file tersebut dan isi `keyAlias`, `keyPassword`, `storeFile`, dan `storePassword`.
 
+## Deploy Web ke GitHub Pages
+
+Project ini sudah disiapkan untuk deploy Flutter Web ke GitHub Pages melalui workflow:
+
+```text
+.github/workflows/deploy-web.yml
+```
+
+Setiap kali branch `main` di-push ke GitHub, workflow akan:
+
+1. Menginstal Flutter `3.44.4` stable.
+2. Menjalankan `flutter pub get`.
+3. Menjalankan `flutter analyze --no-fatal-infos --no-fatal-warnings`.
+4. Build web dengan base href `/cermatify/`.
+5. Mengupload hasil `build/web` ke GitHub Pages.
+
+Di GitHub repository, aktifkan Pages melalui:
+
+```text
+Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+```
+
+Setelah workflow berhasil, aplikasi web biasanya tersedia di:
+
+```text
+https://yuelearningcode.github.io/cermatify/
+```
+
 ## Cara Mengecek Kualitas Project
 
 Setelah Flutter tersedia:
