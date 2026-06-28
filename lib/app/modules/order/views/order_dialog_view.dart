@@ -107,7 +107,7 @@ class OrderDialogView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.border),
                       ),
-                      child: Image.asset('assets/images/qrqris.jpeg', width: 200, height: 200, fit: BoxFit.contain),
+                      child: Image.asset('assets/images/qrqris.jpeg', width: 500, height: 300, fit: BoxFit.cover),
                     ),
                     const SizedBox(height: 16),
                     // Price display
