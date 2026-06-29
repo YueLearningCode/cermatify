@@ -66,9 +66,15 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: widget.isPassword ? _obscureText : false, // Mengatur kata sandi disembunyikan jika diperlukan.
+      obscureText: widget.isPassword
+          ? _obscureText
+          : false, // Mengatur kata sandi disembunyikan jika diperlukan.
       style: AppStyles.body1(), // Menggunakan gaya teks dari AppStyles.
-      keyboardType: widget.keyType, // Menggunakan tipe keyboard sesuai parameter.
+      textAlign: TextAlign.left,
+      textDirection: TextDirection.ltr,
+      cursorColor: AppColors.primaryColor,
+      keyboardType:
+          widget.keyType, // Menggunakan tipe keyboard sesuai parameter.
       onChanged: widget.onChanged, // Terapkan onChanged ke TextFormField
       maxLength: widget.maxLength, // Menentukan panjang maksimum input.
       inputFormatters: [
@@ -81,8 +87,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           data: IconThemeData(
             color: MaterialStateColor.resolveWith((Set<MaterialState> states) {
               // Mengubah warna ikon saat fokus atau saat teks tidak kosong.
-              if (states.contains(MaterialState.focused) || widget.controller.text.isNotEmpty) {
-                return AppColors.primaryColor; // Warna saat fokus atau field terisi.
+              if (states.contains(MaterialState.focused) ||
+                  widget.controller.text.isNotEmpty) {
+                return AppColors
+                    .primaryColor; // Warna saat fokus atau field terisi.
               }
               return Colors.grey; // Warna default.
             }),
@@ -97,11 +105,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             color: Colors.grey, // Warna border saat tidak fokus.
             width: 1.0,
           ),
-          borderRadius: BorderRadius.circular(30.0), // Menambahkan radius pada border.
+          borderRadius: BorderRadius.circular(
+            30.0,
+          ), // Menambahkan radius pada border.
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: AppColors.secondaryColor, // Warna border saat fokus.
+          borderSide: const BorderSide(
+            color: AppColors.primaryColor, // Warna border saat fokus.
             width: 1.0,
           ),
           borderRadius: BorderRadius.circular(30.0),
@@ -109,14 +119,21 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         // Menambahkan ikon untuk visibilitas kata sandi jika diperlukan.
         suffixIcon: widget.isPassword
             ? IconButton(
-                icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off, color: AppColors.secondaryColor),
-                onPressed: _togglePasswordVisibility, // Fungsi untuk toggle visibilitas.
+                icon: Icon(
+                  _obscureText ? Icons.visibility : Icons.visibility_off,
+                  color: AppColors.primaryColor,
+                ),
+                onPressed:
+                    _togglePasswordVisibility, // Fungsi untuk toggle visibilitas.
               )
             : null,
       ),
 
       controller: widget.controller, // Controller untuk mengontrol input.
-      validator: widget.validator ?? (input) => input == '' ? "Tidak boleh kosong" : null, // Validasi input.
+      validator:
+          widget.validator ??
+          (input) =>
+              input == '' ? "Tidak boleh kosong" : null, // Validasi input.
     );
   }
 }

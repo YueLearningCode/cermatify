@@ -32,11 +32,18 @@ class LoginView extends GetView<LoginController> {
                           children: [
                             const SizedBox(height: 40),
                             Center(
-                              child: Hero(tag: 'logo', child: Image.asset('assets/images/logo.jpeg', height: 150)),
+                              child: Hero(
+                                tag: 'logo',
+                                child: Image.asset(
+                                  'assets/images/logo.jpeg',
+                                  height: 150,
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 40),
                             Text(
                               "Selamat Datang Kembali",
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -46,7 +53,11 @@ class LoginView extends GetView<LoginController> {
                             const SizedBox(height: 10),
                             Text(
                               "Masuk ke akun Anda untuk melanjutkan",
-                              style: GoogleFonts.poppins(color: AppColors.greyTextSecondaryColor, fontSize: 16),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                color: AppColors.greyTextSecondaryColor,
+                                fontSize: 16,
+                              ),
                             ),
                             const SizedBox(height: 30),
                             CustomTextField(
@@ -59,7 +70,9 @@ class LoginView extends GetView<LoginController> {
                                 if (value == null || value.isEmpty) {
                                   return 'Email tidak boleh kosong';
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
                                   return 'Masukkan email yang valid';
                                 }
                                 return null;
@@ -85,8 +98,12 @@ class LoginView extends GetView<LoginController> {
                             const SizedBox(height: 20),
                             Obx(
                               () => CustomButtonSimple(
-                                text: controller.isLoading.value ? "Memproses..." : "Masuk",
-                                onPressed: controller.isLoading.value ? null : () => controller.login(),
+                                text: controller.isLoading.value
+                                    ? "Memproses..."
+                                    : "Masuk",
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : () => controller.login(),
                               ),
                             ),
                             const SizedBox(height: 30),
@@ -96,13 +113,19 @@ class LoginView extends GetView<LoginController> {
                                   Get.toNamed(Routes.REGISTER);
                                 },
                                 child: RichText(
+                                  textAlign: TextAlign.center,
                                   text: TextSpan(
-                                    style: GoogleFonts.poppins(color: AppColors.greyTextSecondaryColor),
+                                    style: GoogleFonts.poppins(
+                                      color: AppColors.greyTextSecondaryColor,
+                                    ),
                                     children: const [
                                       TextSpan(text: "Belum punya akun? "),
                                       TextSpan(
                                         text: "Daftar Sekarang",
-                                        style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                          color: AppColors.primaryColor,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -112,7 +135,10 @@ class LoginView extends GetView<LoginController> {
                             const SizedBox(height: 20),
                             GestureDetector(
                               onTap: () {
-                                Get.toNamed(Routes.REGISTER, arguments: 'mentor');
+                                Get.toNamed(
+                                  Routes.REGISTER,
+                                  arguments: 'mentor',
+                                );
                               },
                               child: Center(
                                 child: Text(
