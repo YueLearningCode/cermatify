@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:cermatify/app/data/utils/responsive.dart';
 
 class BottomNavbar extends StatelessWidget {
   final int currentIndex;
@@ -18,133 +17,102 @@ class BottomNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDesktop = Responsive.isDesktop(context);
-
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          isDesktop ? 24 : 0,
-          0,
-          isDesktop ? 24 : 0,
-          isDesktop ? 16 : 0,
+      child: Container(
+        height: 85, // Optimal height untuk bottom navigation
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28.0),
+            topRight: Radius.circular(28.0),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              spreadRadius: 0,
+              blurRadius: 40,
+              offset: const Offset(0, -8),
+            ),
+          ],
         ),
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isDesktop ? 760 : double.infinity,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28.0),
+            topRight: Radius.circular(28.0),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: currentIndex,
+            onTap: onTap,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: AppColors.primaryColor,
+            unselectedItemColor: AppColors.greyTextSecondaryColor.withOpacity(
+              0.6,
             ),
-            child: Container(
-              height: 85, // Optimal height untuk bottom navigation
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(28.0),
-                  topRight: const Radius.circular(28.0),
-                  bottomLeft: Radius.circular(isDesktop ? 28.0 : 0),
-                  bottomRight: Radius.circular(isDesktop ? 28.0 : 0),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    spreadRadius: 0,
-                    blurRadius: 40,
-                    offset: const Offset(0, -8),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(28.0),
-                  topRight: const Radius.circular(28.0),
-                  bottomLeft: Radius.circular(isDesktop ? 28.0 : 0),
-                  bottomRight: Radius.circular(isDesktop ? 28.0 : 0),
-                ),
-                child: BottomNavigationBar(
-                  currentIndex: currentIndex,
-                  onTap: onTap,
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.white,
-                  selectedItemColor: AppColors.primaryColor,
-                  unselectedItemColor: AppColors.greyTextSecondaryColor
-                      .withValues(alpha: 0.6),
-                  showUnselectedLabels: true,
-                  elevation: 0,
-                  selectedFontSize: 12,
-                  unselectedFontSize: 11,
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    height: 1.4,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
-                  items: hideBeranda
-                      ? [
-                          _buildNavBarItem(
-                            Icons.chat_bubble_outline,
-                            Icons.chat_bubble,
-                            "Chat",
-                            0,
-                            showBadge: chatBadgeCount > 0,
-                          ),
-                          _buildNavBarItem(
-                            Icons.assignment_outlined,
-                            Icons.assignment,
-                            "Kuesioner",
-                            1,
-                          ),
-                          _buildNavBarItem(
-                            Icons.help_outline,
-                            Icons.help,
-                            "FAQ",
-                            2,
-                          ),
-                          _buildNavBarItem(
-                            Icons.person_outlined,
-                            Icons.person,
-                            "Profil",
-                            3,
-                          ),
-                        ]
-                      : [
-                          _buildNavBarItem(
-                            Icons.home_outlined,
-                            Icons.home,
-                            "Beranda",
-                            0,
-                          ),
-                          _buildNavBarItem(
-                            Icons.chat_bubble_outline,
-                            Icons.chat_bubble,
-                            "Chat",
-                            1,
-                            showBadge: chatBadgeCount > 0,
-                          ),
-                          _buildNavBarItem(
-                            Icons.assignment_outlined,
-                            Icons.assignment,
-                            "Kuesioner",
-                            2,
-                          ),
-                          _buildNavBarItem(
-                            Icons.help_outline,
-                            Icons.help,
-                            "FAQ",
-                            3,
-                          ),
-                          _buildNavBarItem(
-                            Icons.person_outlined,
-                            Icons.person,
-                            "Profil",
-                            4,
-                          ),
-                        ],
-                ),
-              ),
+            showUnselectedLabels: true,
+            elevation: 0,
+            selectedFontSize: 12,
+            unselectedFontSize: 11,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              height: 1.4,
             ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              height: 1.4,
+            ),
+            items: hideBeranda
+                ? [
+                    _buildNavBarItem(
+                      Icons.chat_bubble_outline,
+                      Icons.chat_bubble,
+                      "Chat",
+                      0,
+                      showBadge: chatBadgeCount > 0,
+                    ),
+                    _buildNavBarItem(
+                      Icons.assignment_outlined,
+                      Icons.assignment,
+                      "Kuesioner",
+                      1,
+                    ),
+                    _buildNavBarItem(Icons.help_outline, Icons.help, "FAQ", 2),
+                    _buildNavBarItem(
+                      Icons.person_outlined,
+                      Icons.person,
+                      "Profil",
+                      3,
+                    ),
+                  ]
+                : [
+                    _buildNavBarItem(
+                      Icons.home_outlined,
+                      Icons.home,
+                      "Beranda",
+                      0,
+                    ),
+                    _buildNavBarItem(
+                      Icons.chat_bubble_outline,
+                      Icons.chat_bubble,
+                      "Chat",
+                      1,
+                      showBadge: chatBadgeCount > 0,
+                    ),
+                    _buildNavBarItem(
+                      Icons.assignment_outlined,
+                      Icons.assignment,
+                      "Kuesioner",
+                      2,
+                    ),
+                    _buildNavBarItem(Icons.help_outline, Icons.help, "FAQ", 3),
+                    _buildNavBarItem(
+                      Icons.person_outlined,
+                      Icons.person,
+                      "Profil",
+                      4,
+                    ),
+                  ],
           ),
         ),
       ),
@@ -167,11 +135,11 @@ class BottomNavbar extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: isSelected
-              ? AppColors.primaryColor.withValues(alpha: 0.12)
+              ? AppColors.primaryColor.withOpacity(0.12)
               : Colors.transparent,
           border: isSelected
               ? Border.all(
-                  color: AppColors.primaryColor.withValues(alpha: 0.3),
+                  color: AppColors.primaryColor.withOpacity(0.3),
                   width: 1,
                 )
               : null,
@@ -202,7 +170,7 @@ class BottomNavbar extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.red.withValues(alpha: 0.3),
+                        color: Colors.red.withOpacity(0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

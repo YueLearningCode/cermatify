@@ -16,49 +16,39 @@ class DashboardView extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final bool isMentor = Get.isRegistered<HomeController>()
-          ? Get.find<HomeController>().isMentor.value
-          : false;
-      final int chatCount = Get.isRegistered<ChatController>()
-          ? Get.find<ChatController>().chatRoomCount.value
-          : 0;
-      final int navIndex = _navIndexFromPageIndex(
-        controller.currentIndex.value,
-        isMentor,
-      );
-
-      return Scaffold(
+    return Obx(
+      () => Scaffold(
         appBar: _buildAppBar(controller.currentIndex.value),
         body: _buildBody(controller.currentIndex.value),
-        bottomNavigationBar: BottomNavbar(
-          currentIndex: navIndex,
-          onTap: (int tapped) =>
-              controller.changeTab(_pageIndexFromNavIndex(tapped, isMentor)),
-          chatBadgeCount: chatCount,
-          hideBeranda: isMentor,
-        ),
-      );
-    });
-  }
-
-  int _navIndexFromPageIndex(int pageIndex, bool isMentor) {
-    if (!isMentor) return pageIndex;
-    return pageIndex == 0 ? 0 : pageIndex - 1;
-  }
-
-  int _pageIndexFromNavIndex(int navIndex, bool isMentor) {
-    if (!isMentor) return navIndex;
-    return navIndex == 0 ? 1 : navIndex + 1;
+        bottomNavigationBar: Obx(() {
+          final bool isMentor = Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
+          final int chatCount = Get.isRegistered<ChatController>() ? Get.find<ChatController>().chatRoomCount.value : 0;
+          // Map controller index to nav index when Beranda hidden
+          int navIndex = controller.currentIndex.value;
+          if (isMentor) {
+            navIndex = controller.currentIndex.value == 0 ? 0 : controller.currentIndex.value - 1;
+          }
+          return BottomNavbar(
+            currentIndex: navIndex,
+            onTap: (int tapped) {
+              if (isMentor) {
+                final mapped = tapped == 0 ? 1 : tapped + 1;
+                controller.changeTab(mapped);
+              } else {
+                controller.changeTab(tapped);
+              }
+            },
+            chatBadgeCount: chatCount,
+            hideBeranda: isMentor,
+          );
+        }),
+      ),
+    );
   }
 
   PreferredSizeWidget? _buildAppBar(int currentIndex) {
     // Hide app bar for Beranda (index 0), Chat (index 1), Kuesioner (index 2), FAQ (index 3), and Profil (index 4) since they have their own headers
-    if (currentIndex == 0 ||
-        currentIndex == 1 ||
-        currentIndex == 2 ||
-        currentIndex == 3 ||
-        currentIndex == 4) {
+    if (currentIndex == 0 || currentIndex == 1 || currentIndex == 2 || currentIndex == 3 || currentIndex == 4) {
       return null;
     }
 
@@ -89,9 +79,7 @@ class DashboardView extends GetView<DashboardController> {
     switch (currentIndex) {
       case 0:
         // If logged-in user is a mentor, skip Beranda and show Chat
-        final bool isMentor = Get.isRegistered<HomeController>()
-            ? Get.find<HomeController>().isMentor.value
-            : false;
+        final bool isMentor = Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
         return isMentor ? _buildChatView() : _buildBerandaView();
       case 1:
         return _buildChatView();
@@ -107,9 +95,7 @@ class DashboardView extends GetView<DashboardController> {
   }
 
   Widget _buildBerandaView() {
-    final bool isMentor = Get.isRegistered<HomeController>()
-        ? Get.find<HomeController>().isMentor.value
-        : false;
+    final bool isMentor = Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
     return isMentor ? const ChatListView() : const HomeContent();
   }
 
