@@ -1,7 +1,8 @@
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
 import '../controllers/users_controller.dart';
 import 'mentor_detail_view.dart';
 
@@ -10,62 +11,82 @@ class UsersView extends GetView<UsersController> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = Responsive.isDesktop(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
           "Users",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
       ),
       body: Obx(
-        () => Column(
-          children: [
-            // Tab Selector
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildTabButton(
-                      label: 'Users',
-                      index: 0,
-                      icon: Icons.people_outlined,
-                      isSelected: controller.selectedTab.value == 0,
-                    ),
+        () => Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1120),
+            child: Column(
+              children: [
+                Container(
+                  margin: EdgeInsets.fromLTRB(
+                    isDesktop ? 24 : 16,
+                    16,
+                    isDesktop ? 24 : 16,
+                    16,
                   ),
-                  Expanded(
-                    child: _buildTabButton(
-                      label: 'Mentors',
-                      index: 1,
-                      icon: Icons.school_outlined,
-                      isSelected: controller.selectedTab.value == 1,
-                    ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.border.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildTabButton(
+                          label: 'Users',
+                          index: 0,
+                          icon: Icons.people_outlined,
+                          isSelected: controller.selectedTab.value == 0,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildTabButton(
+                          label: 'Mentors',
+                          index: 1,
+                          icon: Icons.school_outlined,
+                          isSelected: controller.selectedTab.value == 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: controller.isLoading.value
+                      ? const Center(child: CircularProgressIndicator())
+                      : controller.selectedTab.value == 0
+                      ? _buildUsersList(context)
+                      : _buildMentorsList(context),
+                ),
+              ],
             ),
-            // Content
-            Expanded(
-              child: controller.isLoading.value
-                  ? const Center(child: CircularProgressIndicator())
-                  : controller.selectedTab.value == 0
-                  ? _buildUsersList()
-                  : _buildMentorsList(),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -88,7 +109,11 @@ class UsersView extends GetView<UsersController> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: isSelected ? AppColors.surface : AppColors.textSecondary),
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? AppColors.surface : AppColors.textSecondary,
+            ),
             const SizedBox(width: 8),
             Text(
               label,
@@ -104,57 +129,79 @@ class UsersView extends GetView<UsersController> {
     );
   }
 
-  Widget _buildUsersList() {
+  Widget _buildUsersList(BuildContext context) {
     if (controller.usersList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outlined, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
-            const SizedBox(height: 16),
-            Text(
-              'No users found',
-              style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState(Icons.people_outlined, 'No users found');
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return _buildResponsiveList(
+      context: context,
       itemCount: controller.usersList.length,
-      itemBuilder: (context, index) {
-        final user = controller.usersList[index];
-        return _buildUserCard(user, isMentor: false);
-      },
+      itemBuilder: (index) =>
+          _buildUserCard(controller.usersList[index], isMentor: false),
     );
   }
 
-  Widget _buildMentorsList() {
+  Widget _buildMentorsList(BuildContext context) {
     if (controller.mentorsList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.school_outlined, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
-            const SizedBox(height: 16),
-            Text(
-              'No mentors found',
-              style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+      return _buildEmptyState(Icons.school_outlined, 'No mentors found');
+    }
+
+    return _buildResponsiveList(
+      context: context,
+      itemCount: controller.mentorsList.length,
+      itemBuilder: (index) =>
+          _buildUserCard(controller.mentorsList[index], isMentor: true),
+    );
+  }
+
+  Widget _buildResponsiveList({
+    required BuildContext context,
+    required int itemCount,
+    required Widget Function(int index) itemBuilder,
+  }) {
+    if (!Responsive.isDesktop(context)) {
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: itemCount,
+        itemBuilder: (context, index) => itemBuilder(index),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: controller.mentorsList.length,
-      itemBuilder: (context, index) {
-        final mentor = controller.mentorsList[index];
-        return _buildUserCard(mentor, isMentor: true);
-      },
+    return GridView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 3.8,
+      ),
+      itemCount: itemCount,
+      itemBuilder: (context, index) => itemBuilder(index),
+    );
+  }
+
+  Widget _buildEmptyState(IconData icon, String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 64,
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -171,17 +218,24 @@ class UsersView extends GetView<UsersController> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.border.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            // Avatar
             Container(
               width: 50,
               height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                ),
               ),
               child: CircleAvatar(
                 radius: 24,
@@ -192,18 +246,25 @@ class UsersView extends GetView<UsersController> {
               ),
             ),
             const SizedBox(width: 12),
-            // User Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     user.name,
-                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user.email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -213,18 +274,22 @@ class UsersView extends GetView<UsersController> {
                   if (isMentor) ...[
                     const SizedBox(height: 6),
                     Obx(() {
-                      final mentor = controller.mentorsList.firstWhereOrNull((m) => m.id == user.id);
-                      final verificationStatus = mentor?.verificationStatus ?? user.verificationStatus;
+                      final mentor = controller.mentorsList.firstWhereOrNull(
+                        (m) => m.id == user.id,
+                      );
+                      final verificationStatus =
+                          mentor?.verificationStatus ?? user.verificationStatus;
                       final isVerified = verificationStatus == 'verified';
-                      final statusText = isVerified
-                          ? 'Verified'
-                          : (verificationStatus == 'pending' ? 'Pending' : 'Pending');
+                      final statusText = isVerified ? 'Verified' : 'Pending';
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: isVerified
-                              ? AppColors.greenColor.withOpacity(0.1)
-                              : AppColors.redColor.withOpacity(0.1),
+                              ? AppColors.greenColor.withValues(alpha: 0.1)
+                              : AppColors.redColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -232,7 +297,9 @@ class UsersView extends GetView<UsersController> {
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: isVerified ? AppColors.greenColor : AppColors.redColor,
+                            color: isVerified
+                                ? AppColors.greenColor
+                                : AppColors.redColor,
                           ),
                         ),
                       );
@@ -241,22 +308,27 @@ class UsersView extends GetView<UsersController> {
                 ],
               ),
             ),
-            // Action Button (for mentors only)
             if (isMentor)
               Obx(() {
-                final mentor = controller.mentorsList.firstWhereOrNull((m) => m.id == user.id);
-                final verificationStatus = mentor?.verificationStatus ?? user.verificationStatus;
+                final mentor = controller.mentorsList.firstWhereOrNull(
+                  (m) => m.id == user.id,
+                );
+                final verificationStatus =
+                    mentor?.verificationStatus ?? user.verificationStatus;
                 final isVerified = verificationStatus == 'verified';
                 return Switch(
                   value: isVerified,
                   onChanged: controller.isUpdating.value
                       ? null
                       : (value) {
-                          controller.toggleMentorStatus(user.id, verificationStatus);
+                          controller.toggleMentorStatus(
+                            user.id,
+                            verificationStatus,
+                          );
                         },
                   activeColor: AppColors.greenColor,
                   inactiveThumbColor: AppColors.redColor,
-                  inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
+                  inactiveTrackColor: AppColors.redColor.withValues(alpha: 0.3),
                 );
               }),
           ],

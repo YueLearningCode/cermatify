@@ -12,23 +12,24 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Scaffold(
+    return Obx(() {
+      return Scaffold(
         appBar: _buildAppBar(controller.currentIndex.value),
         body: _buildBody(controller.currentIndex.value),
         bottomNavigationBar: AdminBottomNavbar(
           currentIndex: controller.currentIndex.value,
-          onTap: (int index) {
-            controller.changeTab(index);
-          },
+          onTap: controller.changeTab,
         ),
-      ),
-    );
+      );
+    });
   }
 
   PreferredSizeWidget? _buildAppBar(int currentIndex) {
     // Hide app bar for Home (index 0), Users (index 1), Master Data (index 2), and Profile (index 3) since they have their own headers
-    if (currentIndex == 0 || currentIndex == 1 || currentIndex == 2 || currentIndex == 3) {
+    if (currentIndex == 0 ||
+        currentIndex == 1 ||
+        currentIndex == 2 ||
+        currentIndex == 3) {
       return null;
     }
 

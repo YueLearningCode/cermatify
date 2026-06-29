@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
+import 'package:cermatify/app/data/utils/responsive.dart';
 import '../controllers/master_data_controller.dart';
 
 class MasterDataView extends GetView<MasterDataController> {
@@ -16,155 +17,208 @@ class MasterDataView extends GetView<MasterDataController> {
       appBar: AppBar(
         title: Text(
           "Master Data",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
       ),
-      body: Column(
-        children: [
-          // Tab Selector
-          Container(
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
-              ],
-            ),
-            child: Obx(
-              () => SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildTabButton(
-                      label: 'Kampus',
-                      index: 0,
-                      icon: Icons.school_outlined,
-                      isSelected: controller.selectedTab.value == 0,
-                    ),
-                    _buildTabButton(
-                      label: 'Jurusan',
-                      index: 1,
-                      icon: Icons.menu_book_outlined,
-                      isSelected: controller.selectedTab.value == 1,
-                    ),
-                    _buildTabButton(
-                      label: 'Layanan',
-                      index: 2,
-                      icon: Icons.work_outline,
-                      isSelected: controller.selectedTab.value == 2,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1120),
+          child: Column(
+            children: [
+              // Tab Selector
+              Container(
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.border.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
+                child: Obx(
+                  () => SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildTabButton(
+                          label: 'Kampus',
+                          index: 0,
+                          icon: Icons.school_outlined,
+                          isSelected: controller.selectedTab.value == 0,
+                        ),
+                        _buildTabButton(
+                          label: 'Jurusan',
+                          index: 1,
+                          icon: Icons.menu_book_outlined,
+                          isSelected: controller.selectedTab.value == 1,
+                        ),
+                        _buildTabButton(
+                          label: 'Layanan',
+                          index: 2,
+                          icon: Icons.work_outline,
+                          isSelected: controller.selectedTab.value == 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Filter for Jurusan (Kampus selector)
-          Obx(
-            () => controller.selectedTab.value == 1
-                ? Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Kampus:',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
+              // Filter for Jurusan (Kampus selector)
+              Obx(
+                () => controller.selectedTab.value == 1
+                    ? Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Obx(
-                            () => DropdownButton<String?>(
-                              value: controller.selectedKampus.value.isEmpty ? null : controller.selectedKampus.value,
-                              isExpanded: true,
-                              underline: const SizedBox(),
-                              hint: Text(
-                                'Select Kampus',
-                                style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Kampus:',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
                               ),
-                              items: [
-                                DropdownMenuItem<String?>(
-                                  value: null,
-                                  child: Text('Select Kampus', style: GoogleFonts.poppins(fontSize: 12)),
-                                ),
-                                ...controller.kampusList.map(
-                                  (kampus) => DropdownMenuItem<String?>(
-                                    value: kampus.id,
-                                    child: Text(kampus.name, style: GoogleFonts.poppins(fontSize: 12)),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Obx(
+                                () => DropdownButton<String?>(
+                                  value: controller.selectedKampus.value.isEmpty
+                                      ? null
+                                      : controller.selectedKampus.value,
+                                  isExpanded: true,
+                                  underline: const SizedBox(),
+                                  hint: Text(
+                                    'Select Kampus',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(
+                                        'Select Kampus',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    ...controller.kampusList.map(
+                                      (kampus) => DropdownMenuItem<String?>(
+                                        value: kampus.id,
+                                        child: Text(
+                                          kampus.name,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    controller.changeKampusFilter(value ?? '');
+                                  },
                                 ),
-                              ],
-                              onChanged: (value) {
-                                controller.changeKampusFilter(value ?? '');
-                              },
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-          // Filter for Layanan
-          Obx(
-            () => controller.selectedTab.value == 2
-                ? Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Filter:',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              // Filter for Layanan
+              Obx(
+                () => controller.selectedTab.value == 2
+                    ? Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Obx(
-                            () => DropdownButton<String>(
-                              value: controller.selectedLayananFilter.value,
-                              isExpanded: true,
-                              underline: const SizedBox(),
-                              items: const [
-                                DropdownMenuItem(value: 'all', child: Text('All')),
-                                DropdownMenuItem(value: 'complink', child: Text('Cermat Competition')),
-                                DropdownMenuItem(value: 'paperlink', child: Text('Cermat Paper')),
-                              ],
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.changeLayananFilter(value);
-                                }
-                              },
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Filter:',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Obx(
+                                () => DropdownButton<String>(
+                                  value: controller.selectedLayananFilter.value,
+                                  isExpanded: true,
+                                  underline: const SizedBox(),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'all',
+                                      child: Text('All'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'complink',
+                                      child: Text('Cermat Competition'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'paperlink',
+                                      child: Text('Cermat Paper'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      controller.changeLayananFilter(value);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 8),
+              // Content
+              Expanded(
+                child: Obx(
+                  () => controller.isLoading.value
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildDataList(context),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          // Content
-          Expanded(
-            child: Obx(
-              () => controller.isLoading.value ? const Center(child: CircularProgressIndicator()) : _buildDataList(),
-            ),
-          ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateDialog(),
@@ -187,8 +241,14 @@ class MasterDataView extends GetView<MasterDataController> {
   void _showDeleteDialog(MasterDataItem item) {
     Get.dialog(
       AlertDialog(
-        title: Text('Delete Item', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        content: Text('Are you sure you want to delete "${item.name}"?', style: GoogleFonts.poppins()),
+        title: Text(
+          'Delete Item',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${item.name}"?',
+          style: GoogleFonts.poppins(),
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
@@ -200,7 +260,10 @@ class MasterDataView extends GetView<MasterDataController> {
               controller.deleteItem(item.id);
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.redColor),
-            child: Text('Delete', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
@@ -214,7 +277,10 @@ class MasterDataView extends GetView<MasterDataController> {
 
     Get.dialog(
       AlertDialog(
-        title: Text(isEdit ? 'Edit Item' : 'Create Item', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text(
+          isEdit ? 'Edit Item' : 'Create Item',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -234,7 +300,11 @@ class MasterDataView extends GetView<MasterDataController> {
                 Obx(() {
                   final selectedKampusName =
                       controller.kampusList
-                          .firstWhereOrNull((k) => k.id == controller.selectedKampusForJurusan.value)
+                          .firstWhereOrNull(
+                            (k) =>
+                                k.id ==
+                                controller.selectedKampusForJurusan.value,
+                          )
                           ?.name ??
                       'No Kampus Selected';
                   return Container(
@@ -246,7 +316,11 @@ class MasterDataView extends GetView<MasterDataController> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.school_outlined, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.school_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -281,7 +355,11 @@ class MasterDataView extends GetView<MasterDataController> {
                 const SizedBox(height: 16),
                 Obx(() {
                   final selectedKampusName =
-                      controller.kampusList.firstWhereOrNull((k) => k.id == controller.selectedKampus.value)?.name ??
+                      controller.kampusList
+                          .firstWhereOrNull(
+                            (k) => k.id == controller.selectedKampus.value,
+                          )
+                          ?.name ??
                       'No Kampus Selected';
                   return Container(
                     padding: const EdgeInsets.all(16),
@@ -292,7 +370,11 @@ class MasterDataView extends GetView<MasterDataController> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.school_outlined, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.school_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -326,7 +408,8 @@ class MasterDataView extends GetView<MasterDataController> {
               if (isLayanan && isEdit) ...[
                 const SizedBox(height: 16),
                 Obx(() {
-                  final selectedTypeName = controller.typeController.value == 'complink'
+                  final selectedTypeName =
+                      controller.typeController.value == 'complink'
                       ? 'Cermat Competition'
                       : 'Cermat Paper';
                   return Container(
@@ -338,7 +421,11 @@ class MasterDataView extends GetView<MasterDataController> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.category_outlined, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.category_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -382,11 +469,16 @@ class MasterDataView extends GetView<MasterDataController> {
                   style: GoogleFonts.poppins(),
                   onChanged: (value) {
                     // Remove non-numeric characters
-                    final numericValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    final numericValue = value.replaceAll(
+                      RegExp(r'[^0-9]'),
+                      '',
+                    );
                     if (numericValue != value) {
                       controller.hargaController.value = TextEditingValue(
                         text: numericValue,
-                        selection: TextSelection.collapsed(offset: numericValue.length),
+                        selection: TextSelection.collapsed(
+                          offset: numericValue.length,
+                        ),
                       );
                     }
                   },
@@ -395,7 +487,8 @@ class MasterDataView extends GetView<MasterDataController> {
               if (isLayanan && !isEdit) ...[
                 const SizedBox(height: 16),
                 Obx(() {
-                  final selectedTypeName = controller.typeController.value == 'complink'
+                  final selectedTypeName =
+                      controller.typeController.value == 'complink'
                       ? 'Cermat Competition'
                       : 'Cermat Paper';
                   return Container(
@@ -407,7 +500,11 @@ class MasterDataView extends GetView<MasterDataController> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.category_outlined, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.category_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -450,7 +547,10 @@ class MasterDataView extends GetView<MasterDataController> {
                       padding: const EdgeInsets.all(12),
                       child: Text(
                         'Rp',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.primary),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -473,38 +573,64 @@ class MasterDataView extends GetView<MasterDataController> {
                   : () {
                       if (isEdit) {
                         final harga = controller.hargaController.text.isNotEmpty
-                            ? int.tryParse(controller.hargaController.text.replaceAll(RegExp(r'[^0-9]'), ''))
+                            ? int.tryParse(
+                                controller.hargaController.text.replaceAll(
+                                  RegExp(r'[^0-9]'),
+                                  '',
+                                ),
+                              )
                             : null;
                         controller.updateItem(
                           item.id,
                           controller.nameController.text,
-                          type: isLayanan ? controller.typeController.value : null,
-                          kampusId: isJurusan ? controller.selectedKampusForJurusan.value : null,
+                          type: isLayanan
+                              ? controller.typeController.value
+                              : null,
+                          kampusId: isJurusan
+                              ? controller.selectedKampusForJurusan.value
+                              : null,
                           harga: isLayanan ? harga : null,
                         );
                       } else {
                         final harga = controller.hargaController.text.isNotEmpty
-                            ? int.tryParse(controller.hargaController.text.replaceAll(RegExp(r'[^0-9]'), ''))
+                            ? int.tryParse(
+                                controller.hargaController.text.replaceAll(
+                                  RegExp(r'[^0-9]'),
+                                  '',
+                                ),
+                              )
                             : null;
                         controller.createItem(
                           controller.nameController.text,
-                          type: isLayanan ? controller.typeController.value : null,
-                          kampusId: isJurusan ? controller.selectedKampusForJurusan.value : null,
+                          type: isLayanan
+                              ? controller.typeController.value
+                              : null,
+                          kampusId: isJurusan
+                              ? controller.selectedKampusForJurusan.value
+                              : null,
                           harga: isLayanan ? harga : null,
                         );
                       }
                     },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.surface),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.surface,
+              ),
               child: controller.isSaving.value
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.surface,
+                        ),
                       ),
                     )
-                  : Text(isEdit ? 'Update' : 'Create', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  : Text(
+                      isEdit ? 'Update' : 'Create',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
             ),
           ),
         ],
@@ -531,7 +657,11 @@ class MasterDataView extends GetView<MasterDataController> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: isSelected ? AppColors.surface : AppColors.textSecondary),
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.surface : AppColors.textSecondary,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -547,7 +677,7 @@ class MasterDataView extends GetView<MasterDataController> {
     );
   }
 
-  Widget _buildDataList() {
+  Widget _buildDataList(BuildContext context) {
     final items = controller.getCurrentList();
     final isJurusan = controller.selectedTab.value == 1;
     final hasSelectedKampus = controller.selectedKampus.value.isNotEmpty;
@@ -557,16 +687,27 @@ class MasterDataView extends GetView<MasterDataController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.menu_book_outlined, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
+            Icon(
+              Icons.menu_book_outlined,
+              size: 64,
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               'Select a Kampus',
-              style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Please select a kampus from the dropdown above to view jurusan',
-              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -586,25 +727,49 @@ class MasterDataView extends GetView<MasterDataController> {
                   ? Icons.menu_book_outlined
                   : Icons.work_outline,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
               'No data found',
-              style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Tap the + button to add new item',
-              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    if (!Responsive.isDesktop(context)) {
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return _buildItemCard(item);
+        },
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 4.3,
+      ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
@@ -616,7 +781,10 @@ class MasterDataView extends GetView<MasterDataController> {
   Widget _buildItemCard(MasterDataItem item) {
     final isJurusan = controller.selectedTab.value == 1;
     final kampusName = isJurusan && item.kampusId != null
-        ? controller.kampusList.firstWhereOrNull((k) => k.id == item.kampusId)?.name ?? ''
+        ? controller.kampusList
+                  .firstWhereOrNull((k) => k.id == item.kampusId)
+                  ?.name ??
+              ''
         : '';
 
     return Container(
@@ -625,7 +793,13 @@ class MasterDataView extends GetView<MasterDataController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.border.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -635,7 +809,11 @@ class MasterDataView extends GetView<MasterDataController> {
               children: [
                 Text(
                   item.name,
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 if (isJurusan && kampusName.isNotEmpty) ...[
                   const SizedBox(height: 4),
@@ -651,19 +829,26 @@ class MasterDataView extends GetView<MasterDataController> {
                 if (item.type != null) ...[
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: item.type == 'complink'
-                          ? AppColors.primary.withOpacity(0.1)
-                          : AppColors.greenColor.withOpacity(0.1),
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : AppColors.greenColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      item.type == 'complink' ? 'Cermat Competition' : 'Cermat Paper',
+                      item.type == 'complink'
+                          ? 'Cermat Competition'
+                          : 'Cermat Paper',
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: item.type == 'complink' ? AppColors.primary : AppColors.greenColor,
+                        color: item.type == 'complink'
+                            ? AppColors.primary
+                            : AppColors.greenColor,
                       ),
                     ),
                   ),
@@ -672,7 +857,11 @@ class MasterDataView extends GetView<MasterDataController> {
                   const SizedBox(height: 4),
                   Text(
                     AppFormats.hargaPendek(item.harga!),
-                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ],
