@@ -217,20 +217,6 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 16,
-                    child: Text(
-                      'Belajar, riset, dan konsultasi jadi lebih terarah.',
-                      style: GoogleFonts.poppins(
-                        color: AppColors.black414,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        height: 1.25,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -240,6 +226,16 @@ class _HeroSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Belajar, riset, dan konsultasi jadi lebih terarah.',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.black414,
+                    fontSize: compact ? 18 : 20,
+                    fontWeight: FontWeight.w900,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 _Pill(label: 'Platform pendamping akademik'),
                 const SizedBox(height: 14),
                 Text(
