@@ -105,52 +105,59 @@ class _LandingHeaderDelegate extends SliverPersistentHeaderDelegate {
     final compact = _isCompact(context);
     final logoSize = compact ? 38.0 : 42.0;
 
-    return Container(
-      color: AppColors.background.withValues(alpha: 0.96),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Container(
-            width: logoSize,
-            height: logoSize,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Image.asset('assets/images/logo.jpeg', fit: BoxFit.contain),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Cermatify',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.poppins(
-                fontSize: compact ? 16 : 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.black414,
+    return SizedBox.expand(
+      child: ColoredBox(
+        color: AppColors.background.withValues(alpha: 0.96),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Container(
+                width: logoSize,
+                height: logoSize,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Image.asset(
+                  'assets/images/logo.jpeg',
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Get.toNamed(Routes.LOGIN),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primaryColor,
-              padding: EdgeInsets.symmetric(
-                horizontal: compact ? 8 : 12,
-                vertical: 8,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Cermatify',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: compact ? 16 : 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.black414,
+                  ),
+                ),
               ),
-              minimumSize: const Size(0, 36),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(
-              'Masuk',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-            ),
+              TextButton(
+                onPressed: () => Get.toNamed(Routes.LOGIN),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primaryColor,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 8 : 12,
+                    vertical: 8,
+                  ),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Masuk',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
