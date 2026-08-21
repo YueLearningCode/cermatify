@@ -30,14 +30,48 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: firebase-tests/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Analyze project
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
+      - name: Install Firestore Rules test dependencies
+        working-directory: firebase-tests
+        run: npm ci
+
+      - name: Test Firestore Security Rules
+        run: >-
+          npx --yes firebase-tools@15.28.1 emulators:exec
+          --only firestore
+          --project demo-cermatify
+          "npm --prefix firebase-tests test"
+
+      - name: Validate web configuration
+        env:
+          CLOUDINARY_UPLOAD_PRESET: ${{ vars.CLOUDINARY_UPLOAD_PRESET }}
+        run: test -n "$CLOUDINARY_UPLOAD_PRESET"
+
       - name: Build web
-        run: flutter build web --release --base-href /cermatify/
+        env:
+          CLOUDINARY_UPLOAD_PRESET: ${{ vars.CLOUDINARY_UPLOAD_PRESET }}
+        run: >-
+          flutter build web --release
+          --base-href /cermatify/
+          --dart-define=CLOUDINARY_UPLOAD_PRESET="$CLOUDINARY_UPLOAD_PRESET"
 
       - name: Disable Jekyll
         run: touch build/web/.nojekyll

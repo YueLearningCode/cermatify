@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
@@ -6,11 +7,11 @@ import 'package:cermatify/app/data/theme/app_formats.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/dummy_sourcelink.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:cermatify/app/data/models/selected_image_data.dart';
+import 'package:cermatify/app/data/services/media_upload_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloudinary/cloudinary.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../controllers/sourcelink_controller.dart';
 import '../../kuesioner/controllers/create_kuesioner_controller.dart';
 
@@ -39,14 +40,10 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _imagePicker = ImagePicker();
-  final cloudinary = Cloudinary.signedConfig(
-    apiKey: '885241489685565',
-    apiSecret: 'Eo2Man-3sLzp9sCyYwslSXZFFtQ',
-    cloudName: 'dvxsmpz3m',
-  );
+  final MediaUploadService _mediaUploadService = MediaUploadService();
 
   final isLoading = false.obs;
-  final paymentProofImage = Rxn<File>();
+  final paymentProofImage = Rxn<SelectedImageData>();
 
   Future<void> _createOrderAndKuesioner() async {
     try {
@@ -86,21 +83,12 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
       }
 
       // Upload payment proof image to Cloudinary
-      final File imageFile = paymentProofImage.value!;
-      if (!imageFile.existsSync()) {
-        throw Exception('File does not exist');
-      }
+      final image = paymentProofImage.value!;
 
-      final cloudinaryResponse = await cloudinary.upload(
-        fileBytes: imageFile.readAsBytesSync(),
-        fileName: 'kuesioner_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}',
-        resourceType: CloudinaryResourceType.image,
+      final secureUrl = await _mediaUploadService.uploadImage(
+        bytes: image.bytes,
+        filename: 'sourcelink_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
-
-      final String? secureUrl = cloudinaryResponse.secureUrl;
-      if (secureUrl == null) {
-        throw Exception('Failed to get image URL from Cloudinary');
-      }
 
       // Find admin user for mentorId
       String? adminMentorId;
@@ -246,8 +234,9 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
       );
 
       if (pickedFile != null) {
+        final image = await SelectedImageData.fromXFile(pickedFile);
         setState(() {
-          paymentProofImage.value = File(pickedFile.path);
+          paymentProofImage.value = image;
         });
       }
     } catch (e) {
@@ -495,7 +484,7 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
                                       ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
-                                        child: Image.file(paymentProofImage.value!, fit: BoxFit.cover),
+                                        child: Image.memory(paymentProofImage.value!.bytes, fit: BoxFit.cover),
                                       ),
                                     ),
                                     const SizedBox(height: 12),
@@ -557,18 +546,20 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () => _pickPaymentProof(ImageSource.camera),
-                                            icon: const Icon(Icons.camera_alt, size: 18),
-                                            label: Text('Kamera', style: GoogleFonts.poppins()),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: AppColors.primary,
-                                              side: const BorderSide(color: AppColors.primary),
+                                        if (!kIsWeb) ...[
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () => _pickPaymentProof(ImageSource.camera),
+                                              icon: const Icon(Icons.camera_alt, size: 18),
+                                              label: Text('Kamera', style: GoogleFonts.poppins()),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: AppColors.primary,
+                                                side: const BorderSide(color: AppColors.primary),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 12),
+                                          const SizedBox(width: 12),
+                                        ],
                                         Expanded(
                                           child: OutlinedButton.icon(
                                             onPressed: () => _pickPaymentProof(ImageSource.gallery),

@@ -1,11 +1,11 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloudinary/cloudinary.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cermatify/app/data/models/selected_image_data.dart';
+import 'package:cermatify/app/data/services/media_upload_service.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
@@ -14,13 +14,7 @@ class ProfileController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _imagePicker = ImagePicker();
-
-  // Konfigurasi Cloudinary untuk upload gambar
-  final cloudinary = Cloudinary.signedConfig(
-    apiKey: '885241489685565',
-    apiSecret: 'Eo2Man-3sLzp9sCyYwslSXZFFtQ',
-    cloudName: 'dvxsmpz3m',
-  );
+  final MediaUploadService _mediaUploadService = MediaUploadService();
 
   final userName = 'User'.obs;
   final userEmail = ''.obs;
@@ -384,22 +378,12 @@ class ProfileController extends GetxController {
         return;
       }
 
-      // Upload image to Cloudinary
-      final File imageFile = File(pickedFile.path);
-      if (!imageFile.existsSync()) {
-        throw Exception('File does not exist at ${pickedFile.path}');
-      }
+      final image = await SelectedImageData.fromXFile(pickedFile);
 
-      final cloudinaryResponse = await cloudinary.upload(
-        fileBytes: imageFile.readAsBytesSync(),
-        fileName: 'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}',
-        resourceType: CloudinaryResourceType.image,
+      final secureUrl = await _mediaUploadService.uploadImage(
+        bytes: image.bytes,
+        filename: 'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
-
-      final String? secureUrl = cloudinaryResponse.secureUrl;
-      if (secureUrl == null) {
-        throw Exception('Failed to get image URL from Cloudinary');
-      }
       final String downloadUrl = secureUrl;
 
       // Update user document in Firestore

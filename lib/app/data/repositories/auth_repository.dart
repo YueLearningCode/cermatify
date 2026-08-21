@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cermatify/app/data/models/user_model.dart';
 import 'package:cermatify/app/data/providers/auth_provider.dart';
@@ -66,9 +66,9 @@ class AuthRepository {
     }
   }
 
-  Future<String> uploadProfileImage(File image) async {
+  Future<String> uploadProfileImage({required Uint8List bytes, required String filename}) async {
     try {
-      return await _authProvider.uploadProfileImage(image);
+      return await _authProvider.uploadProfileImage(bytes: bytes, filename: filename);
     } catch (e) {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }

@@ -1,0 +1,227 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function currentUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+          currentUser().data.role == 'admin' &&
+          currentUser().data.status == 'active';
+    }
+
+    function validNewUser(userId) {
+      return isOwner(userId) &&
+          request.resource.data.id == userId &&
+          request.resource.data.email == request.auth.token.email &&
+          request.resource.data.role in ['customer', 'mentor'] &&
+          request.resource.data.status == 'active' &&
+          request.resource.data.get('saldo', 0) == 0 &&
+          request.resource.data.keys().hasOnly([
+            'id',
+            'nama',
+            'email',
+            'noTelp',
+            'kampus',
+            'kampusId',
+            'jurusan',
+            'jurusanId',
+            'semester',
+            'image',
+            'role',
+            'status',
+            'createdAt',
+            'mentorRole',
+            'layanan',
+            'layananIds',
+            'linkedin',
+            'verificationStatus'
+          ]) &&
+          (
+            request.resource.data.role == 'customer' ||
+            request.resource.data.verificationStatus == 'pending'
+          );
+    }
+
+    match /users/{userId} {
+      // Existing screens query mentor/customer profiles directly. Consider
+      // moving public fields to a separate public_profiles collection.
+      allow read: if signedIn();
+      allow create: if validNewUser(userId);
+      allow update: if isAdmin() || (
+        isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'nama',
+          'noTelp',
+          'kampus',
+          'kampusId',
+          'jurusan',
+          'jurusanId',
+          'semester',
+          'image',
+          'mentorRole',
+          'layanan',
+          'layananIds',
+          'linkedin',
+          'updatedAt'
+        ])
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /kampus/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /jurusan/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /layanan/{documentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /data_diri/{userId} {
+      allow read, create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      function isValidServicePrice() {
+        return (
+          request.resource.data.layananId == 'kuesioner' &&
+          request.resource.data.price == 25000
+        ) || (
+          exists(/databases/$(database)/documents/layanan/$(request.resource.data.layananId)) &&
+          request.resource.data.price ==
+              get(/databases/$(database)/documents/layanan/$(request.resource.data.layananId)).data.harga
+        );
+      }
+
+      allow read: if isAdmin() || (
+        signedIn() &&
+        (resource.data.userId == request.auth.uid ||
+          resource.data.mentorId == request.auth.uid)
+      );
+      allow create: if signedIn() &&
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.status == 'waiting verification' &&
+          request.resource.data.price is int &&
+          request.resource.data.price > 0 &&
+          isValidServicePrice() &&
+          request.resource.data.keys().hasOnly([
+            'userId',
+            'mentorId',
+            'layananId',
+            'layananType',
+            'price',
+            'paymentProofUrl',
+            'status',
+            'createdAt',
+            'updatedAt'
+          ]) &&
+          request.resource.data.paymentProofUrl is string &&
+          request.resource.data.paymentProofUrl.matches(
+            'https://res.cloudinary.com/dvxsmpz3m/.*'
+          );
+      allow update, delete: if isAdmin();
+    }
+
+    match /kuesioners/{kuesionerId} {
+      allow read: if isAdmin() || (
+        signedIn() &&
+        (resource.data.userId == request.auth.uid ||
+          resource.data.status == 'approved')
+      );
+      allow create: if signedIn() &&
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.status == 'waiting verification' &&
+          request.resource.data.signedBy.size() == 0 &&
+          request.resource.data.answers.size() == 0 &&
+          exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+          get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId ==
+              request.auth.uid;
+      // Respondent enrollment and rewards must be handled by a trusted
+      // transaction (Cloud Function/backend), never by the browser client.
+      allow update, delete: if isAdmin();
+    }
+
+    match /withdraws/{withdrawId} {
+      allow read: if isAdmin() || (
+        signedIn() && resource.data.mentorId == request.auth.uid
+      );
+      allow create: if signedIn() &&
+          request.resource.data.mentorId == request.auth.uid &&
+          currentUser().data.role == 'mentor' &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.nominal is int &&
+          request.resource.data.nominal > 0 &&
+          request.resource.data.nominal <= currentUser().data.get('saldo', 0) &&
+          request.resource.data.keys().hasOnly([
+            'mentorId',
+            'mentorName',
+            'nominal',
+            'namaRekening',
+            'nomorRekening',
+            'status',
+            'createdAt',
+            'updatedAt'
+          ]);
+      allow update, delete: if isAdmin();
+    }
+
+    match /chatRooms/{roomId} {
+      function isRoomMember() {
+        return signedIn() && request.auth.uid in resource.data.users;
+      }
+
+      allow read: if isAdmin() || isRoomMember();
+      allow create: if signedIn() &&
+          request.resource.data.users is list &&
+          request.resource.data.users.size() == 2 &&
+          request.auth.uid in request.resource.data.users;
+      allow update: if isAdmin() || (
+        isRoomMember() &&
+        request.resource.data.users == resource.data.users &&
+        request.resource.data.roomId == resource.data.roomId
+      );
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        function parentRoom() {
+          return get(/databases/$(database)/documents/chatRooms/$(roomId));
+        }
+
+        function isParentRoomMember() {
+          return signedIn() && request.auth.uid in parentRoom().data.users;
+        }
+
+        allow read: if isAdmin() || isParentRoomMember();
+        allow create: if isParentRoomMember() &&
+            request.resource.data.senderId == request.auth.uid &&
+            request.resource.data.receiverId in parentRoom().data.users &&
+            request.resource.data.message is string &&
+            request.resource.data.message.size() > 0 &&
+            request.resource.data.message.size() <= 4000;
+        allow update, delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

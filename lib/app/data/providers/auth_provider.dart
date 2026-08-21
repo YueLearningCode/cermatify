@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:cermatify/app/data/models/user_model.dart';
 import 'package:cermatify/app/data/services/http_service.dart';
 
@@ -67,9 +67,9 @@ class AuthProvider {
     }
   }
 
-  Future<String> uploadProfileImage(File image) async {
+  Future<String> uploadProfileImage({required Uint8List bytes, required String filename}) async {
     try {
-      final response = await _httpService.uploadFile('/profile/image', image);
+      final response = await _httpService.uploadFile('/profile/image', bytes: bytes, filename: filename);
 
       if (response.statusCode == 200) {
         // Extract the image URL from the response

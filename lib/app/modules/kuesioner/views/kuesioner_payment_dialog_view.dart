@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -148,7 +149,7 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(controller.paymentProofImage.value!, fit: BoxFit.cover),
+                          child: Image.memory(controller.paymentProofImage.value!.bytes, fit: BoxFit.cover),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -207,18 +208,20 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => controller.pickPaymentProofImage(ImageSource.camera),
-                              icon: const Icon(Icons.camera_alt, size: 18),
-                              label: Text('Camera', style: GoogleFonts.poppins()),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.primary),
+                          if (!kIsWeb) ...[
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => controller.pickPaymentProofImage(ImageSource.camera),
+                                icon: const Icon(Icons.camera_alt, size: 18),
+                                label: Text('Camera', style: GoogleFonts.poppins()),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.primary,
+                                  side: const BorderSide(color: AppColors.primary),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
+                            const SizedBox(width: 12),
+                          ],
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () => controller.pickPaymentProofImage(ImageSource.gallery),

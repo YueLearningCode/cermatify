@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloudinary/cloudinary.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cermatify/app/data/models/selected_image_data.dart';
+import 'package:cermatify/app/data/services/media_upload_service.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
@@ -13,16 +13,10 @@ class CreateKuesionerController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _imagePicker = ImagePicker();
-
-  // Konfigurasi Cloudinary untuk upload gambar
-  final cloudinary = Cloudinary.signedConfig(
-    apiKey: '885241489685565',
-    apiSecret: 'Eo2Man-3sLzp9sCyYwslSXZFFtQ',
-    cloudName: 'dvxsmpz3m',
-  );
+  final MediaUploadService _mediaUploadService = MediaUploadService();
 
   final isLoading = false.obs;
-  final paymentProofImage = Rxn<File>();
+  final paymentProofImage = Rxn<SelectedImageData>();
   final paymentProofUrl = ''.obs;
 
   // Criteria selections
@@ -102,21 +96,12 @@ class CreateKuesionerController extends GetxController {
       }
 
       // Upload payment proof image to Cloudinary
-      final File imageFile = paymentProofImage.value!;
-      if (!imageFile.existsSync()) {
-        throw Exception('File does not exist');
-      }
+      final image = paymentProofImage.value!;
 
-      final cloudinaryResponse = await cloudinary.upload(
-        fileBytes: imageFile.readAsBytesSync(),
-        fileName: 'kuesioner_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}',
-        resourceType: CloudinaryResourceType.image,
+      final secureUrl = await _mediaUploadService.uploadImage(
+        bytes: image.bytes,
+        filename: 'kuesioner_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
-
-      final String? secureUrl = cloudinaryResponse.secureUrl;
-      if (secureUrl == null) {
-        throw Exception('Failed to get image URL from Cloudinary');
-      }
 
       // Find admin user for mentorId
       String? adminMentorId;
@@ -253,7 +238,7 @@ class CreateKuesionerController extends GetxController {
       );
 
       if (pickedFile != null) {
-        paymentProofImage.value = File(pickedFile.path);
+        paymentProofImage.value = await SelectedImageData.fromXFile(pickedFile);
         paymentProofUrl.value = '';
       }
     } catch (e) {

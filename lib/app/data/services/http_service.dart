@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:cermatify/app/data/constants/api_constant.dart';
@@ -22,9 +22,9 @@ class HttpService {
     if (const bool.fromEnvironment('dart.vm.product') == false) {
       _dio.interceptors.add(
         PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: true,
+          requestHeader: false,
+          requestBody: false,
+          responseBody: false,
           responseHeader: false,
           error: true,
           compact: true,
@@ -43,9 +43,6 @@ class HttpService {
           final token = await _storage.read(key: _tokenKey);
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
-            print('Added token to headers: $token');
-          } else {
-            print('No token found in storage');
           }
           return handler.next(options);
         },
@@ -141,11 +138,9 @@ class HttpService {
     }
   }
 
-  Future<Response> uploadFile(String url, File file) async {
+  Future<Response> uploadFile(String url, {required Uint8List bytes, required String filename}) async {
     try {
-      final formData = FormData.fromMap({
-        'foto': await MultipartFile.fromFile(file.path, filename: file.path.split('/').last),
-      });
+      final formData = FormData.fromMap({'foto': MultipartFile.fromBytes(bytes, filename: filename)});
 
       final response = await _dio.post(
         url,

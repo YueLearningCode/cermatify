@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -102,14 +103,15 @@ class ProfileView extends GetView<ProfileController> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: Icon(Icons.camera_alt, color: AppColors.primary),
-                title: Text('Kamera', style: GoogleFonts.poppins(color: AppColors.textPrimary)),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  controller.pickAndUploadImage(ImageSource.camera);
-                },
-              ),
+              if (!kIsWeb)
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: AppColors.primary),
+                  title: Text('Kamera', style: GoogleFonts.poppins(color: AppColors.textPrimary)),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.pickAndUploadImage(ImageSource.camera);
+                  },
+                ),
               ListTile(
                 leading: Icon(Icons.photo_library, color: AppColors.primary),
                 title: Text('Galeri', style: GoogleFonts.poppins(color: AppColors.textPrimary)),

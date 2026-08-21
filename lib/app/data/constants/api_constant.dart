@@ -1,5 +1,5 @@
 class ApiConstant {
-  static const String baseUrl = 'https://cermatify.my.id/api/v1';
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cermatify.my.id/api/v1');
 
-  static const String baseUrlImage = 'https://cermatify.my.id/';
+  static const String baseUrlImage = String.fromEnvironment('IMAGE_BASE_URL', defaultValue: 'https://cermatify.my.id/');
 }
