@@ -63,15 +63,20 @@ jobs:
       - name: Validate web configuration
         env:
           CLOUDINARY_UPLOAD_PRESET: ${{ vars.CLOUDINARY_UPLOAD_PRESET }}
-        run: test -n "$CLOUDINARY_UPLOAD_PRESET"
+          FIREBASE_RECAPTCHA_SITE_KEY: ${{ vars.FIREBASE_RECAPTCHA_SITE_KEY }}
+        run: |
+          test -n "$CLOUDINARY_UPLOAD_PRESET"
+          test -n "$FIREBASE_RECAPTCHA_SITE_KEY"
 
       - name: Build web
         env:
           CLOUDINARY_UPLOAD_PRESET: ${{ vars.CLOUDINARY_UPLOAD_PRESET }}
+          FIREBASE_RECAPTCHA_SITE_KEY: ${{ vars.FIREBASE_RECAPTCHA_SITE_KEY }}
         run: >-
           flutter build web --release
           --base-href /cermatify/
           --dart-define=CLOUDINARY_UPLOAD_PRESET="$CLOUDINARY_UPLOAD_PRESET"
+          --dart-define=FIREBASE_RECAPTCHA_SITE_KEY="$FIREBASE_RECAPTCHA_SITE_KEY"
 
       - name: Disable Jekyll
         run: touch build/web/.nojekyll

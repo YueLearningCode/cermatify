@@ -72,7 +72,7 @@ Kriteria selesai:
 
 ## P1 — Firebase Web
 
-- [ ] Verifikasi konfigurasi Firebase Web di `firebase_options.dart`.
+- [x] Verifikasi konfigurasi Firebase Web di `firebase_options.dart`.
 - [ ] Tambahkan `localhost` ke Firebase Authorized Domains untuk development.
 - [ ] Tambahkan `yuelearningcode.github.io` ke Firebase Authorized Domains.
 - [ ] Tambahkan custom domain produksi jika akan digunakan.
@@ -82,8 +82,12 @@ Kriteria selesai:
 - [ ] Uji registrasi customer dan mentor.
 - [ ] Uji persistence session setelah refresh dan browser ditutup.
 - [ ] Uji logout dan pastikan session benar-benar dibersihkan.
-- [ ] Aktifkan dan konfigurasi Firebase App Check untuk web.
-- [ ] Uji Firestore Rules menggunakan Firebase Emulator atau Rules Playground.
+- [x] Tambahkan bootstrap Firebase App Check reCAPTCHA v3 untuk web.
+- [x] Tambahkan Auth persistence `LOCAL` untuk web.
+- [ ] Daftarkan reCAPTCHA v3 dan aplikasi web pada Firebase App Check Console.
+- [ ] Tambahkan GitHub Actions variable `FIREBASE_RECAPTCHA_SITE_KEY`.
+- [ ] Pantau metrik, lalu aktifkan enforcement App Check di Firebase Console.
+- [x] Uji Firestore Rules menggunakan Firebase Emulator atau Rules Playground.
 
 Kriteria selesai:
 

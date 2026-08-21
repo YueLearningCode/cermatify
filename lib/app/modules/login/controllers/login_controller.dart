@@ -97,7 +97,8 @@ class LoginController extends GetxController {
           // Show error message
           CustomSnackbar.show(
             title: 'Akun Belum Terverifikasi',
-            message: "Akun mentor Anda sedang dalam proses verifikasi. Silakan tunggu hingga akun Anda terverifikasi.",
+            message:
+                "Akun mentor Anda sedang dalam proses verifikasi. Silakan tunggu hingga akun Anda terverifikasi.",
             backgroundColor: AppColors.redColor,
             isNav: false,
           );
@@ -140,7 +141,12 @@ class LoginController extends GetxController {
         );
       }
     } on FirebaseAuthException catch (e) {
-      CustomSnackbar.show(title: 'Error', message: "${e.message}", backgroundColor: AppColors.redColor, isNav: false);
+      CustomSnackbar.show(
+        title: 'Error',
+        message: "${e.message}",
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -151,13 +157,18 @@ class LoginController extends GetxController {
     try {
       isCheckingSession.value = true;
 
-      // Check if there's a current Firebase Auth user
-      final User? currentUser = _auth.currentUser;
+      // Tunggu Firebase Auth memulihkan sesi browser sebelum mengambil keputusan.
+      // Membaca currentUser langsung saat startup web dapat menghasilkan null
+      // sementara meskipun kredensial masih tersimpan.
+      final User? currentUser = await _auth.authStateChanges().first;
 
       if (currentUser != null) {
         // User has an active session, fetch role from Firestore
         try {
-          DocumentSnapshot userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
+          DocumentSnapshot userDoc = await _firestore
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
 
           if (userDoc.exists) {
             final userData = userDoc.data() as Map<String, dynamic>?;
@@ -174,10 +185,12 @@ class LoginController extends GetxController {
 
             // Only check verification status for mentors
             if (userRole == 'mentor') {
-              String? verificationStatus = userData['verificationStatus']?.toString();
+              String? verificationStatus = userData['verificationStatus']
+                  ?.toString();
 
               // Block auto-login only if verification status is null or 'pending'
-              if (verificationStatus == null || verificationStatus == 'pending') {
+              if (verificationStatus == null ||
+                  verificationStatus == 'pending') {
                 // Sign out the user since they can't login
                 await _auth.signOut();
                 await _clearLoginData();
