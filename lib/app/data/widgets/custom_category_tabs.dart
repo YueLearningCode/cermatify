@@ -93,7 +93,7 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.grey2Color.withOpacity(0.1),
+        color: AppColors.grey2Color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(30.0),
       ),
       child: Row(
@@ -104,8 +104,9 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
           final isSelected = index == widget.selectedIndex;
 
           return Expanded(
-            child: GestureDetector(
+            child: InkWell(
               onTap: () => widget.onCategoryChanged(index),
+              borderRadius: BorderRadius.circular(25),
               child: Container(
                 margin: EdgeInsets.only(right: index < widget.categories.length - 1 ? 4.0 : 0.0),
                 child: Stack(
@@ -134,7 +135,7 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
                               borderRadius: BorderRadius.circular(25.0),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.blackColor.withOpacity(0.1),
+                                  color: AppColors.blackColor.withValues(alpha: 0.1),
                                   blurRadius: 4.0,
                                   offset: const Offset(0, 2),
                                 ),

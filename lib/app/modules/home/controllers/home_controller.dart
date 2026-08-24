@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,10 +29,6 @@ class HomeController extends GetxController {
     _fetchUserData();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
   @override
   void onClose() {
@@ -78,7 +75,7 @@ class HomeController extends GetxController {
         }
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      AppLogger.info('Error fetching user data: $e');
       userName.value = 'User';
     }
   }

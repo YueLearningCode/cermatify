@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -47,7 +50,7 @@ jobs:
         run: flutter pub get
 
       - name: Analyze project
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze
 
       - name: Install Firestore Rules test dependencies
         working-directory: firebase-tests
@@ -81,12 +84,24 @@ jobs:
       - name: Disable Jekyll
         run: touch build/web/.nojekyll
 
+      - name: Validate PWA artifacts and public bundle
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('build/web/manifest.json', 'utf8'))"
+          test -f build/web/flutter_service_worker.js
+          test -f build/web/icons/Icon-192.png
+          test -f build/web/icons/Icon-512.png
+          if grep -R -E "CLOUDINARY_API_SECRET|api_secret|BEGIN (RSA |EC )?PRIVATE KEY" build/web; then
+            echo "Credential privat terdeteksi pada bundle web."
+            exit 1
+          fi
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

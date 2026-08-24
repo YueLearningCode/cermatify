@@ -108,7 +108,7 @@ class LoginView extends GetView<LoginController> {
                             ),
                             const SizedBox(height: 30),
                             Center(
-                              child: GestureDetector(
+                              child: InkWell(
                                 onTap: () {
                                   Get.toNamed(Routes.REGISTER);
                                 },
@@ -133,7 +133,7 @@ class LoginView extends GetView<LoginController> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            GestureDetector(
+                            InkWell(
                               onTap: () {
                                 Get.toNamed(
                                   Routes.REGISTER,

@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
@@ -48,15 +49,7 @@ class UsersController extends GetxController {
     fetchUsers();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   Future<void> fetchUsers() async {
     try {
@@ -83,7 +76,7 @@ class UsersController extends GetxController {
       usersList.value = users;
       mentorsList.value = mentors;
     } catch (e) {
-      print('Error fetching users: $e');
+      AppLogger.info('Error fetching users: $e');
       CustomSnackbar.show(
         title: 'Error',
         message: 'Failed to fetch users: $e',
@@ -127,7 +120,7 @@ class UsersController extends GetxController {
         isNav: false,
       );
     } catch (e) {
-      print('Error updating mentor verification status: $e');
+      AppLogger.info('Error updating mentor verification status: $e');
       CustomSnackbar.show(
         title: 'Error',
         message: 'Failed to update mentor verification status: $e',
@@ -152,7 +145,7 @@ class UsersController extends GetxController {
       }
       return null;
     } catch (e) {
-      print('Error fetching mentor full data: $e');
+      AppLogger.info('Error fetching mentor full data: $e');
       return null;
     }
   }

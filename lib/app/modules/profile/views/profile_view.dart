@@ -30,7 +30,7 @@ class ProfileView extends GetView<ProfileController> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: iconColor, size: 20),
@@ -118,6 +118,9 @@ class ProfileView extends GetView<ProfileController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          constraints: const BoxConstraints(maxWidth: 480),
+          scrollable: true,
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -165,6 +168,9 @@ class ProfileView extends GetView<ProfileController> {
   void _showLogoutDialog() {
     Get.dialog(
       AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        constraints: const BoxConstraints(maxWidth: 480),
+        scrollable: true,
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
@@ -253,14 +259,14 @@ class ProfileView extends GetView<ProfileController> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              AppColors.primary.withOpacity(0.8),
+                              AppColors.primary.withValues(alpha: 0.8),
                               AppColors.primaryDark,
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 4),
                             ),
@@ -276,7 +282,7 @@ class ProfileView extends GetView<ProfileController> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        AppColors.surface.withOpacity(0.8),
+                                        AppColors.surface.withValues(alpha: 0.8),
                                         AppColors.primaryLight,
                                       ],
                                     ),
@@ -300,18 +306,19 @@ class ProfileView extends GetView<ProfileController> {
                                   bottom: 0,
                                   right: 0,
                                   child: Obx(
-                                    () => GestureDetector(
-                                      onTap: controller.isLoading.value
+                                    () => IconButton(
+                                      tooltip: 'Ubah foto profil',
+                                      onPressed: controller.isLoading.value
                                           ? null
                                           : () =>
                                                 _showImageSourceDialog(context),
-                                      child: Container(
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: AppColors.surface,
+                                        disabledBackgroundColor: AppColors.primary,
                                         padding: const EdgeInsets.all(8),
-                                        decoration: const BoxDecoration(
-                                          color: AppColors.primary,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: controller.isLoading.value
+                                      ),
+                                      icon: controller.isLoading.value
                                             ? const SizedBox(
                                                 width: 18,
                                                 height: 18,
@@ -328,7 +335,6 @@ class ProfileView extends GetView<ProfileController> {
                                                 color: AppColors.surface,
                                                 size: 18,
                                               ),
-                                      ),
                                     ),
                                   ),
                                 ),
@@ -349,7 +355,7 @@ class ProfileView extends GetView<ProfileController> {
                               controller.userEmail.value,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                color: AppColors.surface.withOpacity(0.8),
+                                color: AppColors.surface.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w400,
                               ),
                               textAlign: TextAlign.center,
@@ -362,7 +368,7 @@ class ProfileView extends GetView<ProfileController> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface.withOpacity(0.2),
+                                  color: AppColors.surface.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -387,7 +393,7 @@ class ProfileView extends GetView<ProfileController> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.border.withOpacity(0.5),
+                              color: AppColors.border.withValues(alpha: 0.5),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -478,22 +484,22 @@ class ProfileView extends GetView<ProfileController> {
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                         colors: [
-                                          AppColors.primary.withOpacity(0.1),
-                                          AppColors.primaryLight.withOpacity(
-                                            0.1,
+                                          AppColors.primary.withValues(alpha: 0.1),
+                                          AppColors.primaryLight.withValues(
+                                            alpha: 0.1,
                                           ),
                                         ],
                                       ),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: AppColors.primary.withOpacity(
-                                          0.2,
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.2,
                                         ),
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: AppColors.primary.withOpacity(
-                                            0.1,
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.1,
                                           ),
                                           blurRadius: 10,
                                           offset: const Offset(0, 2),
@@ -510,7 +516,7 @@ class ProfileView extends GetView<ProfileController> {
                                               padding: const EdgeInsets.all(12),
                                               decoration: BoxDecoration(
                                                 color: AppColors.primary
-                                                    .withOpacity(0.2),
+                                                    .withValues(alpha: 0.2),
                                                 borderRadius:
                                                     BorderRadius.circular(12),
                                               ),
@@ -567,7 +573,7 @@ class ProfileView extends GetView<ProfileController> {
                                                   ),
                                               decoration: BoxDecoration(
                                                 color: AppColors.greenColor
-                                                    .withOpacity(0.1),
+                                                    .withValues(alpha: 0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(12),
                                               ),
@@ -822,8 +828,8 @@ class ProfileView extends GetView<ProfileController> {
                                       borderRadius: BorderRadius.circular(20),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: AppColors.border.withOpacity(
-                                            0.5,
+                                          color: AppColors.border.withValues(
+                                            alpha: 0.5,
                                           ),
                                           blurRadius: 10,
                                           offset: const Offset(0, 2),
@@ -950,7 +956,7 @@ class ProfileView extends GetView<ProfileController> {
       decoration: BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border.withOpacity(0.3)),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -974,7 +980,7 @@ class ProfileView extends GetView<ProfileController> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.greenColor.withOpacity(0.1),
+                  color: AppColors.greenColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

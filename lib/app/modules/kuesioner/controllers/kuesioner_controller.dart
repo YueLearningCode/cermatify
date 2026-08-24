@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:cermatify/app/data/models/kuesioner_model.dart';
 import 'package:cermatify/app/data/dummy_kuesioner.dart';
@@ -31,15 +32,7 @@ class KuesionerController extends GetxController {
     _loadSignedByMe();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   void loadKuesioner() {
     // Fetch from Firestore and filter by responden attributes if available
@@ -182,11 +175,11 @@ class KuesionerController extends GetxController {
 
             // Debug logging (can be removed in production)
             if (!allMatch) {
-              print('Kuesioner ${doc.id} filtered out:');
-              print('  Usia: ${data['rentangUsia']} vs $usia -> $usiaMatch');
-              print('  Kelamin: ${data['jenisKelamin']} vs $kelamin -> $kelaminMatch');
-              print('  Penghasilan: ${data['tingkatPenghasilan']} vs $penghasilan -> $penghasilanMatch');
-              print('  Pendidikan: ${data['pendidikanTerakhir']} vs $pendidikan -> $pendidikanMatch');
+              AppLogger.info('Kuesioner ${doc.id} filtered out:');
+              AppLogger.info('  Usia: ${data['rentangUsia']} vs $usia -> $usiaMatch');
+              AppLogger.info('  Kelamin: ${data['jenisKelamin']} vs $kelamin -> $kelaminMatch');
+              AppLogger.info('  Penghasilan: ${data['tingkatPenghasilan']} vs $penghasilan -> $penghasilanMatch');
+              AppLogger.info('  Pendidikan: ${data['pendidikanTerakhir']} vs $pendidikan -> $pendidikanMatch');
             }
 
             return allMatch;

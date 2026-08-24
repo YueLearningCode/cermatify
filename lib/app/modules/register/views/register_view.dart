@@ -147,7 +147,7 @@ class RegisterView extends GetView<RegisterController> {
                           ),
                         ),
                         child: DropdownButtonFormField<String>(
-                          value: controller.selectedKampus.value.isEmpty ? null : controller.selectedKampus.value,
+                          initialValue: controller.selectedKampus.value.isEmpty ? null : controller.selectedKampus.value,
                           isExpanded: true,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -201,7 +201,7 @@ class RegisterView extends GetView<RegisterController> {
                           ),
                         ),
                         child: DropdownButtonFormField<String>(
-                          value: controller.selectedJurusan.value.isEmpty ? null : controller.selectedJurusan.value,
+                          initialValue: controller.selectedJurusan.value.isEmpty ? null : controller.selectedJurusan.value,
                           isExpanded: true,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -257,7 +257,7 @@ class RegisterView extends GetView<RegisterController> {
                           ),
                         ),
                         child: DropdownButtonFormField<String>(
-                          value: controller.selectedSemester.value.isEmpty ? null : controller.selectedSemester.value,
+                          initialValue: controller.selectedSemester.value.isEmpty ? null : controller.selectedSemester.value,
                           isExpanded: true,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -314,7 +314,7 @@ class RegisterView extends GetView<RegisterController> {
                                     ),
                                   ),
                                   child: DropdownButtonFormField<String>(
-                                    value: controller.selectedMentorRole.value.isEmpty
+                                    initialValue: controller.selectedMentorRole.value.isEmpty
                                         ? null
                                         : controller.selectedMentorRole.value,
                                     isExpanded: true,
@@ -451,7 +451,7 @@ class RegisterView extends GetView<RegisterController> {
                                             dense: true,
                                           ),
                                         );
-                                      }).toList(),
+                                      }),
                                     ],
                                   ),
                                 ),
@@ -496,7 +496,7 @@ class RegisterView extends GetView<RegisterController> {
                     ),
                     const SizedBox(height: 30),
                     Center(
-                      child: GestureDetector(
+                      child: InkWell(
                         onTap: () {
                           Get.offAllNamed(Routes.LOGIN);
                         },

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -55,7 +56,7 @@ class AdminWithdrawController extends GetxController {
         }).toList();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
-        print('Error with orderBy, trying without: $e');
+        AppLogger.info('Error with orderBy, trying without: $e');
         final querySnapshot = await query.get();
         final withdrawsList = querySnapshot.docs.map((doc) {
           return WithdrawModel.fromJson(doc.data(), doc.id);
@@ -69,7 +70,7 @@ class AdminWithdrawController extends GetxController {
         withdraws.value = withdrawsList;
       }
     } catch (e) {
-      print('Error fetching withdraws: $e');
+      AppLogger.info('Error fetching withdraws: $e');
       withdraws.value = [];
     } finally {
       isLoading.value = false;
@@ -269,7 +270,7 @@ class AdminWithdrawController extends GetxController {
                 }
               }
             } catch (e) {
-              print('Error getting partner data: $e');
+              AppLogger.info('Error getting partner data: $e');
             }
           }
 

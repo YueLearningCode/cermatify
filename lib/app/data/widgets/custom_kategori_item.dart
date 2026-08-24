@@ -17,8 +17,9 @@ class CustomKategoriItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        GestureDetector(
+        InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
           child: Container(
             width: 100,
             height: 85,

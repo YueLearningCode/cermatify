@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,7 +43,7 @@ class OrderHistoryController extends GetxController {
         }).toList();
       } catch (e) {
         // If orderBy fails (might need composite index), fetch without orderBy
-        print('Error with orderBy, trying without: $e');
+        AppLogger.info('Error with orderBy, trying without: $e');
         final querySnapshot = await _firestore.collection('orders').where('userId', isEqualTo: user.uid).get();
 
         ordersList = querySnapshot.docs.map((doc) {
@@ -80,7 +81,7 @@ class OrderHistoryController extends GetxController {
               order['mentorName'] = 'Unknown Mentor';
             }
           } catch (e) {
-            print('Error fetching mentor name: $e');
+            AppLogger.info('Error fetching mentor name: $e');
             order['mentorName'] = 'Unknown Mentor';
           }
         } else {
@@ -98,7 +99,7 @@ class OrderHistoryController extends GetxController {
               order['layananName'] = 'Unknown Layanan';
             }
           } catch (e) {
-            print('Error fetching layanan name: $e');
+            AppLogger.info('Error fetching layanan name: $e');
             order['layananName'] = 'Unknown Layanan';
           }
         } else {
@@ -120,9 +121,9 @@ class OrderHistoryController extends GetxController {
       });
 
       orders.value = ordersList;
-      print('Fetched ${orders.length} orders'); // Debug
+      AppLogger.info('Fetched ${orders.length} orders'); // Debug
     } catch (e) {
-      print('Error fetching orders: $e');
+      AppLogger.info('Error fetching orders: $e');
       orders.value = [];
     } finally {
       isLoading.value = false;
@@ -162,7 +163,7 @@ class OrderHistoryController extends GetxController {
 
       return hasOrder;
     } catch (e) {
-      print('Error checking progress order: $e');
+      AppLogger.info('Error checking progress order: $e');
       return false;
     }
   }
@@ -216,7 +217,7 @@ class OrderHistoryController extends GetxController {
 
       return validOrders.first.id;
     } catch (e) {
-      print('Error getting progress orderId: $e');
+      AppLogger.info('Error getting progress orderId: $e');
       return null;
     }
   }

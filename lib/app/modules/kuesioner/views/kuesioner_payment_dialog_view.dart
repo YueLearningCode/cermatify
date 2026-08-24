@@ -15,11 +15,15 @@ class KuesionerPaymentDialogView extends StatelessWidget {
     final CreateKuesionerController controller = Get.put(CreateKuesionerController());
 
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        constraints: const BoxConstraints(maxWidth: 400),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 560,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+        ),
         child: SingleChildScrollView(
+          padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 480 ? 16 : 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +93,13 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.border),
                       ),
-                      child: Image.asset('assets/images/qrqris.jpeg', width: 200, height: 200, fit: BoxFit.contain),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 280),
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: Image.asset('assets/images/qrqris.jpeg', fit: BoxFit.contain),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     // Price display
@@ -102,7 +112,7 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Text(
@@ -153,10 +163,13 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      OverflowBar(
+                        spacing: 12,
+                        overflowSpacing: 8,
+                        alignment: MainAxisAlignment.center,
+                        overflowAlignment: OverflowBarAlignment.center,
                         children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
+                          OutlinedButton.icon(
                               onPressed: () => controller.pickPaymentProofImage(ImageSource.gallery),
                               icon: const Icon(Icons.edit, size: 18),
                               label: Text('Change', style: GoogleFonts.poppins()),
@@ -165,10 +178,7 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                                 side: const BorderSide(color: AppColors.primary),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
+                          OutlinedButton.icon(
                               onPressed: () => controller.removePaymentProofImage(),
                               icon: const Icon(Icons.delete_outline, size: 18),
                               label: Text('Remove', style: GoogleFonts.poppins()),
@@ -177,7 +187,6 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                                 side: const BorderSide(color: AppColors.redColor),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ],
@@ -206,11 +215,14 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Row(
+                      OverflowBar(
+                        spacing: 12,
+                        overflowSpacing: 8,
+                        alignment: MainAxisAlignment.center,
+                        overflowAlignment: OverflowBarAlignment.center,
                         children: [
                           if (!kIsWeb) ...[
-                            Expanded(
-                              child: OutlinedButton.icon(
+                            OutlinedButton.icon(
                                 onPressed: () => controller.pickPaymentProofImage(ImageSource.camera),
                                 icon: const Icon(Icons.camera_alt, size: 18),
                                 label: Text('Camera', style: GoogleFonts.poppins()),
@@ -219,11 +231,8 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                                   side: const BorderSide(color: AppColors.primary),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
                           ],
-                          Expanded(
-                            child: OutlinedButton.icon(
+                          OutlinedButton.icon(
                               onPressed: () => controller.pickPaymentProofImage(ImageSource.gallery),
                               icon: const Icon(Icons.photo_library, size: 18),
                               label: Text('Gallery', style: GoogleFonts.poppins()),
@@ -232,7 +241,6 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                                 side: const BorderSide(color: AppColors.primary),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ],
@@ -242,10 +250,13 @@ class KuesionerPaymentDialogView extends StatelessWidget {
               const SizedBox(height: 24),
               // Action Buttons
               Obx(
-                () => Row(
+                () => OverflowBar(
+                  spacing: 12,
+                  overflowSpacing: 8,
+                  alignment: MainAxisAlignment.end,
+                  overflowAlignment: OverflowBarAlignment.end,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
+                    OutlinedButton(
                         onPressed: controller.isLoading.value ? null : () => Get.back(),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary,
@@ -254,11 +265,7 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         ),
                         child: Text('Cancel', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton(
+                    ElevatedButton(
                         onPressed: controller.isLoading.value || controller.paymentProofImage.value == null
                             ? null
                             : () async {
@@ -284,7 +291,6 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                               )
                             : Text('Continue', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       ),
-                    ),
                   ],
                 ),
               ),

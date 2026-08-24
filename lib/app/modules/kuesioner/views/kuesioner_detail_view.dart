@@ -41,11 +41,11 @@ class KuesionerDetailView extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AppColors.primary.withOpacity(0.9), AppColors.primaryDark],
+                colors: [AppColors.primary.withValues(alpha: 0.9), AppColors.primaryDark],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5)),
               ],
             ),
             child: Row(
@@ -53,7 +53,7 @@ class KuesionerDetailView extends StatelessWidget {
                 Container(
                   width: 60,
                   height: 60,
-                  decoration: BoxDecoration(color: AppColors.surface.withOpacity(0.2), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: AppColors.surface.withValues(alpha: 0.2), shape: BoxShape.circle),
                   child: Icon(Icons.assignment_rounded, color: AppColors.surface, size: 30),
                 ),
                 const SizedBox(width: 16),
@@ -68,7 +68,7 @@ class KuesionerDetailView extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         "Tanggal: ${_formatDate(kuesioner.createdAt)}",
-                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withOpacity(0.9)),
+                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withValues(alpha: 0.9)),
                       ),
                       const SizedBox(height: 4),
                       StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -78,7 +78,7 @@ class KuesionerDetailView extends StatelessWidget {
                           final int jumlahResponden = signedBy.length;
                           return Text(
                             "Jumlah Responden: $jumlahResponden",
-                            style: GoogleFonts.poppins(fontSize: 13, color: AppColors.surface.withOpacity(0.8)),
+                            style: GoogleFonts.poppins(fontSize: 13, color: AppColors.surface.withValues(alpha: 0.8)),
                           );
                         },
                       ),
@@ -218,14 +218,14 @@ class KuesionerDetailView extends StatelessWidget {
                           // Main Card
                           Card(
                             elevation: 6,
-                            shadowColor: AppColors.primary.withOpacity(0.1),
+                            shadowColor: AppColors.primary.withValues(alpha: 0.1),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [AppColors.surface, AppColors.background.withOpacity(0.5)],
+                                  colors: [AppColors.surface, AppColors.background.withValues(alpha: 0.5)],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -247,7 +247,7 @@ class KuesionerDetailView extends StatelessWidget {
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.primary.withOpacity(0.3),
+                                            color: AppColors.primary.withValues(alpha: 0.3),
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
                                           ),
@@ -295,9 +295,9 @@ class KuesionerDetailView extends StatelessWidget {
                                             width: double.infinity,
                                             padding: const EdgeInsets.all(16),
                                             decoration: BoxDecoration(
-                                              color: AppColors.primaryLight.withOpacity(0.08),
+                                              color: AppColors.primaryLight.withValues(alpha: 0.08),
                                               borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+                                              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
                                             ),
                                             child: Row(
                                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +337,7 @@ class KuesionerDetailView extends StatelessWidget {
                               width: 60,
                               height: 60,
                               decoration: BoxDecoration(
-                                color: AppColors.primaryLight.withOpacity(0.05),
+                                color: AppColors.primaryLight.withValues(alpha: 0.05),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -345,7 +345,7 @@ class KuesionerDetailView extends StatelessWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

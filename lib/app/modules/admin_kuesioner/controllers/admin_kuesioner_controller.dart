@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -43,7 +44,7 @@ class AdminKuesionerController extends GetxController {
         kuesioners.value = kuesionersList;
       } catch (e) {
         // If orderBy fails, fetch without orderBy
-        print('Error with orderBy, trying without: $e');
+        AppLogger.info('Error with orderBy, trying without: $e');
         final querySnapshot = await query.get();
         final kuesionersList = querySnapshot.docs.map((doc) {
           return Kuesioner.fromJson(doc.data(), doc.id);
@@ -54,7 +55,7 @@ class AdminKuesionerController extends GetxController {
         kuesioners.value = kuesionersList;
       }
     } catch (e) {
-      print('Error fetching kuesioners: $e');
+      AppLogger.info('Error fetching kuesioners: $e');
       CustomSnackbar.show(
         title: 'Error',
         message: 'Gagal mengambil data kuesioner: ${e.toString()}',

@@ -20,7 +20,7 @@ class WithdrawDialogView extends StatelessWidget {
 
     return PopScope(
       canPop: true,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
           // Unfocus any focused fields when dialog is closed
           FocusScope.of(context).unfocus();
@@ -28,11 +28,11 @@ class WithdrawDialogView extends StatelessWidget {
       },
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9, maxWidth: 400),
+          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.9, maxWidth: 560),
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 480 ? 16 : 24),
             child: SingleChildScrollView(
               child: Form(
                 key: controller.formKey,
@@ -67,9 +67,9 @@ class WithdrawDialogView extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withOpacity(0.1),
+                        color: AppColors.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
@@ -206,10 +206,13 @@ class WithdrawDialogView extends StatelessWidget {
                     const SizedBox(height: 24),
                     // Action Buttons
                     Obx(
-                      () => Row(
+                      () => OverflowBar(
+                        spacing: 12,
+                        overflowSpacing: 8,
+                        alignment: MainAxisAlignment.end,
+                        overflowAlignment: OverflowBarAlignment.end,
                         children: [
-                          Expanded(
-                            child: OutlinedButton(
+                          OutlinedButton(
                               onPressed: controller.isLoading.value
                                   ? null
                                   : () {
@@ -224,11 +227,7 @@ class WithdrawDialogView extends StatelessWidget {
                               ),
                               child: Text('Batal', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton(
+                          ElevatedButton(
                               onPressed: controller.isLoading.value ? null : () => controller.submitWithdraw(),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
@@ -246,7 +245,6 @@ class WithdrawDialogView extends StatelessWidget {
                                     )
                                   : Text('Ajukan Withdraw', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                             ),
-                          ),
                         ],
                       ),
                     ),

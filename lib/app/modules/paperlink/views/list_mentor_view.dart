@@ -40,9 +40,9 @@ class ListMentorView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.1),
+        color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -105,7 +105,7 @@ class ListMentorView extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 boxShadow: [
-                  BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
+                  BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2)),
                 ],
               ),
               child: SingleChildScrollView(
@@ -214,7 +214,7 @@ class ListMentorView extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       margin: const EdgeInsets.only(bottom: 16),
                       elevation: 2,
-                      shadowColor: AppColors.border.withOpacity(0.1),
+                      shadowColor: AppColors.border.withValues(alpha: 0.1),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(16),
                         leading: CircleAvatar(

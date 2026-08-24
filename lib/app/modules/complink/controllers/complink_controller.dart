@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -29,15 +30,7 @@ class ComplinkController extends GetxController {
     fetchMasterData();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   // Fetch master data from Firebase
   Future<void> fetchMasterData() async {
@@ -52,7 +45,7 @@ class ComplinkController extends GetxController {
           .toList()
           .cast<Map<String, String>>();
     } catch (e) {
-      print('Error fetching master data: $e');
+      AppLogger.info('Error fetching master data: $e');
     }
   }
 

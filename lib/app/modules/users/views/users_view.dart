@@ -43,7 +43,7 @@ class UsersView extends GetView<UsersController> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.border.withOpacity(0.2),
+                      color: AppColors.border.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -91,8 +91,9 @@ class UsersView extends GetView<UsersController> {
     required IconData icon,
     required bool isSelected,
   }) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => controller.changeTab(index),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
@@ -131,7 +132,7 @@ class UsersView extends GetView<UsersController> {
             Icon(
               Icons.people_outlined,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -159,7 +160,7 @@ class UsersView extends GetView<UsersController> {
             Icon(
               Icons.school_outlined,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -210,12 +211,13 @@ class UsersView extends GetView<UsersController> {
   }
 
   Widget _buildUserCard(UserData user, {required bool isMentor}) {
-    return GestureDetector(
+    return InkWell(
       onTap: isMentor
           ? () {
               Get.to(() => MentorDetailView(mentorId: user.id));
             }
           : null,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -224,7 +226,7 @@ class UsersView extends GetView<UsersController> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.border.withOpacity(0.1),
+              color: AppColors.border.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -294,8 +296,8 @@ class UsersView extends GetView<UsersController> {
                         ),
                         decoration: BoxDecoration(
                           color: isVerified
-                              ? AppColors.greenColor.withOpacity(0.1)
-                              : AppColors.redColor.withOpacity(0.1),
+                              ? AppColors.greenColor.withValues(alpha: 0.1)
+                              : AppColors.redColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -333,9 +335,9 @@ class UsersView extends GetView<UsersController> {
                             verificationStatus,
                           );
                         },
-                  activeColor: AppColors.greenColor,
+                  activeThumbColor: AppColors.greenColor,
                   inactiveThumbColor: AppColors.redColor,
-                  inactiveTrackColor: AppColors.redColor.withOpacity(0.3),
+                  inactiveTrackColor: AppColors.redColor.withValues(alpha: 0.3),
                 );
               }),
           ],

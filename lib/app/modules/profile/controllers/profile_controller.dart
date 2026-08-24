@@ -1,14 +1,15 @@
 import 'dart:async';
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cermatify/app/data/models/selected_image_data.dart';
 import 'package:cermatify/app/data/services/media_upload_service.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/services/session_state.dart';
 
 class ProfileController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -122,7 +123,7 @@ class ProfileController extends GetxController {
           .toList()
           .cast<Map<String, String>>();
     } catch (e) {
-      print('Error fetching master data: $e');
+      AppLogger.info('Error fetching master data: $e');
     }
   }
 
@@ -141,10 +142,6 @@ class ProfileController extends GetxController {
     fetchUserData();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
   @override
   void onClose() {
@@ -192,7 +189,7 @@ class ProfileController extends GetxController {
         }
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      AppLogger.info('Error fetching user data: $e');
     } finally {
       isLoading.value = false;
     }
@@ -235,7 +232,7 @@ class ProfileController extends GetxController {
               order['customerName'] = 'Unknown Customer';
             }
           } catch (e) {
-            print('Error fetching customer name: $e');
+            AppLogger.info('Error fetching customer name: $e');
             order['customerName'] = 'Unknown Customer';
           }
         } else {
@@ -253,7 +250,7 @@ class ProfileController extends GetxController {
               order['layananName'] = 'Unknown Layanan';
             }
           } catch (e) {
-            print('Error fetching layanan name: $e');
+            AppLogger.info('Error fetching layanan name: $e');
             order['layananName'] = 'Unknown Layanan';
           }
         } else {
@@ -276,7 +273,7 @@ class ProfileController extends GetxController {
 
       mentorOrders.value = ordersList;
     } catch (e) {
-      print('Error fetching mentor orders: $e');
+      AppLogger.info('Error fetching mentor orders: $e');
       mentorOrders.value = [];
     } finally {
       isLoadingOrders.value = false;
@@ -415,10 +412,7 @@ class ProfileController extends GetxController {
 
   Future<void> logout() async {
     try {
-      // Clear SharedPreferences
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', false);
-      await prefs.remove('userRole');
+      await SessionState.clear();
 
       // Sign out from Firebase
       await _auth.signOut();

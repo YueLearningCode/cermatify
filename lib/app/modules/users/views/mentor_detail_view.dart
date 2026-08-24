@@ -111,8 +111,8 @@ class MentorDetailView extends GetView<UsersController> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: isVerified
-                                ? AppColors.greenColor.withOpacity(0.1)
-                                : AppColors.redColor.withOpacity(0.1),
+                                ? AppColors.greenColor.withValues(alpha: 0.1)
+                                : AppColors.redColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: isVerified ? AppColors.greenColor : AppColors.redColor,
@@ -236,7 +236,7 @@ class MentorDetailView extends GetView<UsersController> {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                        BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
                       ],
                     ),
                     child: Column(
@@ -320,13 +320,13 @@ class MentorDetailView extends GetView<UsersController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: 12),
@@ -363,7 +363,7 @@ class MentorDetailView extends GetView<UsersController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child: InkWell(
         onTap: () => _launchURL(url),
@@ -373,7 +373,7 @@ class MentorDetailView extends GetView<UsersController> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF0077B5).withOpacity(0.1),
+                color: const Color(0xFF0077B5).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.link, color: Color(0xFF0077B5), size: 20),

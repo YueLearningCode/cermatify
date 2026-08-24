@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 
 /// [CustomItemSetting] adalah widget custom untuk setting
 Widget customItemSetting(IconData icon, String title, VoidCallback onTap) {
-  return GestureDetector(
+  return InkWell(
     onTap: onTap,
+    borderRadius: BorderRadius.circular(8),
     child: SizedBox(
       height: 50,
       width: double.infinity,

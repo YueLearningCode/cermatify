@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -67,10 +68,6 @@ class MasterDataController extends GetxController {
     fetchAllData();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
   @override
   void onClose() {
@@ -92,7 +89,7 @@ class MasterDataController extends GetxController {
         snapshot = await _firestore.collection('kampus').orderBy('createdAt', descending: true).get();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
-        print('Error with orderBy createdAt, trying without: $e');
+        AppLogger.info('Error with orderBy createdAt, trying without: $e');
         snapshot = await _firestore.collection('kampus').get();
       }
 
@@ -115,7 +112,7 @@ class MasterDataController extends GetxController {
 
       kampusList.value = items.map((e) => e['item'] as MasterDataItem).toList();
     } catch (e) {
-      print('Error fetching kampus: $e');
+      AppLogger.info('Error fetching kampus: $e');
       kampusList.value = [];
     } finally {
       isLoading.value = false;
@@ -131,7 +128,7 @@ class MasterDataController extends GetxController {
         snapshot = await _firestore.collection('jurusan').orderBy('createdAt', descending: true).get();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
-        print('Error with orderBy createdAt, trying without: $e');
+        AppLogger.info('Error with orderBy createdAt, trying without: $e');
         snapshot = await _firestore.collection('jurusan').get();
       }
 
@@ -154,7 +151,7 @@ class MasterDataController extends GetxController {
 
       jurusanList.value = items.map((e) => e['item'] as MasterDataItem).toList();
     } catch (e) {
-      print('Error fetching jurusan: $e');
+      AppLogger.info('Error fetching jurusan: $e');
       jurusanList.value = [];
     } finally {
       isLoading.value = false;
@@ -170,7 +167,7 @@ class MasterDataController extends GetxController {
         snapshot = await _firestore.collection('layanan').orderBy('createdAt', descending: true).get();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
-        print('Error with orderBy createdAt, trying without: $e');
+        AppLogger.info('Error with orderBy createdAt, trying without: $e');
         snapshot = await _firestore.collection('layanan').get();
       }
 
@@ -193,7 +190,7 @@ class MasterDataController extends GetxController {
 
       layananList.value = items.map((e) => e['item'] as MasterDataItem).toList();
     } catch (e) {
-      print('Error fetching layanan: $e');
+      AppLogger.info('Error fetching layanan: $e');
       layananList.value = [];
     } finally {
       isLoading.value = false;

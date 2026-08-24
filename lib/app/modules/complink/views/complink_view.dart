@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,7 +26,7 @@ class ComplinkView extends GetView<ComplinkController> {
             layananPrice = data?['harga'] as int?;
           }
         } catch (e) {
-          print('Error fetching layanan price: $e');
+          AppLogger.info('Error fetching layanan price: $e');
         }
       }
 
@@ -72,7 +73,7 @@ class ComplinkView extends GetView<ComplinkController> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.border.withOpacity(0.1),
+            color: AppColors.border.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -128,7 +129,7 @@ class ComplinkView extends GetView<ComplinkController> {
             ),
           );
         }).toList(),
-        value: value,
+        initialValue: value,
         onChanged: onChanged,
         icon: Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
         borderRadius: BorderRadius.circular(16),
@@ -181,14 +182,14 @@ class ComplinkView extends GetView<ComplinkController> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              AppColors.primary.withOpacity(0.8),
+                              AppColors.primary.withValues(alpha: 0.8),
                               AppColors.primaryDark,
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                               blurRadius: 15,
                               offset: const Offset(0, 4),
                             ),
@@ -199,7 +200,7 @@ class ComplinkView extends GetView<ComplinkController> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.surface.withOpacity(0.2),
+                                color: AppColors.surface.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -226,7 +227,7 @@ class ComplinkView extends GetView<ComplinkController> {
                                     "Dapatkan bimbingan untuk kompetisi dan beasiswa dari mentor terbaik",
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
-                                      color: AppColors.surface.withOpacity(0.8),
+                                      color: AppColors.surface.withValues(alpha: 0.8),
                                       height: 1.4,
                                     ),
                                   ),
@@ -286,7 +287,7 @@ class ComplinkView extends GetView<ComplinkController> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             elevation: 4,
-                            shadowColor: AppColors.primary.withOpacity(0.3),
+                            shadowColor: AppColors.primary.withValues(alpha: 0.3),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -310,10 +311,10 @@ class ComplinkView extends GetView<ComplinkController> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.1),
+                          color: AppColors.primaryLight.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: AppColors.primaryLight.withOpacity(0.3),
+                            color: AppColors.primaryLight.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(

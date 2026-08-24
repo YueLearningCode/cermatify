@@ -122,7 +122,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
   }
 
   Widget _buildFilterChip(String label, String value, bool isSelected) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => controller.changeStatusFilter(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -156,7 +156,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +165,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: controller.getStatusColor(status).withOpacity(0.1),
+              color: controller.getStatusColor(status).withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
             ),
             child: Row(
@@ -211,13 +211,14 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                 ],
                 if (order['paymentProofUrl'] != null) ...[
                   const SizedBox(height: 12),
-                  GestureDetector(
+                  InkWell(
                     onTap: () {
                       // Show payment proof image in full screen
                       Get.dialog(
                         Dialog(
+                          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                           child: Container(
-                            constraints: const BoxConstraints(maxHeight: 600),
+                            constraints: const BoxConstraints(maxWidth: 720, maxHeight: 600),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [

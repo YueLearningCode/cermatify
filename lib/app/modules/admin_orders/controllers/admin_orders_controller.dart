@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,7 +39,7 @@ class AdminOrdersController extends GetxController {
         }).toList();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
-        print('Error with orderBy, trying without: $e');
+        AppLogger.info('Error with orderBy, trying without: $e');
         final querySnapshot = await query.get();
         final ordersList = querySnapshot.docs.map((doc) {
           final data = doc.data();
@@ -80,7 +81,7 @@ class AdminOrdersController extends GetxController {
               orderMap['userName'] = 'Unknown User';
             }
           } catch (e) {
-            print('Error fetching user name: $e');
+            AppLogger.info('Error fetching user name: $e');
             orderMap['userName'] = 'Unknown User';
           }
         } else {
@@ -98,7 +99,7 @@ class AdminOrdersController extends GetxController {
               orderMap['mentorName'] = 'Unknown Mentor';
             }
           } catch (e) {
-            print('Error fetching mentor name: $e');
+            AppLogger.info('Error fetching mentor name: $e');
             orderMap['mentorName'] = 'Unknown Mentor';
           }
         } else {
@@ -116,7 +117,7 @@ class AdminOrdersController extends GetxController {
               orderMap['layananName'] = 'Unknown Layanan';
             }
           } catch (e) {
-            print('Error fetching layanan name: $e');
+            AppLogger.info('Error fetching layanan name: $e');
             orderMap['layananName'] = 'Unknown Layanan';
           }
         } else {
@@ -127,9 +128,9 @@ class AdminOrdersController extends GetxController {
       }
 
       orders.value = ordersWithNames;
-      print('Fetched ${orders.length} orders'); // Debug
+      AppLogger.info('Fetched ${orders.length} orders'); // Debug
     } catch (e) {
-      print('Error fetching orders: $e');
+      AppLogger.info('Error fetching orders: $e');
       orders.value = [];
     } finally {
       isLoading.value = false;
@@ -174,7 +175,7 @@ class AdminOrdersController extends GetxController {
           // Update mentor saldo
           await _firestore.collection('users').doc(mentorId).update({'saldo': newSaldo});
 
-          print('Added $price to mentor $mentorId saldo. New saldo: $newSaldo');
+          AppLogger.info('Added $price to mentor $mentorId saldo. New saldo: $newSaldo');
         }
       }
 

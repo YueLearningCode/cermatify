@@ -57,4 +57,19 @@ void main() {
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.byType(BottomNavigationBar), findsNothing);
   });
+
+  for (final width in <double>[320, 375, 768, 1024, 1366, 1920]) {
+    testWidgets('lays out without exceptions at ${width.toInt()} px', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(buildShell());
+
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

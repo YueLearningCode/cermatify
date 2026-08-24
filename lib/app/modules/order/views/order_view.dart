@@ -26,7 +26,7 @@ class OrderView extends GetView<OrderController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.shopping_cart_outlined, size: 80, color: AppColors.primary.withOpacity(0.5)),
+            Icon(Icons.shopping_cart_outlined, size: 80, color: AppColors.primary.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text(
               "Order Management",

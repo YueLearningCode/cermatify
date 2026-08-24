@@ -36,11 +36,11 @@ class CreateKuesionerView extends GetView<CreateKuesionerController> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppColors.primary.withOpacity(0.8), AppColors.primaryDark],
+                  colors: [AppColors.primary.withValues(alpha: 0.8), AppColors.primaryDark],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
-                  BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                  BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5)),
                 ],
               ),
               child: Column(
@@ -53,7 +53,7 @@ class CreateKuesionerView extends GetView<CreateKuesionerController> {
                   const SizedBox(height: 8),
                   Text(
                     "Pilih karakteristik responden yang sesuai dengan kebutuhan penelitian Anda",
-                    style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withOpacity(0.9)),
+                    style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withValues(alpha: 0.9)),
                   ),
                 ],
               ),
@@ -63,9 +63,9 @@ class CreateKuesionerView extends GetView<CreateKuesionerController> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.1),
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+                border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -88,7 +88,7 @@ class CreateKuesionerView extends GetView<CreateKuesionerController> {
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
-                  BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 4)),
+                  BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 4)),
                 ],
               ),
               child: Column(
@@ -222,7 +222,7 @@ class CreateKuesionerView extends GetView<CreateKuesionerController> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.1),
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 20, color: AppColors.primary),
@@ -252,7 +252,7 @@ class CreateKuesionerView extends GetView<CreateKuesionerController> {
             border: Border.all(color: AppColors.border),
           ),
           child: DropdownButtonFormField<String>(
-            value: value.isEmpty ? null : value,
+            initialValue: value.isEmpty ? null : value,
             isExpanded: true,
             decoration: const InputDecoration(
               border: InputBorder.none,

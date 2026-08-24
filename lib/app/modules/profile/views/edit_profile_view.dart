@@ -69,7 +69,7 @@ class EditProfileView extends GetView<ProfileController> {
                   ),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: controller.selectedKampus.value.isEmpty ? null : controller.selectedKampus.value,
+                  initialValue: controller.selectedKampus.value.isEmpty ? null : controller.selectedKampus.value,
                   isExpanded: true,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -119,7 +119,7 @@ class EditProfileView extends GetView<ProfileController> {
                   ),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: controller.selectedJurusan.value.isEmpty ? null : controller.selectedJurusan.value,
+                  initialValue: controller.selectedJurusan.value.isEmpty ? null : controller.selectedJurusan.value,
                   isExpanded: true,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -168,7 +168,7 @@ class EditProfileView extends GetView<ProfileController> {
                   ),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: controller.selectedSemester.value.isEmpty ? null : controller.selectedSemester.value,
+                  initialValue: controller.selectedSemester.value.isEmpty ? null : controller.selectedSemester.value,
                   isExpanded: true,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -218,7 +218,7 @@ class EditProfileView extends GetView<ProfileController> {
                             ),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: controller.selectedMentorRole.value.isEmpty
+                            initialValue: controller.selectedMentorRole.value.isEmpty
                                 ? null
                                 : controller.selectedMentorRole.value,
                             isExpanded: true,
@@ -309,7 +309,7 @@ class EditProfileView extends GetView<ProfileController> {
                                     dense: true,
                                   ),
                                 );
-                              }).toList(),
+                              }),
                             ],
                           ),
                         ),

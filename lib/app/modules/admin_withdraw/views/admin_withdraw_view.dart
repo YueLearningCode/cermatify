@@ -121,7 +121,7 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
 
   Widget _buildFilterButton(String status, String label) {
     return Obx(
-      () => GestureDetector(
+      () => InkWell(
         onTap: () => controller.changeStatusFilter(status),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -179,7 +179,7 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(color: AppColors.border.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2)),
               ],
             ),
             child: Column(
@@ -215,7 +215,7 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: controller.getStatusColor(withdraw.status).withOpacity(0.1),
+                        color: controller.getStatusColor(withdraw.status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -336,7 +336,7 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(color: AppColors.border.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2)),
               ],
             ),
             child: Material(

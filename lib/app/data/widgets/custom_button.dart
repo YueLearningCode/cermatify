@@ -26,13 +26,20 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap, // Menetapkan aksi ketika tombol ditekan.
-      child: Container(
+    final borderRadius = BorderRadius.circular(20);
+    return Semantics(
+      button: true,
+      child: Material(
+        color: color,
+        borderRadius: borderRadius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: borderRadius,
+          child: Container(
         height: height, // Menetapkan tinggi tombol.
         width: width, // Menetapkan lebar tombol.
         decoration: BoxDecoration(
-          color: color, // Menetapkan warna latar belakang tombol.
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(
               20), // Menambahkan radius pada sudut tombol.
           border: withBorder == true
@@ -44,7 +51,9 @@ class CustomButton extends StatelessWidget {
                 )
               : null, // Tidak ada border jika withBorder bukan true.
         ),
-        child: widget, // Menampilkan widget yang diberikan di dalam tombol.
+            child: widget,
+          ),
+        ),
       ),
     );
   }

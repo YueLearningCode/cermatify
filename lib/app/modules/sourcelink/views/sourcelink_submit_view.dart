@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
@@ -106,7 +107,7 @@ class _SourcelinkSubmitViewStatefulState
           adminMentorId = adminSnapshot.docs.first.id;
         }
       } catch (e) {
-        print('Error finding admin: $e');
+        AppLogger.info('Error finding admin: $e');
       }
 
       // Create order for kuesioner (25000)
@@ -351,13 +352,13 @@ class _SourcelinkSubmitViewStatefulState
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
                         ],
                         border: Border.all(
-                          color: AppColors.border.withOpacity(0.5),
+                          color: AppColors.border.withValues(alpha: 0.5),
                         ),
                       ),
                       child: Column(
@@ -367,7 +368,7 @@ class _SourcelinkSubmitViewStatefulState
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -502,8 +503,8 @@ class _SourcelinkSubmitViewStatefulState
                                       Container(
                                         padding: const EdgeInsets.all(6),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primary.withOpacity(
-                                            0.1,
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.1,
                                           ),
                                           shape: BoxShape.circle,
                                         ),
@@ -732,8 +733,8 @@ class _SourcelinkSubmitViewStatefulState
                                     horizontal: 16,
                                   ),
                                   elevation: 2,
-                                  shadowColor: AppColors.primary.withOpacity(
-                                    0.3,
+                                  shadowColor: AppColors.primary.withValues(
+                                    alpha: 0.3,
                                   ),
                                 ),
                                 onPressed: isLoading.value
@@ -794,9 +795,9 @@ class _SourcelinkSubmitViewStatefulState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.1),
+        color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

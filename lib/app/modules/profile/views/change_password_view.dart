@@ -41,7 +41,7 @@ class ChangePasswordView extends GetView<ProfileController> {
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: AppColors.border.withOpacity(0.5), blurRadius: 10, offset: const Offset(0, 2)),
+                    BoxShadow(color: AppColors.border.withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 2)),
                   ],
                 ),
                 child: Column(

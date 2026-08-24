@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -111,7 +112,7 @@ class CreateKuesionerController extends GetxController {
           adminMentorId = adminSnapshot.docs.first.id;
         }
       } catch (e) {
-        print('Error finding admin: $e');
+        AppLogger.info('Error finding admin: $e');
       }
 
       // Create order for kuesioner (25000)
@@ -203,8 +204,8 @@ class CreateKuesionerController extends GetxController {
       final docRef = await _firestore.collection('kuesioners').add(kuesionerData);
 
       // Verify link was saved (for debugging)
-      print('Kuesioner created with ID: ${docRef.id}');
-      print('Link saved: $link');
+      AppLogger.info('Kuesioner created with ID: ${docRef.id}');
+      AppLogger.info('Link saved: $link');
 
       CustomSnackbar.show(
         title: 'Berhasil',

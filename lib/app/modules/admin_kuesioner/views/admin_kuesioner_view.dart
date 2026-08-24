@@ -106,7 +106,7 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
   }
 
   Widget _buildFilterChip(String label, String value, bool isSelected) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => controller.changeStatusFilter(value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -138,7 +138,7 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +147,7 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
+              color: statusColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             ),
             child: Row(
@@ -348,9 +348,9 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.1),
+        color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
       ),
       child: Text(label, style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textPrimary)),
     );
@@ -360,9 +360,9 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

@@ -111,7 +111,7 @@ class ChatListView extends GetView<ChatController> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.border.withOpacity(0.2),
+            color: AppColors.border.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -224,7 +224,7 @@ class ChatListView extends GetView<ChatController> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   blurRadius: 15,
                   offset: const Offset(0, 4),
                 ),
@@ -309,7 +309,7 @@ class ChatListView extends GetView<ChatController> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     blurRadius: 15,
                     offset: const Offset(0, 4),
                   ),
@@ -369,12 +369,12 @@ class ChatListView extends GetView<ChatController> {
                   decoration: InputDecoration(
                     hintText: 'Cari percakapan...',
                     hintStyle: TextStyle(
-                      color: AppColors.surface.withOpacity(0.7),
+                      color: AppColors.surface.withValues(alpha: 0.7),
                     ),
                     border: InputBorder.none,
                     prefixIcon: Icon(
                       Icons.search_rounded,
-                      color: AppColors.surface.withOpacity(0.7),
+                      color: AppColors.surface.withValues(alpha: 0.7),
                     ),
                   ),
                 )

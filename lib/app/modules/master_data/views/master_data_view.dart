@@ -43,7 +43,7 @@ class MasterDataView extends GetView<MasterDataController> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.border.withOpacity(0.2),
+                    color: AppColors.border.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -237,6 +237,9 @@ class MasterDataView extends GetView<MasterDataController> {
   void _showDeleteDialog(MasterDataItem item) {
     Get.dialog(
       AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        constraints: const BoxConstraints(maxWidth: 480),
+        scrollable: true,
         title: Text(
           'Delete Item',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -273,6 +276,8 @@ class MasterDataView extends GetView<MasterDataController> {
 
     Get.dialog(
       AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        constraints: const BoxConstraints(maxWidth: 560),
         title: Text(
           isEdit ? 'Edit Item' : 'Create Item',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -640,8 +645,9 @@ class MasterDataView extends GetView<MasterDataController> {
     required IconData icon,
     required bool isSelected,
   }) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => controller.changeTab(index),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
         margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -686,7 +692,7 @@ class MasterDataView extends GetView<MasterDataController> {
             Icon(
               Icons.menu_book_outlined,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -723,7 +729,7 @@ class MasterDataView extends GetView<MasterDataController> {
                   ? Icons.menu_book_outlined
                   : Icons.work_outline,
               size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -774,7 +780,7 @@ class MasterDataView extends GetView<MasterDataController> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.border.withOpacity(0.1),
+            color: AppColors.border.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -814,8 +820,8 @@ class MasterDataView extends GetView<MasterDataController> {
                     ),
                     decoration: BoxDecoration(
                       color: item.type == 'complink'
-                          ? AppColors.primary.withOpacity(0.1)
-                          : AppColors.greenColor.withOpacity(0.1),
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : AppColors.greenColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

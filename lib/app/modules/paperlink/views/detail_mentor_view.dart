@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,9 +28,9 @@ class DetailMentorView extends StatelessWidget {
             margin: const EdgeInsets.only(right: 8, bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.1),
+              color: AppColors.primaryLight.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
             ),
             child: Text(
               e,
@@ -49,7 +50,7 @@ class DetailMentorView extends StatelessWidget {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: AppColors.primary, size: 18),
           ),
           const SizedBox(width: 12),
@@ -92,7 +93,7 @@ class DetailMentorView extends StatelessWidget {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(color: const Color(0xFF0077B5).withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: const Color(0xFF0077B5).withValues(alpha: 0.1), shape: BoxShape.circle),
               child: const Icon(Icons.link, color: Color(0xFF0077B5), size: 18),
             ),
             const SizedBox(width: 12),
@@ -176,7 +177,7 @@ class DetailMentorView extends StatelessWidget {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(color: AppColors.border.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
                       ],
                     ),
                     child: Row(
@@ -240,7 +241,7 @@ class DetailMentorView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.border.withOpacity(0.15),
+                          color: AppColors.border.withValues(alpha: 0.15),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -275,7 +276,7 @@ class DetailMentorView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.border.withOpacity(0.15),
+                          color: AppColors.border.withValues(alpha: 0.15),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -318,7 +319,7 @@ class DetailMentorView extends StatelessWidget {
                                 finalLayananType = layananData?['type']?.toString();
                               }
                             } catch (e) {
-                              print('Error fetching layanan type: $e');
+                              AppLogger.info('Error fetching layanan type: $e');
                             }
                           }
                         }
@@ -370,7 +371,7 @@ class DetailMentorView extends StatelessWidget {
                         foregroundColor: AppColors.surface,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         elevation: 2,
-                        shadowColor: AppColors.primary.withOpacity(0.25),
+                        shadowColor: AppColors.primary.withValues(alpha: 0.25),
                       ),
                       child: Text("Chat Mentor", style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
                     ),

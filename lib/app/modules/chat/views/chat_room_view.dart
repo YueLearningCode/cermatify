@@ -31,7 +31,7 @@ class ChatRoomView extends GetView<ChatController> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.border.withOpacity(0.2),
+              color: AppColors.border.withValues(alpha: 0.2),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -115,7 +115,7 @@ class ChatRoomView extends GetView<ChatController> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.border.withOpacity(isMe ? 0.3 : 0.1),
+                    color: AppColors.border.withValues(alpha: isMe ? 0.3 : 0.1),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -140,7 +140,7 @@ class ChatRoomView extends GetView<ChatController> {
                         DateFormat('HH:mm').format(msg.timestamp),
                         style: GoogleFonts.poppins(
                           color: isMe
-                              ? AppColors.surface.withOpacity(0.7)
+                              ? AppColors.surface.withValues(alpha: 0.7)
                               : AppColors.textLight,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
@@ -151,7 +151,7 @@ class ChatRoomView extends GetView<ChatController> {
                         Icon(
                           Icons.done_all_rounded,
                           size: 12,
-                          color: AppColors.surface.withOpacity(0.7),
+                          color: AppColors.surface.withValues(alpha: 0.7),
                         ),
                       ],
                     ],
@@ -259,7 +259,7 @@ class ChatRoomView extends GetView<ChatController> {
                     "Online",
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: AppColors.surface.withOpacity(0.8),
+                      color: AppColors.surface.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -293,7 +293,7 @@ class ChatRoomView extends GetView<ChatController> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.border.withOpacity(0.1),
+                                color: AppColors.border.withValues(alpha: 0.1),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -344,7 +344,7 @@ class ChatRoomView extends GetView<ChatController> {
                 color: AppColors.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.border.withOpacity(0.2),
+                    color: AppColors.border.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, -2),
                   ),
@@ -421,7 +421,7 @@ class ChatRoomView extends GetView<ChatController> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withValues(alpha: 0.3),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),

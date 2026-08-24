@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cermatify/app/data/dummy_sourcelink.dart';
@@ -49,7 +50,7 @@ class SourcelinkController extends GetxController {
       await prefs.setString(_keyPendidikan, selectedPendidikan.value);
       await prefs.setString(_keyKriteria, kriteriaController.text);
     } catch (e) {
-      print('Error saving criteria: $e');
+      AppLogger.info('Error saving criteria: $e');
     }
   }
 
@@ -69,7 +70,7 @@ class SourcelinkController extends GetxController {
       if (pendidikan != null && pendidikan.isNotEmpty) selectedPendidikan.value = pendidikan;
       if (kriteria != null) kriteriaController.text = kriteria;
     } catch (e) {
-      print('Error loading criteria: $e');
+      AppLogger.info('Error loading criteria: $e');
     }
   }
 
@@ -83,7 +84,7 @@ class SourcelinkController extends GetxController {
       await prefs.remove(_keyPendidikan);
       await prefs.remove(_keyKriteria);
     } catch (e) {
-      print('Error clearing criteria: $e');
+      AppLogger.info('Error clearing criteria: $e');
     }
   }
 

@@ -246,7 +246,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +256,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                 child: Icon(icon, color: color, size: 20),
               ),
             ],
@@ -283,17 +283,17 @@ class AdminHomeView extends GetView<AdminHomeController> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
+    return Semantics(
+      container: true,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color.withOpacity(0.9), color],
+            colors: [color.withValues(alpha: 0.9), color],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Material(
           color: Colors.transparent,
@@ -308,7 +308,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: AppColors.surface.withOpacity(0.2), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: AppColors.surface.withValues(alpha: 0.2), shape: BoxShape.circle),
                     child: Icon(icon, color: AppColors.surface, size: 26),
                   ),
                   const SizedBox(height: 12),
@@ -321,7 +321,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                     subtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
-                      color: AppColors.surface.withOpacity(0.8),
+                      color: AppColors.surface.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

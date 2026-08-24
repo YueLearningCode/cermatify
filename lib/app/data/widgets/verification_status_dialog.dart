@@ -18,15 +18,28 @@ class VerificationStatusDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 520,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+        ),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 480 ? 16 : 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  tooltip: 'Tutup',
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close),
+                ),
+              ),
+              Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Progress Indicator
@@ -43,7 +56,7 @@ class VerificationStatusDialog extends StatelessWidget {
                         child: CircularProgressIndicator(
                           value: progressPercentage / 100,
                           strokeWidth: 8,
-                          backgroundColor: AppColors.redColor.withOpacity(0.2),
+                          backgroundColor: AppColors.redColor.withValues(alpha: 0.2),
                           valueColor: AlwaysStoppedAnimation<Color>(AppColors.redColor),
                         ),
                       ),
@@ -78,18 +91,10 @@ class VerificationStatusDialog extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Close Button
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(color: AppColors.greyInactiveColor, shape: BoxShape.circle),
-                    child: Icon(Icons.close, size: 20, color: AppColors.greyTextSecondaryColor),
-                  ),
-                ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

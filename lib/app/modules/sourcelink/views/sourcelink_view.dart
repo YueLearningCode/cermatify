@@ -95,13 +95,13 @@ class SourcelinkView extends GetView<SourcelinkController> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
                         ],
                         border: Border.all(
-                          color: AppColors.border.withOpacity(0.5),
+                          color: AppColors.border.withValues(alpha: 0.5),
                         ),
                       ),
                       child: Column(
@@ -114,10 +114,10 @@ class SourcelinkView extends GetView<SourcelinkController> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.primary.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
@@ -289,7 +289,7 @@ class SourcelinkView extends GetView<SourcelinkController> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, size: 20, color: AppColors.primary),
@@ -331,7 +331,7 @@ class SourcelinkView extends GetView<SourcelinkController> {
     required Function(String?) onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       dropdownColor: AppColors.surface,
       icon: const Icon(Icons.arrow_drop_down, color: AppColors.textPrimary),
@@ -385,7 +385,7 @@ class SourcelinkView extends GetView<SourcelinkController> {
           ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           elevation: 2,
-          shadowColor: AppColors.primary.withOpacity(0.3),
+          shadowColor: AppColors.primary.withValues(alpha: 0.3),
         ),
         onPressed: () async {
           // Save criteria to local storage before navigating
@@ -417,9 +417,9 @@ class SourcelinkView extends GetView<SourcelinkController> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.1),
+        color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryLight.withOpacity(0.2)),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [

@@ -29,7 +29,7 @@ class BottomNavbar extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               spreadRadius: 0,
               blurRadius: 40,
               offset: const Offset(0, -8),
@@ -47,8 +47,8 @@ class BottomNavbar extends StatelessWidget {
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.white,
             selectedItemColor: AppColors.primaryColor,
-            unselectedItemColor: AppColors.greyTextSecondaryColor.withOpacity(
-              0.6,
+            unselectedItemColor: AppColors.greyTextSecondaryColor.withValues(
+              alpha: 0.6,
             ),
             showUnselectedLabels: true,
             elevation: 0,
@@ -135,11 +135,11 @@ class BottomNavbar extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: isSelected
-              ? AppColors.primaryColor.withOpacity(0.12)
+              ? AppColors.primaryColor.withValues(alpha: 0.12)
               : Colors.transparent,
           border: isSelected
               ? Border.all(
-                  color: AppColors.primaryColor.withOpacity(0.3),
+                  color: AppColors.primaryColor.withValues(alpha: 0.3),
                   width: 1,
                 )
               : null,
@@ -170,7 +170,7 @@ class BottomNavbar extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.red.withOpacity(0.3),
+                        color: Colors.red.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

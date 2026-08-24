@@ -1,4 +1,6 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/services/session_state.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/widgets/verification_status_dialog.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
@@ -6,7 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   // Controller input
@@ -113,10 +114,7 @@ class LoginController extends GetxController {
         // If verificationStatus is 'verified' or any other value, continue to login
       }
 
-      // Save login status and role to SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('userRole', userRole);
+      await SessionState.markAuthenticated(userRole);
 
       CustomSnackbar.show(
         title: 'Sukses',
@@ -214,10 +212,7 @@ class LoginController extends GetxController {
               // If verificationStatus is 'verified' or any other value, continue to auto-login
             }
 
-            // Save login status and role to SharedPreferences for consistency
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('isLoggedIn', true);
-            await prefs.setString('userRole', userRole);
+            await SessionState.markAuthenticated(userRole);
 
             // Navigate to dashboard based on role
             if (userRole == 'customer' || userRole == 'mentor') {
@@ -236,7 +231,7 @@ class LoginController extends GetxController {
           }
         } catch (e) {
           // Error fetching user data, sign out and show login
-          print('Error fetching user data: $e');
+          AppLogger.info('Error fetching user data: $e');
           await _auth.signOut();
           await _clearLoginData();
         }
@@ -245,7 +240,7 @@ class LoginController extends GetxController {
         await _clearLoginData();
       }
     } catch (e) {
-      print('Error checking auth session: $e');
+      AppLogger.info('Error checking auth session: $e');
       await _clearLoginData();
     } finally {
       isCheckingSession.value = false;
@@ -254,9 +249,7 @@ class LoginController extends GetxController {
 
   // Helper method to clear login data
   Future<void> _clearLoginData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
-    await prefs.remove('userRole');
+    await SessionState.clear();
   }
 
   // Metode untuk memeriksa status login (kept for backward compatibility).

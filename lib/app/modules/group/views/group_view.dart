@@ -26,7 +26,7 @@ class GroupView extends GetView<GroupController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.group_outlined, size: 80, color: AppColors.primary.withOpacity(0.5)),
+            Icon(Icons.group_outlined, size: 80, color: AppColors.primary.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text(
               "Group Management",

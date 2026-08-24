@@ -128,11 +128,15 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
           // Controller might not be initialized, ignore
         }
 
+        if (!mounted) return;
+
         // Show success dialog
-        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            constraints: const BoxConstraints(maxWidth: 480),
+            scrollable: true,
             backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Row(
@@ -235,9 +239,9 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,12 +280,12 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 4),
                         ),
                       ],
-                      border: Border.all(color: AppColors.border.withOpacity(0.5)),
+                      border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
                     ),
                     child: Form(
                       key: _formKey,
@@ -292,7 +296,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -318,7 +322,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                             title: "Rentang Usia",
                             subtitle: "Pilih rentang usia Anda",
                             child: DropdownButtonFormField<String>(
-                              value: _selectedUsia,
+                              initialValue: _selectedUsia,
                               isExpanded: true,
                               decoration: _buildInputDecoration(),
                               items: _rentangUsia
@@ -349,7 +353,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                             title: "Jenis Kelamin",
                             subtitle: "Pilih jenis kelamin Anda",
                             child: DropdownButtonFormField<String>(
-                              value: _selectedKelamin,
+                              initialValue: _selectedKelamin,
                               isExpanded: true,
                               decoration: _buildInputDecoration(),
                               items: _jenisKelamin
@@ -380,7 +384,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                             title: "Tingkat Penghasilan",
                             subtitle: "Pilih tingkat penghasilan per bulan",
                             child: DropdownButtonFormField<String>(
-                              value: _selectedPenghasilan,
+                              initialValue: _selectedPenghasilan,
                               isExpanded: true,
                               decoration: _buildInputDecoration(),
                               items: _tingkatPenghasilan
@@ -411,7 +415,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                             title: "Pendidikan Terakhir",
                             subtitle: "Pilih tingkat pendidikan terakhir",
                             child: DropdownButtonFormField<String>(
-                              value: _selectedPendidikan,
+                              initialValue: _selectedPendidikan,
                               isExpanded: true,
                               decoration: _buildInputDecoration(),
                               items: _pendidikanTerakhir
@@ -446,7 +450,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                                 elevation: 2,
-                                shadowColor: AppColors.primary.withOpacity(0.3),
+                                shadowColor: AppColors.primary.withValues(alpha: 0.3),
                               ),
                               onPressed: _submitForm,
                               child: Row(
@@ -493,7 +497,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 18, color: AppColors.primary),

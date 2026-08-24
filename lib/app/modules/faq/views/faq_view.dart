@@ -34,7 +34,7 @@ class FaqView extends GetView<FaqController> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.primary.withOpacity(0.03), AppColors.background],
+            colors: [AppColors.primary.withValues(alpha: 0.03), AppColors.background],
           ),
         ),
         child: ListView.builder(
@@ -47,11 +47,11 @@ class FaqView extends GetView<FaqController> {
               maxWidth: 900,
               child: Card(
                 elevation: 3,
-                shadowColor: AppColors.primary.withOpacity(0.1),
+                shadowColor: AppColors.primary.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: AppColors.border.withOpacity(0.5),
+                    color: AppColors.border.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -67,7 +67,7 @@ class FaqView extends GetView<FaqController> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -108,10 +108,10 @@ class FaqView extends GetView<FaqController> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.08),
+                          color: AppColors.primaryLight.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primaryLight.withOpacity(0.2),
+                            color: AppColors.primaryLight.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Row(

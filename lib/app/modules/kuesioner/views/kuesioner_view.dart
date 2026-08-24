@@ -53,14 +53,14 @@ class KuesionerView extends GetView<KuesionerController> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.primary.withOpacity(0.8),
+                    AppColors.primary.withValues(alpha: 0.8),
                     AppColors.primaryDark,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -72,7 +72,7 @@ class KuesionerView extends GetView<KuesionerController> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: AppColors.surface.withOpacity(0.2),
+                      color: AppColors.surface.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -101,7 +101,7 @@ class KuesionerView extends GetView<KuesionerController> {
                                 : "Lengkapi data tambahan untuk melihat kuesioner",
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: AppColors.surface.withOpacity(0.9),
+                              color: AppColors.surface.withValues(alpha: 0.9),
                             ),
                           ),
                         ),
@@ -242,7 +242,7 @@ class KuesionerView extends GetView<KuesionerController> {
                             // Main Card
                             Card(
                               elevation: 6,
-                              shadowColor: AppColors.primary.withOpacity(0.15),
+                              shadowColor: AppColors.primary.withValues(alpha: 0.15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -290,7 +290,7 @@ class KuesionerView extends GetView<KuesionerController> {
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: AppColors.primary
-                                                      .withOpacity(0.3),
+                                                      .withValues(alpha: 0.3),
                                                   blurRadius: 8,
                                                   offset: const Offset(0, 3),
                                                 ),
@@ -352,7 +352,7 @@ class KuesionerView extends GetView<KuesionerController> {
                                                   width: 60,
                                                   decoration: BoxDecoration(
                                                     color: AppColors.primary
-                                                        .withOpacity(0.3),
+                                                        .withValues(alpha: 0.3),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           2,
@@ -368,7 +368,7 @@ class KuesionerView extends GetView<KuesionerController> {
                                             height: 40,
                                             decoration: BoxDecoration(
                                               color: AppColors.primary
-                                                  .withOpacity(0.1),
+                                                  .withValues(alpha: 0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -392,8 +392,8 @@ class KuesionerView extends GetView<KuesionerController> {
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryLight.withOpacity(
-                                    0.05,
+                                  color: AppColors.primaryLight.withValues(
+                                    alpha: 0.05,
                                   ),
                                   shape: BoxShape.circle,
                                 ),
@@ -449,18 +449,18 @@ class KuesionerView extends GetView<KuesionerController> {
   Widget _buildSegment(String label, int index) {
     final isSelected = controller.selectedTab.value == index;
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: () => controller.selectedTab.value = index,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primary.withOpacity(0.12)
+                ? AppColors.primary.withValues(alpha: 0.12)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
-                  ? AppColors.primary.withOpacity(0.3)
+                  ? AppColors.primary.withValues(alpha: 0.3)
                   : AppColors.border,
             ),
           ),
@@ -496,14 +496,14 @@ class KuesionerView extends GetView<KuesionerController> {
     switch (status.toLowerCase()) {
       case 'approved':
       case 'disetujui':
-        backgroundColor = AppColors.success.withOpacity(0.15);
+        backgroundColor = AppColors.success.withValues(alpha: 0.15);
         textColor = AppColors.success;
         statusText = 'Disetujui';
         icon = Icons.check_circle_rounded;
         break;
       case 'rejected':
       case 'ditolak':
-        backgroundColor = AppColors.error.withOpacity(0.15);
+        backgroundColor = AppColors.error.withValues(alpha: 0.15);
         textColor = AppColors.error;
         statusText = 'Ditolak';
         icon = Icons.cancel_rounded;
@@ -511,7 +511,7 @@ class KuesionerView extends GetView<KuesionerController> {
       case 'waiting verification':
       case 'menunggu verifikasi':
       default:
-        backgroundColor = AppColors.yellowColor.withOpacity(0.15);
+        backgroundColor = AppColors.yellowColor.withValues(alpha: 0.15);
         textColor = AppColors.yellow2Color;
         statusText = 'Menunggu';
         icon = Icons.pending_rounded;
@@ -523,7 +523,7 @@ class KuesionerView extends GetView<KuesionerController> {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withOpacity(0.3), width: 1),
+        border: Border.all(color: textColor.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

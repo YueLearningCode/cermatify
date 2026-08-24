@@ -143,7 +143,7 @@ class HomeContent extends GetView<HomeController> {
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.2),
+                              color: AppColors.primary.withValues(alpha: 0.2),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -286,46 +286,21 @@ class FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        switch (title) {
-          case "Cermat Paper":
-            Get.toNamed(Routes.PAPERLINK);
-            break;
-          case "Cermat Competition":
-            Get.toNamed(Routes.COMPLINK);
-            break;
-          case "Cermat Kuesioner":
-            Get.toNamed(Routes.SOURCELINK);
-            break;
-          case "Order History":
-            Get.toNamed(Routes.ORDER_HISTORY);
-            break;
-          default:
-            Get.snackbar(
-              title,
-              "Menu '$title' sedang dalam pengembangan",
-              backgroundColor: AppColors.primary,
-              colorText: AppColors.surface,
-              snackPosition: SnackPosition.BOTTOM,
-              borderRadius: 12,
-              margin: const EdgeInsets.all(16),
-            );
-        }
-      },
+    return Semantics(
+      container: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color.withOpacity(0.9), color],
+            colors: [color.withValues(alpha: 0.9), color],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.3),
+              color: color.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -370,7 +345,7 @@ class FeatureCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.surface.withOpacity(0.2),
+                      color: AppColors.surface.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(icon, color: AppColors.surface, size: 26),
@@ -393,7 +368,7 @@ class FeatureCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
-                      color: AppColors.surface.withOpacity(0.8),
+                      color: AppColors.surface.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

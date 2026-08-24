@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
@@ -123,7 +124,7 @@ class RegisterController extends GetxController {
           .toList()
           .cast<Map<String, String>>();
     } catch (e) {
-      print('Error fetching master data: $e');
+      AppLogger.info('Error fetching master data: $e');
     }
   }
 

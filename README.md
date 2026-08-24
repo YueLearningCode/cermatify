@@ -51,7 +51,7 @@ Catatan penting:
 | Android minSdk | `23` |
 | Android Java/Kotlin target | Java 11 |
 | Android NDK | `27.0.12077973` |
-| Gradle wrapper | `8.12` |
+| Gradle wrapper | `8.14` |
 | iOS bundle id | `com.example.cermatify` |
 | Font tema aplikasi | `Poppins` |
 
@@ -152,6 +152,11 @@ Catatan release Android:
 - File `key.properties` tidak ada di repository ini. Jika ingin build release signed, buat file tersebut dan isi `keyAlias`, `keyPassword`, `storeFile`, dan `storePassword`.
 
 ## Deploy Web ke GitHub Pages
+
+Panduan lengkap deployment, smoke test, dan rollback tersedia di
+[`docs/WEB_DEPLOYMENT.md`](docs/WEB_DEPLOYMENT.md).
+Baseline analyzer dan quality gate dijelaskan di
+[`docs/QUALITY_GATE.md`](docs/QUALITY_GATE.md).
 
 Project ini sudah disiapkan untuk deploy Flutter Web ke GitHub Pages melalui workflow:
 
@@ -439,7 +444,7 @@ Catatan: `pubspec.yaml` juga mendaftarkan `assets/icons/`, tetapi pada hasil pem
 | `android/settings.gradle.kts` | Pengaturan Gradle multi-project Android. |
 | `android/build.gradle.kts` | Konfigurasi Gradle level root Android. |
 | `android/gradle.properties` | Properti Gradle/Android. |
-| `android/gradle/wrapper/gradle-wrapper.properties` | Versi Gradle wrapper, yaitu Gradle `8.12`. |
+| `android/gradle/wrapper/gradle-wrapper.properties` | Versi Gradle wrapper, yaitu Gradle `8.14`. |
 | `android/app/build.gradle.kts` | Konfigurasi module Android app: application id, minSdk, signing, dependency native. |
 | `android/app/google-services.json` | Konfigurasi Firebase Android. |
 | `android/app/src/main/AndroidManifest.xml` | Manifest utama Android. |

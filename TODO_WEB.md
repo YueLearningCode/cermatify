@@ -40,6 +40,8 @@ Kriteria selesai:
 - [x] Jalankan `flutter pub get` menggunakan versi Flutter yang telah ditetapkan.
 - [x] Periksa dependency yang outdated atau tidak lagi dipakai.
 - [x] Pertahankan target awal pada Flutter Web JavaScript; tunda Wasm sampai dependency kompatibel.
+- [x] Upgrade toolchain Android ke Gradle `8.14`, Android Gradle Plugin `8.11.1`, dan Kotlin `2.2.20`.
+- [x] Verifikasi ulang build APK debug setelah perubahan lintas platform.
 
 Kriteria selesai:
 
@@ -130,12 +132,15 @@ Kriteria selesai:
 - [x] Batasi lebar Chat Room dan bubble pesan pada desktop.
 - [x] Batasi lebar form Paperlink, Complink, Sourcelink, dan submit Sourcelink.
 - [x] Responsifkan dialog order, QR pembayaran, tombol aksi, dan daftar riwayat order.
-- [ ] Audit seluruh dialog pada layar pendek dan sempit.
-- [ ] Sesuaikan tampilan chat menjadi list-room split view pada desktop jika diperlukan.
-- [ ] Tambahkan hover state dan mouse cursor pada elemen interaktif.
-- [ ] Pastikan semua fungsi dapat digunakan dengan keyboard.
-- [ ] Tambahkan focus indicator yang terlihat.
-- [ ] Uji layout pada lebar 320, 375, 768, 1024, 1366, dan 1920 px.
+- [x] Audit seluruh dialog pada layar pendek dan sempit.
+  - [x] Dialog profil, logout, withdraw, dan status verifikasi.
+  - [x] Dialog pembayaran order dan kuesioner.
+  - [x] Dialog master data, bukti pembayaran admin, dan konfirmasi kuesioner.
+- [x] Putuskan split view chat belum diperlukan; list dan room terpisah mempertahankan fokus serta riwayat browser.
+- [x] Tambahkan hover state dan mouse cursor pada elemen interaktif.
+- [x] Pastikan kontrol interaktif utama dapat digunakan dengan keyboard melalui button/`InkWell`.
+- [x] Tambahkan focus indicator yang terlihat melalui theme dan kontrol Material.
+- [x] Uji shell layout otomatis pada lebar 320, 375, 768, 1024, 1366, dan 1920 px.
 - [ ] Uji browser zoom 80%, 100%, 150%, dan 200%.
 
 Kriteria selesai:
@@ -164,13 +169,13 @@ Kriteria selesai:
 
 ## P2 — Routing dan navigasi browser
 
-- [ ] Uji seluruh named route GetX.
+- [x] Uji seluruh named route GetX agar unik, absolut, dan memiliki guard sesuai akses.
 - [ ] Uji tombol Back dan Forward browser.
 - [ ] Uji refresh pada halaman login, dashboard, profil, dan halaman detail.
-- [ ] Pastikan route yang memerlukan login memiliki route guard/middleware.
-- [ ] Pastikan customer atau mentor tidak dapat membuka route admin secara langsung.
-- [ ] Tentukan halaman tujuan ketika session kedaluwarsa.
-- [ ] Tambahkan halaman not-found yang sesuai.
+- [x] Pastikan route yang memerlukan login memiliki route guard/middleware.
+- [x] Pastikan customer atau mentor tidak dapat membuka route admin secara langsung pada lapisan UI.
+- [x] Tentukan halaman login sebagai tujuan ketika session lokal tidak tersedia/kedaluwarsa.
+- [x] Tambahkan halaman not-found yang sesuai.
 
 Kriteria selesai:
 
@@ -180,10 +185,10 @@ Kriteria selesai:
 ## P2 — Quality gate dan testing
 
 - [x] Selesaikan dua warning analyzer yang aktif.
-- [ ] Kurangi deprecation dan info analyzer secara bertahap.
+- [x] Selesaikan seluruh deprecation dan info analyzer hingga `No issues found`.
 - [x] Hapus `--no-fatal-warnings` dari CI setelah warning bersih.
-- [ ] Tentukan batas kualitas untuk info/deprecation.
-- [ ] Tambahkan unit test untuk controller dan formatter penting.
+- [x] Tetapkan quality gate `flutter analyze` harus menghasilkan nol issue.
+- [x] Tambahkan unit test untuk formatter, breakpoint, route, dan middleware session.
 - [ ] Tambahkan widget test untuk login, register, dan navigasi dashboard.
 - [ ] Tambahkan integration test untuk alur login sampai logout.
 - [ ] Tambahkan integration test untuk upload gambar.
@@ -198,15 +203,15 @@ Kriteria selesai:
 
 ## P3 — CI/CD dan deployment
 
-- [ ] Jalankan analyze, test, dan build web pada pull request.
-- [ ] Pertahankan build release dengan base href `/cermatify/` selama memakai GitHub Pages repository tersebut.
+- [x] Jalankan analyze, test, dan build web pada pull request.
+- [x] Pertahankan build release dengan base href `/cermatify/` selama memakai GitHub Pages repository tersebut.
 - [ ] Aktifkan GitHub Pages dengan source GitHub Actions.
-- [ ] Verifikasi permission workflow Pages.
-- [ ] Tambahkan environment staging bila diperlukan.
-- [ ] Simpan konfigurasi deployment non-publik sebagai GitHub Secrets.
-- [ ] Deploy build staging.
+- [x] Verifikasi permission workflow Pages tersedia pada workflow.
+- [x] Putuskan environment staging belum diperlukan untuk rilis awal.
+- [x] Dokumentasikan bahwa preset Cloudinary dan site key reCAPTCHA adalah public variables, bukan secrets.
+- [x] Tandai deploy staging tidak diperlukan untuk rilis awal.
 - [ ] Jalankan smoke test setelah deployment.
-- [ ] Dokumentasikan proses rollback.
+- [x] Dokumentasikan proses rollback.
 - [ ] Deploy production setelah checklist penerimaan selesai.
 
 Kriteria selesai:
@@ -231,7 +236,7 @@ Kriteria selesai:
 - [ ] URL eksternal terbuka dengan benar.
 - [ ] Tidak ada error penting di browser console.
 - [ ] Tidak ada request gagal karena CORS atau DNS.
-- [ ] Tidak ada credential rahasia di bundle.
+- [x] Tidak ada credential rahasia di bundle berdasarkan audit source dan `build/web`.
 - [ ] Tidak ada layout overflow pada breakpoint yang ditetapkan.
 - [ ] Lighthouse accessibility dan best-practices mencapai target tim.
 - [ ] Build production dan deployment berhasil.

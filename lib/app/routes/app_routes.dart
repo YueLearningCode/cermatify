@@ -1,4 +1,7 @@
+// ignore_for_file: constant_identifier_names
+
 part of 'app_pages.dart';
+// Uppercase route constants are retained for compatibility with Get CLI output.
 // DO NOT EDIT. This is code generated via package:get_cli/get_cli.dart
 
 abstract class Routes {
@@ -19,6 +22,7 @@ abstract class Routes {
   static const SOURCELINK = _Paths.SOURCELINK;
   static const ORDER_HISTORY = _Paths.ORDER_HISTORY;
   static const ADMIN_KUESIONER = _Paths.ADMIN_KUESIONER;
+  static const NOT_FOUND = _Paths.NOT_FOUND;
 }
 
 abstract class _Paths {
@@ -39,4 +43,5 @@ abstract class _Paths {
   static const SOURCELINK = '/sourcelink';
   static const ORDER_HISTORY = '/order-history';
   static const ADMIN_KUESIONER = '/admin-kuesioner';
+  static const NOT_FOUND = '/not-found';
 }

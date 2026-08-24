@@ -127,7 +127,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.border.withOpacity(0.1),
+            color: AppColors.border.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -140,7 +140,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _getStatusColor(status).withOpacity(0.1),
+              color: _getStatusColor(status).withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -198,7 +198,7 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                 ],
                 if (order['paymentProofUrl'] != null) ...[
                   const SizedBox(height: 12),
-                  GestureDetector(
+                  InkWell(
                     onTap: () {
                       // Show payment proof image in full screen
                       Get.dialog(

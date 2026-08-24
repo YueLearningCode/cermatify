@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,15 +20,7 @@ class AdminHomeController extends GetxController {
     _fetchStatistics();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   Future<void> _fetchUserData() async {
     try {
@@ -44,7 +37,7 @@ class AdminHomeController extends GetxController {
         }
       }
     } catch (e) {
-      print('Error fetching user data: $e');
+      AppLogger.info('Error fetching user data: $e');
       userName.value = 'Admin';
     }
   }
@@ -64,11 +57,11 @@ class AdminHomeController extends GetxController {
         final layananSnapshot = await _firestore.collection('layanan').get();
         totalMasterData.value = kampusSnapshot.docs.length + jurusanSnapshot.docs.length + layananSnapshot.docs.length;
       } catch (e) {
-        print('Error fetching master data count: $e');
+        AppLogger.info('Error fetching master data count: $e');
         totalMasterData.value = 0;
       }
     } catch (e) {
-      print('Error fetching statistics: $e');
+      AppLogger.info('Error fetching statistics: $e');
     } finally {
       isLoading.value = false;
     }

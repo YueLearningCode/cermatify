@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
@@ -148,7 +149,7 @@ class OrderDialogView extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Text(
@@ -362,7 +363,7 @@ class OrderDialogView extends StatelessWidget {
                                     orderId: orderId,
                                   );
                                 } catch (e) {
-                                  print('Error creating chat room: $e');
+                                  AppLogger.info('Error creating chat room: $e');
                                 }
 
                                 // Close dialog first
