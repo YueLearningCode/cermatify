@@ -4,7 +4,7 @@ Cermatify adalah aplikasi Flutter untuk layanan akademik/digital seperti dashboa
 
 Cermatify bisa dipahami sebagai aplikasi mobile berbasis Flutter yang mempertemukan mahasiswa yang membutuhkan bantuan akademik dengan mentor atau mahasiswa lain yang punya kemampuan relevan. Layanannya berfokus pada tiga produk utama: Cermat Paper, Cermat Competition, dan Cermat Kuesioner.
 
-Secara teknis, Cermatify adalah aplikasi mobile berbasis Flutter yang menggunakan Node.js sebagai backend, Google Cloud sebagai infrastruktur server, dan firebase sebagai database. Flutter digunakan untuk membangun antarmuka aplikasi di sisi pengguna, sedangkan backend bertugas mengelola proses bisnis seperti login, pemilihan layanan, pencocokan mentor, transaksi, dan evaluasi layanan. Data pengguna, mentor, layanan, dan transaksi disimpan secara terstruktur di firebase, sementara keamanan data didukung dengan SSL/TLS.
+Secara teknis, Cermatify adalah aplikasi Flutter untuk mobile dan web. Alur aktif menggunakan Firebase Authentication dan Cloud Firestore secara langsung, sedangkan upload gambar menggunakan restricted unsigned upload Cloudinary. REST API lama sudah dihapus karena tidak memiliki pemanggil aktif dan domainnya tidak lagi tersedia.
 
 Secara administrasi, Cermatify memiliki alur operasional mulai dari pendaftaran dan verifikasi pengguna, pemilihan layanan, proses kolaborasi antara pengguna dan mentor, transaksi digital, hingga evaluasi layanan. Admin berperan mengelola data pengguna, mentor, layanan, transaksi, verifikasi, serta menjaga kualitas layanan melalui pemantauan dan evaluasi. Dengan demikian, sistem tidak hanya berjalan sebagai aplikasi teknologi, tetapi juga sebagai ekosistem layanan akademik yang memerlukan tata kelola operasional.
 
@@ -18,9 +18,7 @@ Proyek ini memakai pola GetX. Di dalam setiap fitur biasanya ada 3 bagian:
 
 Proyek ini adalah proyek Flutter app yang lengkap secara struktur karena memiliki `pubspec.yaml`, `lib/main.dart`, konfigurasi Android, iOS, Web, Windows, macOS, dan Linux.
 
-Namun pada komputer yang dianalisis, perintah `flutter --version` gagal karena `flutter` belum dikenali di PATH. Artinya proyek belum bisa saya jalankan langsung dari terminal ini sampai Flutter SDK dipasang atau path Flutter ditambahkan ke environment variable.
-
-Setelah Flutter SDK tersedia, proyek ini seharusnya bisa dicoba dengan alur standar:
+Toolchain proyek telah distandarkan pada Flutter `3.44.4` dan JDK 21. Proyek dapat dijalankan dengan alur standar:
 
 ```bash
 cd E:\laragon\www\cermatify\cermatify
@@ -31,7 +29,8 @@ flutter run
 Catatan penting:
 
 - Proyek membutuhkan koneksi internet saat `flutter pub get` pertama kali karena paket diambil dari `pub.dev`.
-- Proyek memakai Firebase dan backend API online, sehingga fitur login/data membutuhkan koneksi internet.
+- Fitur Firebase sedang dipending sampai akses layanan kembali tersedia.
+- Upload gambar memerlukan konfigurasi Cloudinary dan koneksi internet.
 - Linux belum dikonfigurasi untuk Firebase pada `lib/firebase_options.dart`, jadi target Linux akan error jika menjalankan kode Firebase saat startup.
 
 ## Spesifikasi Project
@@ -41,12 +40,12 @@ Catatan penting:
 | Nama package | `cermatify` |
 | Tipe proyek | Flutter application |
 | Versi aplikasi | `1.0.0+1` |
-| Dart SDK | `>=3.8.1 <4.0.0` |
-| Flutter minimum dari lockfile | `>=3.32.0` |
+| Dart SDK | `>=3.10.0 <4.0.0` |
+| Flutter yang distandarkan | `3.44.4` |
 | Flutter channel saat proyek dibuat | `stable` |
 | State management dan routing | GetX |
-| Backend API | `https://cermatify.my.id/api/v1` |
-| Base URL gambar | `https://cermatify.my.id/` |
+| Backend data aktif | Firebase Authentication dan Cloud Firestore |
+| Upload gambar | Cloudinary restricted unsigned upload |
 | Firebase project id | `cermatify` |
 | Android application id | `com.example.cermatify` |
 | Android minSdk | `23` |
@@ -63,16 +62,14 @@ Dependency berikut diambil dari `pubspec.yaml` dan versi terkunci di `pubspec.lo
 | Package | Fungsi | Versi terkunci |
 | --- | --- | --- |
 | `get` | Routing, dependency injection, state management | `4.7.2` |
-| `firebase_core` | Inisialisasi Firebase | `4.2.1` |
-| `firebase_auth` | Autentikasi Firebase | `6.1.2` |
-| `cloud_firestore` | Database Firestore | `6.1.0` |
+| `firebase_core` | Inisialisasi Firebase | `4.13.0` |
+| `firebase_auth` | Autentikasi Firebase | `6.5.7` |
+| `firebase_app_check` | Proteksi request Firebase web | `0.4.6` |
+| `cloud_firestore` | Database Firestore | `6.8.0` |
 | `dio` | HTTP client | `5.9.0` |
 | `http` | HTTP client tambahan | `1.6.0` |
-| `pretty_dio_logger` | Logging request/response Dio | `1.4.0` |
-| `flutter_secure_storage` | Penyimpanan aman untuk token/data sensitif | `9.2.4` |
 | `shared_preferences` | Penyimpanan lokal sederhana | `2.5.3` |
 | `image_picker` | Memilih gambar dari galeri/kamera | `1.2.1` |
-| `cloudinary` | Integrasi upload/media Cloudinary | `1.2.0` |
 | `fl_chart` | Grafik/chart | `0.71.0` |
 | `google_fonts` | Font dari Google Fonts | `6.3.2` |
 | `intl` | Format tanggal/angka/lokalisasi | `0.20.2` |

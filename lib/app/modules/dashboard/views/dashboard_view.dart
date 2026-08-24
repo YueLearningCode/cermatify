@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cermatify/app/data/widgets/bottom_navbar.dart';
+import 'package:cermatify/app/data/widgets/responsive_navigation_scaffold.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import '../../chat/controllers/chat_controller.dart';
 import '../../home/controllers/home_controller.dart';
@@ -16,39 +17,92 @@ class DashboardView extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Scaffold(
-        appBar: _buildAppBar(controller.currentIndex.value),
-        body: _buildBody(controller.currentIndex.value),
-        bottomNavigationBar: Obx(() {
-          final bool isMentor = Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
-          final int chatCount = Get.isRegistered<ChatController>() ? Get.find<ChatController>().chatRoomCount.value : 0;
-          // Map controller index to nav index when Beranda hidden
-          int navIndex = controller.currentIndex.value;
-          if (isMentor) {
-            navIndex = controller.currentIndex.value == 0 ? 0 : controller.currentIndex.value - 1;
-          }
-          return BottomNavbar(
-            currentIndex: navIndex,
-            onTap: (int tapped) {
-              if (isMentor) {
-                final mapped = tapped == 0 ? 1 : tapped + 1;
-                controller.changeTab(mapped);
-              } else {
-                controller.changeTab(tapped);
-              }
-            },
-            chatBadgeCount: chatCount,
-            hideBeranda: isMentor,
-          );
-        }),
+    return Obx(() {
+      final bool isMentor = Get.isRegistered<HomeController>()
+          ? Get.find<HomeController>().isMentor.value
+          : false;
+      final int chatCount = Get.isRegistered<ChatController>()
+          ? Get.find<ChatController>().chatRoomCount.value
+          : 0;
+      final int currentIndex = controller.currentIndex.value;
+      final int navIndex = isMentor
+          ? (currentIndex == 0 ? 0 : currentIndex - 1)
+          : currentIndex;
+
+      void changeNavigationTab(int tapped) {
+        if (isMentor) {
+          controller.changeTab(tapped == 0 ? 1 : tapped + 1);
+        } else {
+          controller.changeTab(tapped);
+        }
+      }
+
+      return ResponsiveNavigationScaffold(
+        appBar: _buildAppBar(currentIndex),
+        body: _buildBody(currentIndex),
+        selectedIndex: navIndex,
+        destinations: _buildDesktopDestinations(
+          hideBeranda: isMentor,
+          chatCount: chatCount,
+        ),
+        onDestinationSelected: changeNavigationTab,
+        mobileNavigation: BottomNavbar(
+          currentIndex: navIndex,
+          onTap: changeNavigationTab,
+          chatBadgeCount: chatCount,
+          hideBeranda: isMentor,
+        ),
+      );
+    });
+  }
+
+  List<NavigationRailDestination> _buildDesktopDestinations({
+    required bool hideBeranda,
+    required int chatCount,
+  }) {
+    final chatDestination = NavigationRailDestination(
+      icon: Badge(
+        isLabelVisible: chatCount > 0,
+        label: Text(chatCount > 99 ? '99+' : '$chatCount'),
+        child: const Icon(Icons.chat_bubble_outline),
       ),
+      selectedIcon: const Icon(Icons.chat_bubble),
+      label: const Text('Chat'),
     );
+
+    return [
+      if (!hideBeranda)
+        const NavigationRailDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: Text('Beranda'),
+        ),
+      chatDestination,
+      const NavigationRailDestination(
+        icon: Icon(Icons.assignment_outlined),
+        selectedIcon: Icon(Icons.assignment),
+        label: Text('Kuesioner'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.help_outline),
+        selectedIcon: Icon(Icons.help),
+        label: Text('FAQ'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.person_outlined),
+        selectedIcon: Icon(Icons.person),
+        label: Text('Profil'),
+      ),
+    ];
   }
 
   PreferredSizeWidget? _buildAppBar(int currentIndex) {
     // Hide app bar for Beranda (index 0), Chat (index 1), Kuesioner (index 2), FAQ (index 3), and Profil (index 4) since they have their own headers
-    if (currentIndex == 0 || currentIndex == 1 || currentIndex == 2 || currentIndex == 3 || currentIndex == 4) {
+    if (currentIndex == 0 ||
+        currentIndex == 1 ||
+        currentIndex == 2 ||
+        currentIndex == 3 ||
+        currentIndex == 4) {
       return null;
     }
 
@@ -79,7 +133,9 @@ class DashboardView extends GetView<DashboardController> {
     switch (currentIndex) {
       case 0:
         // If logged-in user is a mentor, skip Beranda and show Chat
-        final bool isMentor = Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
+        final bool isMentor = Get.isRegistered<HomeController>()
+            ? Get.find<HomeController>().isMentor.value
+            : false;
         return isMentor ? _buildChatView() : _buildBerandaView();
       case 1:
         return _buildChatView();
@@ -95,7 +151,9 @@ class DashboardView extends GetView<DashboardController> {
   }
 
   Widget _buildBerandaView() {
-    final bool isMentor = Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
+    final bool isMentor = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>().isMentor.value
+        : false;
     return isMentor ? const ChatListView() : const HomeContent();
   }
 

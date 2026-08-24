@@ -38,7 +38,7 @@ Kriteria selesai:
 - [x] Tambahkan `.fvmrc` untuk mendokumentasikan versi Flutter yang wajib dipakai.
 - [x] Selaraskan batas Dart SDK di `pubspec.yaml` dengan kebutuhan `pubspec.lock`.
 - [x] Jalankan `flutter pub get` menggunakan versi Flutter yang telah ditetapkan.
-- [ ] Periksa dependency yang outdated atau tidak lagi dipakai.
+- [x] Periksa dependency yang outdated atau tidak lagi dipakai.
 - [x] Pertahankan target awal pada Flutter Web JavaScript; tunda Wasm sampai dependency kompatibel.
 
 Kriteria selesai:
@@ -72,6 +72,10 @@ Kriteria selesai:
 
 ## P1 — Firebase Web
 
+> Pending sementara sejak 24 Agustus 2026 karena Firebase tidak dapat diakses.
+> Checklist yang memerlukan Console atau koneksi Firebase dilanjutkan setelah
+> layanan tersedia kembali.
+
 - [x] Verifikasi konfigurasi Firebase Web di `firebase_options.dart`.
 - [ ] Tambahkan `localhost` ke Firebase Authorized Domains untuk development.
 - [ ] Tambahkan `yuelearningcode.github.io` ke Firebase Authorized Domains.
@@ -97,14 +101,14 @@ Kriteria selesai:
 
 ## P1 — Backend API dan CORS
 
-- [ ] Putuskan apakah REST API `cermatify.my.id/api/v1` masih digunakan.
-- [ ] Jika digunakan, pulihkan DNS/domain dan sertifikat HTTPS.
-- [ ] Jika tidak digunakan, hapus service, repository, dependency, dan konstanta yang menjadi dead code.
-- [x] Siapkan override base URL menggunakan `--dart-define`.
-- [ ] Konfigurasi CORS untuk origin development dan production.
-- [ ] Izinkan method dan header yang diperlukan, termasuk `Authorization` dan multipart.
-- [ ] Uji respons preflight `OPTIONS`.
-- [ ] Pastikan error network ditampilkan secara ramah kepada pengguna.
+- [x] Putuskan REST API `cermatify.my.id/api/v1` tidak lagi digunakan.
+- [x] Tandai pemulihan DNS/domain tidak berlaku karena REST API tidak digunakan.
+- [x] Jika tidak digunakan, hapus service, repository, dependency, dan konstanta yang menjadi dead code.
+- [x] Hapus override `API_BASE_URL` dan `IMAGE_BASE_URL` yang tidak lagi diperlukan.
+- [x] Tandai konfigurasi CORS API lama tidak berlaku karena tidak ada request client.
+- [x] Tandai header `Authorization` dan multipart API lama tidak berlaku.
+- [x] Konfirmasi preflight tidak dapat dijalankan karena domain lama berstatus NXDOMAIN.
+- [x] Pastikan error upload/network aktif ditampilkan melalui snackbar kepada pengguna.
 
 Kriteria selesai:
 
@@ -113,16 +117,16 @@ Kriteria selesai:
 
 ## P2 — Responsive layout
 
-- [ ] Tetapkan breakpoint, misalnya:
-  - [ ] Mobile: `< 600 px`.
-  - [ ] Tablet: `600–1023 px`.
-  - [ ] Desktop: `>= 1024 px`.
-- [ ] Buat widget layout/shell responsif yang digunakan bersama.
-- [ ] Pertahankan bottom navigation pada mobile.
-- [ ] Gunakan `NavigationRail` atau sidebar pada desktop.
-- [ ] Batasi lebar konten utama agar tidak melebar memenuhi monitor.
-- [ ] Buat jumlah kolom dashboard mengikuti lebar layar.
-- [ ] Audit semua `Row` yang berpotensi overflow.
+- [x] Tetapkan breakpoint:
+  - [x] Mobile: `< 600 px`.
+  - [x] Tablet: `600–1023 px`.
+  - [x] Desktop: `>= 1024 px`.
+- [x] Buat widget layout/shell responsif yang digunakan bersama.
+- [x] Pertahankan bottom navigation pada mobile dan tablet.
+- [x] Gunakan `NavigationRail` pada desktop.
+- [x] Batasi lebar konten utama hingga 1440 px.
+- [x] Buat jumlah kolom fitur Home mengikuti lebar layar.
+- [x] Audit `Row` pada tab utama dan pastikan konten teks memakai `Expanded`/scroll yang sesuai.
 - [ ] Audit seluruh dialog pada layar pendek dan sempit.
 - [ ] Sesuaikan tampilan chat menjadi list-room split view pada desktop jika diperlukan.
 - [ ] Tambahkan hover state dan mouse cursor pada elemen interaktif.
@@ -139,16 +143,16 @@ Kriteria selesai:
 
 ## P2 — Konfigurasi folder `web/` dan PWA
 
-- [ ] Perbarui title dan meta description final.
-- [ ] Tambahkan meta viewport jika dibutuhkan oleh template Flutter yang digunakan.
-- [ ] Perbarui favicon dan seluruh icon PWA dengan logo final.
-- [ ] Hapus atau ubah `orientation: portrait-primary` menjadi perilaku yang sesuai web.
-- [ ] Sesuaikan `theme_color` dan `background_color` dengan brand Cermatify.
-- [ ] Verifikasi `manifest.json` dapat dimuat tanpa error.
+- [x] Perbarui title dan meta description final.
+- [x] Tambahkan meta viewport tanpa menonaktifkan zoom browser.
+- [x] Verifikasi favicon dan seluruh icon PWA memakai logo Cermatify dan ukuran yang benar.
+- [x] Hapus `orientation: portrait-primary` agar desktop dan landscape didukung.
+- [x] Sesuaikan `theme_color` dan `background_color` dengan brand Cermatify.
+- [x] Verifikasi `manifest.json` dapat dimuat tanpa error.
 - [ ] Uji instalasi PWA.
 - [ ] Uji service worker dan pembaruan versi setelah deployment baru.
-- [ ] Tentukan strategi URL: hash URL atau path URL dengan rewrite/fallback yang benar.
-- [ ] Tambahkan halaman/fallback 404 bila diperlukan oleh GitHub Pages.
+- [x] Pertahankan strategi hash URL agar kompatibel dengan GitHub Pages tanpa rewrite server.
+- [x] Tetapkan fallback 404 khusus tidak diperlukan selama menggunakan hash URL.
 
 Kriteria selesai:
 
@@ -172,9 +176,9 @@ Kriteria selesai:
 
 ## P2 — Quality gate dan testing
 
-- [ ] Selesaikan dua warning analyzer yang aktif.
+- [x] Selesaikan dua warning analyzer yang aktif.
 - [ ] Kurangi deprecation dan info analyzer secara bertahap.
-- [ ] Hapus `--no-fatal-warnings` dari CI setelah warning bersih.
+- [x] Hapus `--no-fatal-warnings` dari CI setelah warning bersih.
 - [ ] Tentukan batas kualitas untuk info/deprecation.
 - [ ] Tambahkan unit test untuk controller dan formatter penting.
 - [ ] Tambahkan widget test untuk login, register, dan navigasi dashboard.

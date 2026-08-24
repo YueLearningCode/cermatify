@@ -1,12 +1,14 @@
 {
     "name": "Cermatify",
     "short_name": "Cermatify",
+    "description": "Platform pendamping akademik untuk layanan paper, kompetisi, kuesioner, dan kolaborasi dengan mentor.",
     "start_url": ".",
+    "scope": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Platform pendamping akademik Cermatify.",
-    "orientation": "portrait-primary",
+    "background_color": "#F9FAFB",
+    "theme_color": "#1E88E5",
+    "lang": "id",
+    "categories": ["education", "productivity"],
     "prefer_related_applications": false,
     "icons": [
         {

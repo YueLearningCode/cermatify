@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cermatify/app/data/widgets/admin_bottom_navbar.dart';
+import 'package:cermatify/app/data/widgets/responsive_navigation_scaffold.dart';
 import '../controllers/admin_dashboard_controller.dart';
 import '../../admin_home/views/admin_home_view.dart';
 import '../../users/views/users_view.dart';
@@ -13,14 +14,36 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Scaffold(
+      () => ResponsiveNavigationScaffold(
         appBar: _buildAppBar(controller.currentIndex.value),
         body: _buildBody(controller.currentIndex.value),
-        bottomNavigationBar: AdminBottomNavbar(
+        selectedIndex: controller.currentIndex.value,
+        destinations: const [
+          NavigationRailDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: Text('Home'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.people_outlined),
+            selectedIcon: Icon(Icons.people),
+            label: Text('Users'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.storage_outlined),
+            selectedIcon: Icon(Icons.storage),
+            label: Text('Master Data'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.person_outlined),
+            selectedIcon: Icon(Icons.person),
+            label: Text('Profile'),
+          ),
+        ],
+        onDestinationSelected: controller.changeTab,
+        mobileNavigation: AdminBottomNavbar(
           currentIndex: controller.currentIndex.value,
-          onTap: (int index) {
-            controller.changeTab(index);
-          },
+          onTap: controller.changeTab,
         ),
       ),
     );
@@ -28,7 +51,10 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
 
   PreferredSizeWidget? _buildAppBar(int currentIndex) {
     // Hide app bar for Home (index 0), Users (index 1), Master Data (index 2), and Profile (index 3) since they have their own headers
-    if (currentIndex == 0 || currentIndex == 1 || currentIndex == 2 || currentIndex == 3) {
+    if (currentIndex == 0 ||
+        currentIndex == 1 ||
+        currentIndex == 2 ||
+        currentIndex == 3) {
       return null;
     }
 
