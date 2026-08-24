@@ -8,6 +8,7 @@ import '../controllers/order_history_controller.dart';
 import '../../chat/controllers/chat_controller.dart';
 import '../../chat/views/chat_room_view.dart';
 import 'package:cermatify/app/data/models/mentor_model.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
 
 class OrderHistoryView extends GetView<OrderHistoryController> {
   const OrderHistoryView({super.key});
@@ -19,7 +20,11 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
       appBar: AppBar(
         title: Text(
           'Riwayat Order',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
@@ -33,11 +38,15 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.surface,
+                        ),
                       ),
                     )
                   : const Icon(Icons.refresh_rounded),
-              onPressed: controller.isLoading.value ? null : () => controller.fetchOrders(),
+              onPressed: controller.isLoading.value
+                  ? null
+                  : () => controller.fetchOrders(),
               tooltip: 'Refresh',
             ),
           ),
@@ -53,16 +62,27 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.shopping_bag_outlined, size: 80, color: AppColors.textSecondary),
+                Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 80,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Belum ada order',
-                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Riwayat order akan muncul di sini',
-                  style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -71,13 +91,16 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
 
         return RefreshIndicator(
           onRefresh: controller.fetchOrders,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: controller.orders.length,
-            itemBuilder: (context, index) {
-              final order = controller.orders[index];
-              return _buildOrderCard(order);
-            },
+          child: ResponsiveContent(
+            maxWidth: 1000,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: controller.orders.length,
+              itemBuilder: (context, index) {
+                final order = controller.orders[index];
+                return _buildOrderCard(order);
+              },
+            ),
           ),
         );
       }),
@@ -88,15 +111,27 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
     final status = order['status']?.toString() ?? 'pending';
     final price = order['price'] as int? ?? 0;
     final createdAt = order['createdAt'] as Timestamp?;
-    final mentorName = order['mentorName']?.toString() ?? order['mentorId']?.toString() ?? 'Unknown Mentor';
-    final layananName = order['layananName']?.toString() ?? order['layananId']?.toString() ?? 'Unknown Layanan';
+    final mentorName =
+        order['mentorName']?.toString() ??
+        order['mentorId']?.toString() ??
+        'Unknown Mentor';
+    final layananName =
+        order['layananName']?.toString() ??
+        order['layananId']?.toString() ??
+        'Unknown Layanan';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.border.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,21 +141,38 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: _getStatusColor(status).withOpacity(0.1),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Order #${order['id'].toString().substring(0, 8)}',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: _getStatusColor(status), borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(status),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Text(
                     controller.getStatusText(status),
-                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.surface),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.surface,
+                    ),
                   ),
                 ),
               ],
@@ -151,16 +203,33 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                       // Show payment proof image in full screen
                       Get.dialog(
                         Dialog(
+                          insetPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
                           child: Container(
-                            constraints: const BoxConstraints(maxHeight: 600),
+                            constraints: const BoxConstraints(
+                              maxWidth: 720,
+                              maxHeight: 600,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppBar(
                                   title: const Text('Bukti Pembayaran'),
-                                  actions: [IconButton(icon: const Icon(Icons.close), onPressed: () => Get.back())],
+                                  actions: [
+                                    IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () => Get.back(),
+                                    ),
+                                  ],
                                 ),
-                                Expanded(child: Image.network(order['paymentProofUrl'], fit: BoxFit.contain)),
+                                Expanded(
+                                  child: Image.network(
+                                    order['paymentProofUrl'],
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -192,7 +261,8 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                   ),
                 ],
                 // Chat button for orders in progress
-                if (status.toLowerCase() == 'progress' || status.toLowerCase() == 'approved') ...[
+                if (status.toLowerCase() == 'progress' ||
+                    status.toLowerCase() == 'approved') ...[
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -202,7 +272,10 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                         if (mentorId != null && mentorId.isNotEmpty) {
                           try {
                             // Fetch mentor data from Firestore
-                            final mentorDoc = await FirebaseFirestore.instance.collection('users').doc(mentorId).get();
+                            final mentorDoc = await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(mentorId)
+                                .get();
 
                             if (!mentorDoc.exists) {
                               Get.snackbar(
@@ -220,27 +293,41 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                             // Create Mentor object from Firestore data
                             final mentor = Mentor(
                               id: mentorId,
-                              name: mentorData['nama'] ?? mentorData['name'] ?? 'Unknown Mentor',
+                              name:
+                                  mentorData['nama'] ??
+                                  mentorData['name'] ??
+                                  'Unknown Mentor',
                               kampus: mentorData['kampus']?.toString() ?? '',
                               jurusan: mentorData['jurusan']?.toString() ?? '',
                               layanan: mentorData['layanan']?.toString() ?? '',
                               image: mentorData['image']?.toString() ?? '',
                               email: mentorData['email']?.toString() ?? '',
                               bio: mentorData['bio']?.toString() ?? '',
-                              rating: (mentorData['rating'] as num?)?.toDouble() ?? 0.0,
-                              totalSessions: mentorData['totalSessions'] as int? ?? 0,
+                              rating:
+                                  (mentorData['rating'] as num?)?.toDouble() ??
+                                  0.0,
+                              totalSessions:
+                                  mentorData['totalSessions'] as int? ?? 0,
                             );
 
                             // Get or create ChatController
-                            final ChatController chatController = Get.isRegistered<ChatController>()
+                            final ChatController chatController =
+                                Get.isRegistered<ChatController>()
                                 ? Get.find<ChatController>()
                                 : Get.put(ChatController());
 
                             // Create or get chat room
-                            await chatController.createOrGetChatRoom(mentorId: mentorId);
+                            await chatController.createOrGetChatRoom(
+                              mentorId: mentorId,
+                            );
 
                             // Navigate to chat room with mentor data
-                            Get.to(() => ChatRoomView(mentorId: mentorId, mentor: mentor));
+                            Get.to(
+                              () => ChatRoomView(
+                                mentorId: mentorId,
+                                mentor: mentor,
+                              ),
+                            );
                           } catch (e) {
                             Get.snackbar(
                               'Error',
@@ -253,12 +340,17 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
                         }
                       },
                       icon: const Icon(Icons.chat, size: 18),
-                      label: Text('Chat Mentor', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      label: Text(
+                        'Chat Mentor',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.greenColor,
                         foregroundColor: AppColors.surface,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -279,13 +371,21 @@ class OrderHistoryView extends GetView<OrderHistoryController> {
           width: 100,
           child: Text(
             label,
-            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],

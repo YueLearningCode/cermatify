@@ -127,6 +127,9 @@ Kriteria selesai:
 - [x] Batasi lebar konten utama hingga 1440 px.
 - [x] Buat jumlah kolom fitur Home mengikuti lebar layar.
 - [x] Audit `Row` pada tab utama dan pastikan konten teks memakai `Expanded`/scroll yang sesuai.
+- [x] Batasi lebar Chat Room dan bubble pesan pada desktop.
+- [x] Batasi lebar form Paperlink, Complink, Sourcelink, dan submit Sourcelink.
+- [x] Responsifkan dialog order, QR pembayaran, tombol aksi, dan daftar riwayat order.
 - [ ] Audit seluruh dialog pada layar pendek dan sempit.
 - [ ] Sesuaikan tampilan chat menjadi list-room split view pada desktop jika diperlukan.
 - [ ] Tambahkan hover state dan mouse cursor pada elemen interaktif.

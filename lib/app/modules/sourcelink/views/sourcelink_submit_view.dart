@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/dummy_sourcelink.dart';
@@ -33,10 +34,12 @@ class _SourcelinkSubmitViewStateful extends StatefulWidget {
   const _SourcelinkSubmitViewStateful({required this.controller});
 
   @override
-  State<_SourcelinkSubmitViewStateful> createState() => _SourcelinkSubmitViewStatefulState();
+  State<_SourcelinkSubmitViewStateful> createState() =>
+      _SourcelinkSubmitViewStatefulState();
 }
 
-class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStateful> {
+class _SourcelinkSubmitViewStatefulState
+    extends State<_SourcelinkSubmitViewStateful> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _imagePicker = ImagePicker();
@@ -87,13 +90,18 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
 
       final secureUrl = await _mediaUploadService.uploadImage(
         bytes: image.bytes,
-        filename: 'sourcelink_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
+        filename:
+            'sourcelink_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
 
       // Find admin user for mentorId
       String? adminMentorId;
       try {
-        final adminSnapshot = await _firestore.collection('users').where('role', isEqualTo: 'admin').limit(1).get();
+        final adminSnapshot = await _firestore
+            .collection('users')
+            .where('role', isEqualTo: 'admin')
+            .limit(1)
+            .get();
         if (adminSnapshot.docs.isNotEmpty) {
           adminMentorId = adminSnapshot.docs.first.id;
         }
@@ -114,7 +122,9 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      final DocumentReference orderRef = await _firestore.collection('orders').add(orderData);
+      final DocumentReference orderRef = await _firestore
+          .collection('orders')
+          .add(orderData);
       final String orderId = orderRef.id;
 
       // Map criteria from sourcelink format to kuesioner format
@@ -141,7 +151,9 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
       }
 
       String? mappedPenghasilan;
-      if (createController.tingkatPenghasilanOptions.contains(penghasilanValue)) {
+      if (createController.tingkatPenghasilanOptions.contains(
+        penghasilanValue,
+      )) {
         mappedPenghasilan = penghasilanValue;
       } else if (penghasilanValue != dummyTingkatPenghasilan.first) {
         // Try to map similar values
@@ -159,7 +171,9 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
       }
 
       String? mappedPendidikan;
-      if (createController.pendidikanTerakhirOptions.contains(pendidikanValue)) {
+      if (createController.pendidikanTerakhirOptions.contains(
+        pendidikanValue,
+      )) {
         mappedPendidikan = pendidikanValue;
       } else if (pendidikanValue != dummyPendidikanTerakhir.first) {
         // Try to map similar values
@@ -171,7 +185,10 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
       }
 
       // Check if at least one criteria is selected
-      if (mappedUsia == null && mappedKelamin == null && mappedPenghasilan == null && mappedPendidikan == null) {
+      if (mappedUsia == null &&
+          mappedKelamin == null &&
+          mappedPenghasilan == null &&
+          mappedPendidikan == null) {
         CustomSnackbar.show(
           title: 'Error',
           message: 'Pilih minimal satu kriteria responden',
@@ -258,14 +275,22 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
           // Header dengan gradient
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, bottom: 30, left: 24, right: 24),
+            padding: const EdgeInsets.only(
+              top: 60,
+              bottom: 30,
+              left: 24,
+              right: 24,
+            ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [AppColors.primary, AppColors.primaryLight],
               ),
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
             ),
             child: Column(
               children: [
@@ -278,20 +303,31 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
                     const SizedBox(width: 8),
                     Text(
                       'Sebarkan Kuesioner',
-                      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Masukkan link Google Form Anda',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Link akan disebarkan ke responden yang sesuai dengan kriteria yang telah dipilih',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -300,332 +336,452 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
           // Konten form
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Card container
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                      border: Border.all(color: AppColors.border.withOpacity(0.5)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Icon dan judul section
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
+              padding: EdgeInsets.all(
+                MediaQuery.sizeOf(context).width < 600 ? 16 : 20,
+              ),
+              child: ResponsiveContent(
+                maxWidth: 900,
+                child: Column(
+                  children: [
+                    // Card container
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
                             color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.link_rounded, color: AppColors.primary, size: 24),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Link Google Form",
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                  fontSize: 16,
+                        ],
+                        border: Border.all(
+                          color: AppColors.border.withOpacity(0.5),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Icon dan judul section
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.link_rounded,
+                                  color: AppColors.primary,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Link Google Form",
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Input field
+                          Text(
+                            "Masukkan Link",
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: widget.controller.linkController,
+                            style: GoogleFonts.poppins(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: "https://forms.gle/abcd1234xyz",
+                              hintStyle: GoogleFonts.poppins(
+                                color: AppColors.textLight,
+                                fontSize: 14,
+                              ),
+                              filled: true,
+                              fillColor: AppColors.background,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        // Input field
-                        Text(
-                          "Masukkan Link",
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: widget.controller.linkController,
-                          style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
-                          decoration: InputDecoration(
-                            hintText: "https://forms.gle/abcd1234xyz",
-                            hintStyle: GoogleFonts.poppins(color: AppColors.textLight, fontSize: 14),
-                            filled: true,
-                            fillColor: AppColors.background,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.border),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.border),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                            ),
-                            contentPadding: const EdgeInsets.all(16),
-                            prefixIcon: Icon(Icons.link, color: AppColors.textLight, size: 20),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Pastikan link Google Form sudah dalam mode 'Dapat mengisi'",
-                          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
-                        ),
-                        const SizedBox(height: 32),
-                        // QRIS Section
-                        Text(
-                          "QRIS Pembayaran",
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Column(
-                            children: [
-                              // QR Code Image from Assets
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.border),
-                                ),
-                                child: Image.asset(
-                                  'assets/images/qrqris.jpeg',
-                                  width: 200,
-                                  height: 200,
-                                  fit: BoxFit.contain,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              // Price display
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.background,
-                                  borderRadius: BorderRadius.circular(12),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withOpacity(0.1),
-                                        shape: BoxShape.circle,
+                              ),
+                              contentPadding: const EdgeInsets.all(16),
+                              prefixIcon: Icon(
+                                Icons.link,
+                                color: AppColors.textLight,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Pastikan link Google Form sudah dalam mode 'Dapat mengisi'",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          // QRIS Section
+                          Text(
+                            "QRIS Pembayaran",
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              children: [
+                                // QR Code Image from Assets
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  child: Image.asset(
+                                    'assets/images/qrqris.jpeg',
+                                    width: 200,
+                                    height: 200,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Price display
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.background,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary.withOpacity(
+                                            0.1,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          'Rp',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
                                       ),
-                                      child: Text(
-                                        'Rp',
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        AppFormats.hargaPendek(25000),
                                         style: GoogleFonts.poppins(
-                                          fontSize: 12,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.primary,
+                                          color: AppColors.textPrimary,
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      AppFormats.hargaPendek(25000),
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Payment Proof Section
-                        Text(
-                          "Bukti Pembayaran",
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
+                          const SizedBox(height: 32),
+                          // Payment Proof Section
+                          Text(
+                            "Bukti Pembayaran",
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Obx(
-                          () => paymentProofImage.value != null
-                              ? Column(
-                                  children: [
-                                    Container(
-                                      height: 200,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: AppColors.border),
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.memory(paymentProofImage.value!.bytes, fit: BoxFit.cover),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () => _pickPaymentProof(ImageSource.gallery),
-                                            icon: const Icon(Icons.edit, size: 18),
-                                            label: Text('Ganti', style: GoogleFonts.poppins()),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: AppColors.primary,
-                                              side: const BorderSide(color: AppColors.primary),
-                                            ),
+                          const SizedBox(height: 8),
+                          Obx(
+                            () => paymentProofImage.value != null
+                                ? Column(
+                                    children: [
+                                      Container(
+                                        height: 200,
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.border,
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () {
-                                              setState(() {
-                                                paymentProofImage.value = null;
-                                              });
-                                            },
-                                            icon: const Icon(Icons.delete_outline, size: 18),
-                                            label: Text('Hapus', style: GoogleFonts.poppins()),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: AppColors.error,
-                                              side: const BorderSide(color: AppColors.error),
-                                            ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          child: Image.memory(
+                                            paymentProofImage.value!.bytes,
+                                            fit: BoxFit.cover,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                )
-                              : Column(
-                                  children: [
-                                    Container(
-                                      height: 200,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.background,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: AppColors.border, style: BorderStyle.solid),
                                       ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                      const SizedBox(height: 12),
+                                      Row(
                                         children: [
-                                          Icon(Icons.image_outlined, size: 48, color: AppColors.textLight),
-                                          const SizedBox(height: 12),
-                                          Text(
-                                            'Belum ada bukti pembayaran',
-                                            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textLight),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        if (!kIsWeb) ...[
                                           Expanded(
                                             child: OutlinedButton.icon(
-                                              onPressed: () => _pickPaymentProof(ImageSource.camera),
-                                              icon: const Icon(Icons.camera_alt, size: 18),
-                                              label: Text('Kamera', style: GoogleFonts.poppins()),
+                                              onPressed: () =>
+                                                  _pickPaymentProof(
+                                                    ImageSource.gallery,
+                                                  ),
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                size: 18,
+                                              ),
+                                              label: Text(
+                                                'Ganti',
+                                                style: GoogleFonts.poppins(),
+                                              ),
                                               style: OutlinedButton.styleFrom(
-                                                foregroundColor: AppColors.primary,
-                                                side: const BorderSide(color: AppColors.primary),
+                                                foregroundColor:
+                                                    AppColors.primary,
+                                                side: const BorderSide(
+                                                  color: AppColors.primary,
+                                                ),
                                               ),
                                             ),
                                           ),
                                           const SizedBox(width: 12),
-                                        ],
-                                        Expanded(
-                                          child: OutlinedButton.icon(
-                                            onPressed: () => _pickPaymentProof(ImageSource.gallery),
-                                            icon: const Icon(Icons.photo_library, size: 18),
-                                            label: Text('Galeri', style: GoogleFonts.poppins()),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: AppColors.primary,
-                                              side: const BorderSide(color: AppColors.primary),
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () {
+                                                setState(() {
+                                                  paymentProofImage.value =
+                                                      null;
+                                                });
+                                              },
+                                              icon: const Icon(
+                                                Icons.delete_outline,
+                                                size: 18,
+                                              ),
+                                              label: Text(
+                                                'Hapus',
+                                                style: GoogleFonts.poppins(),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor:
+                                                    AppColors.error,
+                                                side: const BorderSide(
+                                                  color: AppColors.error,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Button submit
-                        Obx(
-                          () => SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                                elevation: 2,
-                                shadowColor: AppColors.primary.withOpacity(0.3),
-                              ),
-                              onPressed: isLoading.value ? null : () => _createOrderAndKuesioner(),
-                              child: isLoading.value
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ],
                                       ),
-                                    )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(Icons.check_circle, size: 18),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          "Buat Kuesioner",
-                                          style: GoogleFonts.poppins(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      Container(
+                                        height: 200,
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.background,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.border,
+                                            style: BorderStyle.solid,
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.image_outlined,
+                                              size: 48,
+                                              color: AppColors.textLight,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              'Belum ada bukti pembayaran',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 14,
+                                                color: AppColors.textLight,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          if (!kIsWeb) ...[
+                                            Expanded(
+                                              child: OutlinedButton.icon(
+                                                onPressed: () =>
+                                                    _pickPaymentProof(
+                                                      ImageSource.camera,
+                                                    ),
+                                                icon: const Icon(
+                                                  Icons.camera_alt,
+                                                  size: 18,
+                                                ),
+                                                label: Text(
+                                                  'Kamera',
+                                                  style: GoogleFonts.poppins(),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor:
+                                                      AppColors.primary,
+                                                  side: const BorderSide(
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                          ],
+                                          Expanded(
+                                            child: OutlinedButton.icon(
+                                              onPressed: () =>
+                                                  _pickPaymentProof(
+                                                    ImageSource.gallery,
+                                                  ),
+                                              icon: const Icon(
+                                                Icons.photo_library,
+                                                size: 18,
+                                              ),
+                                              label: Text(
+                                                'Galeri',
+                                                style: GoogleFonts.poppins(),
+                                              ),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor:
+                                                    AppColors.primary,
+                                                side: const BorderSide(
+                                                  color: AppColors.primary,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                          const SizedBox(height: 32),
+                          // Button submit
+                          Obx(
+                            () => SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 16,
+                                  ),
+                                  elevation: 2,
+                                  shadowColor: AppColors.primary.withOpacity(
+                                    0.3,
+                                  ),
+                                ),
+                                onPressed: isLoading.value
+                                    ? null
+                                    : () => _createOrderAndKuesioner(),
+                                child: isLoading.value
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.check_circle,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            "Buat Kuesioner",
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  // Tips section
-                  const SizedBox(height: 24),
-                  _buildTipsSection(),
-                ],
+                    // Tips section
+                    const SizedBox(height: 24),
+                    _buildTipsSection(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -645,7 +801,11 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.lightbulb_outline_rounded, color: AppColors.primary, size: 20),
+          Icon(
+            Icons.lightbulb_outline_rounded,
+            color: AppColors.primary,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -653,7 +813,11 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
               children: [
                 Text(
                   'Tips Penyebaran Kuesioner',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -661,7 +825,11 @@ class _SourcelinkSubmitViewStatefulState extends State<_SourcelinkSubmitViewStat
                   '• Gunakan pertanyaan yang jelas dan mudah dipahami\n'
                   '• Test kuesioner terlebih dahulu sebelum menyebar\n'
                   '• Perkirakan waktu pengisian yang diperlukan',
-                  style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import '../controllers/paperlink_controller.dart';
 import 'list_mentor_view.dart';
 
@@ -49,7 +50,10 @@ class PaperlinkView extends GetView<PaperlinkController> {
         margin: const EdgeInsets.all(16),
         messageText: Text(
           'Silakan pilih semua opsi terlebih dahulu',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w500, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            color: AppColors.surface,
+          ),
         ),
       );
     }
@@ -67,25 +71,47 @@ class PaperlinkView extends GetView<PaperlinkController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.border.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.border.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.poppins(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+          labelStyle: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
           prefixIcon: Icon(icon, color: AppColors.primary),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(color: AppColors.primary, width: 2),
           ),
           filled: true,
           fillColor: AppColors.surface,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
         dropdownColor: AppColors.surface,
-        style: GoogleFonts.poppins(color: AppColors.textPrimary, fontWeight: FontWeight.w500, fontSize: 14),
+        style: GoogleFonts.poppins(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+        ),
         items: items.asMap().entries.map((entry) {
           final index = entry.key;
           final name = entry.value;
@@ -96,7 +122,10 @@ class PaperlinkView extends GetView<PaperlinkController> {
               width: double.infinity,
               child: Text(
                 name,
-                style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
+                style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
@@ -119,7 +148,11 @@ class PaperlinkView extends GetView<PaperlinkController> {
       appBar: AppBar(
         title: Text(
           "Cermat Paper",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: AppColors.surface, fontSize: 18),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppColors.surface,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppColors.primary,
@@ -127,157 +160,218 @@ class PaperlinkView extends GetView<PaperlinkController> {
         iconTheme: const IconThemeData(color: AppColors.surface),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Section
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.primary.withOpacity(0.8), AppColors.primaryDark],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 4)),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppColors.surface.withOpacity(0.2), shape: BoxShape.circle),
-                    child: Icon(Icons.description_rounded, color: AppColors.surface, size: 32),
+        padding: EdgeInsets.all(
+          MediaQuery.sizeOf(context).width < 600 ? 16 : 24,
+        ),
+        child: ResponsiveContent(
+          maxWidth: 900,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Section
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withOpacity(0.8),
+                      AppColors.primaryDark,
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Temukan Mentor Cermat Paper",
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.surface,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Dapatkan bimbingan untuk penelitian dan publikasi dari mentor berpengalaman",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: AppColors.surface.withOpacity(0.8),
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            // Filter Section
-            Text(
-              "Filter Pencarian",
-              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Pilih kriteria mentor yang Anda butuhkan",
-              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            // Dropdown Universitas
-            Obx(
-              () => _buildDropdown(
-                label: "Pilih Universitas",
-                items: controller.listKampus.map((k) => k['name'] ?? '').toList(),
-                itemIds: controller.listKampus.map((k) => k['id'] ?? '').toList(),
-                value: controller.selectedUniversitas.value.isEmpty ? null : controller.selectedUniversitas.value,
-                onChanged: (val) => controller.selectedUniversitas.value = val ?? '',
-                icon: Icons.account_balance_rounded,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Dropdown Jurusan
-            Obx(
-              () => _buildDropdown(
-                label: "Pilih Jurusan",
-                items: controller.filteredJurusan.map((j) => j['name'] ?? '').toList(),
-                itemIds: controller.filteredJurusan.map((j) => j['id'] ?? '').toList(),
-                value: controller.selectedJurusan.value.isEmpty ? null : controller.selectedJurusan.value,
-                onChanged: (val) => controller.selectedJurusan.value = val ?? '',
-                icon: Icons.menu_book_rounded,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Dropdown Layanan
-            Obx(
-              () => _buildDropdown(
-                label: "Pilih Layanan Riset/Publikasi",
-                items: controller.filteredLayanan.map((l) => l['name'] ?? '').toList(),
-                itemIds: controller.filteredLayanan.map((l) => l['id'] ?? '').toList(),
-                value: controller.selectedLayanan.value.isEmpty ? null : controller.selectedLayanan.value,
-                onChanged: (val) => controller.selectedLayanan.value = val ?? '',
-                icon: Icons.analytics_rounded,
-              ),
-            ),
-            const SizedBox(height: 32),
-            // Search Button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _searchMentors,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                  shadowColor: AppColors.primary.withOpacity(0.3),
+                  ],
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.search_rounded, size: 22),
-                    const SizedBox(width: 12),
-                    Text("Cari Mentor", style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16)),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.description_rounded,
+                        color: AppColors.surface,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Temukan Mentor Cermat Paper",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.surface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Dapatkan bimbingan untuk penelitian dan publikasi dari mentor berpengalaman",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: AppColors.surface.withOpacity(0.8),
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            // Info Section
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primaryLight.withOpacity(0.3)),
+              const SizedBox(height: 32),
+              // Filter Section
+              Text(
+                "Filter Pencarian",
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.lightbulb_outline_rounded, color: AppColors.primary, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      "Temukan mentor yang sesuai dengan bidang penelitian dan publikasi Anda",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+              const SizedBox(height: 8),
+              Text(
+                "Pilih kriteria mentor yang Anda butuhkan",
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Dropdown Universitas
+              Obx(
+                () => _buildDropdown(
+                  label: "Pilih Universitas",
+                  items: controller.listKampus
+                      .map((k) => k['name'] ?? '')
+                      .toList(),
+                  itemIds: controller.listKampus
+                      .map((k) => k['id'] ?? '')
+                      .toList(),
+                  value: controller.selectedUniversitas.value.isEmpty
+                      ? null
+                      : controller.selectedUniversitas.value,
+                  onChanged: (val) =>
+                      controller.selectedUniversitas.value = val ?? '',
+                  icon: Icons.account_balance_rounded,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Dropdown Jurusan
+              Obx(
+                () => _buildDropdown(
+                  label: "Pilih Jurusan",
+                  items: controller.filteredJurusan
+                      .map((j) => j['name'] ?? '')
+                      .toList(),
+                  itemIds: controller.filteredJurusan
+                      .map((j) => j['id'] ?? '')
+                      .toList(),
+                  value: controller.selectedJurusan.value.isEmpty
+                      ? null
+                      : controller.selectedJurusan.value,
+                  onChanged: (val) =>
+                      controller.selectedJurusan.value = val ?? '',
+                  icon: Icons.menu_book_rounded,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Dropdown Layanan
+              Obx(
+                () => _buildDropdown(
+                  label: "Pilih Layanan Riset/Publikasi",
+                  items: controller.filteredLayanan
+                      .map((l) => l['name'] ?? '')
+                      .toList(),
+                  itemIds: controller.filteredLayanan
+                      .map((l) => l['id'] ?? '')
+                      .toList(),
+                  value: controller.selectedLayanan.value.isEmpty
+                      ? null
+                      : controller.selectedLayanan.value,
+                  onChanged: (val) =>
+                      controller.selectedLayanan.value = val ?? '',
+                  icon: Icons.analytics_rounded,
+                ),
+              ),
+              const SizedBox(height: 32),
+              // Search Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _searchMentors,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                    shadowColor: AppColors.primary.withOpacity(0.3),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.search_rounded, size: 22),
+                      const SizedBox(width: 12),
+                      Text(
+                        "Cari Mentor",
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Info Section
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.primaryLight.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "Temukan mentor yang sesuai dengan bidang penelitian dan publikasi Anda",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

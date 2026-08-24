@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import 'package:cermatify/app/data/dummy_sourcelink.dart';
 import '../controllers/sourcelink_controller.dart';
 import 'sourcelink_submit_view.dart';
@@ -18,14 +19,22 @@ class SourcelinkView extends GetView<SourcelinkController> {
           // Header dengan gradient
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, bottom: 30, left: 24, right: 24),
+            padding: const EdgeInsets.only(
+              top: 60,
+              bottom: 30,
+              left: 24,
+              right: 24,
+            ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [AppColors.primary, AppColors.primaryLight],
               ),
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
             ),
             child: Column(
               children: [
@@ -38,20 +47,31 @@ class SourcelinkView extends GetView<SourcelinkController> {
                     const SizedBox(width: 8),
                     Text(
                       'Cermat Kuesioner',
-                      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Tentukan Kriteria Responden',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Pilih karakteristik responden yang sesuai dengan kebutuhan penelitian Anda',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -60,155 +80,193 @@ class SourcelinkView extends GetView<SourcelinkController> {
           // Konten form
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Card container
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                      border: Border.all(color: AppColors.border.withOpacity(0.5)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Badge informasi
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
+              padding: EdgeInsets.all(
+                MediaQuery.sizeOf(context).width < 600 ? 16 : 20,
+              ),
+              child: ResponsiveContent(
+                maxWidth: 900,
+                child: Column(
+                  children: [
+                    // Card container
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
                             color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.info_outline, size: 16, color: AppColors.primary),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Pilih minimal satu kriteria',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                        ],
+                        border: Border.all(
+                          color: AppColors.border.withOpacity(0.5),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Badge informasi
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.primary.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 16,
                                   color: AppColors.primary,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Obx(
-                          () => _buildFormSection(
-                            icon: Icons.calendar_today,
-                            title: "Rentang Usia",
-                            subtitle: "Pilih rentang usia responden",
-                            child: _buildDropdown(
-                              value: controller.selectedUsia.value,
-                              items: dummyRentangUsia,
-                              onChanged: (value) => controller.selectedUsia.value = value ?? dummyRentangUsia.first,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Obx(
-                          () => _buildFormSection(
-                            icon: Icons.person_outline,
-                            title: "Jenis Kelamin",
-                            subtitle: "Pilih jenis kelamin responden",
-                            child: _buildDropdown(
-                              value: controller.selectedKelamin.value,
-                              items: dummyJenisKelamin,
-                              onChanged: (value) => controller.selectedKelamin.value = value ?? dummyJenisKelamin.first,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Obx(
-                          () => _buildFormSection(
-                            icon: Icons.attach_money,
-                            title: "Tingkat Penghasilan",
-                            subtitle: "Pilih tingkat penghasilan responden",
-                            child: _buildDropdown(
-                              value: controller.selectedPenghasilan.value,
-                              items: dummyTingkatPenghasilan,
-                              onChanged: (value) =>
-                                  controller.selectedPenghasilan.value = value ?? dummyTingkatPenghasilan.first,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Obx(
-                          () => _buildFormSection(
-                            icon: Icons.school,
-                            title: "Pendidikan Terakhir",
-                            subtitle: "Pilih tingkat pendidikan responden",
-                            child: _buildDropdown(
-                              value: controller.selectedPendidikan.value,
-                              items: dummyPendidikanTerakhir,
-                              onChanged: (value) =>
-                                  controller.selectedPendidikan.value = value ?? dummyPendidikanTerakhir.first,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _buildFormSection(
-                          icon: Icons.tune,
-                          title: "Kriteria Lainnya",
-                          subtitle: "Tambahkan kriteria khusus (opsional)",
-                          child: Column(
-                            children: [
-                              TextField(
-                                controller: controller.kriteriaController,
-                                maxLines: 3,
-                                style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
-                                decoration: InputDecoration(
-                                  hintText:
-                                      "Contoh: Mahasiswa aktif, berdomisili di Jabodetabek, pengguna e-commerce...",
-                                  hintStyle: GoogleFonts.poppins(color: AppColors.textLight, fontSize: 13),
-                                  filled: true,
-                                  fillColor: AppColors.background,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: AppColors.border),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Pilih minimal satu kriteria',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.primary,
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: AppColors.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                  ),
-                                  contentPadding: const EdgeInsets.all(16),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Kriteria akan membantu menemukan responden yang lebih spesifik',
-                                style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
-                        // Button yang diperkecil
-                        _buildContinueButton(),
-                      ],
+                          const SizedBox(height: 20),
+                          Obx(
+                            () => _buildFormSection(
+                              icon: Icons.calendar_today,
+                              title: "Rentang Usia",
+                              subtitle: "Pilih rentang usia responden",
+                              child: _buildDropdown(
+                                value: controller.selectedUsia.value,
+                                items: dummyRentangUsia,
+                                onChanged: (value) =>
+                                    controller.selectedUsia.value =
+                                        value ?? dummyRentangUsia.first,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Obx(
+                            () => _buildFormSection(
+                              icon: Icons.person_outline,
+                              title: "Jenis Kelamin",
+                              subtitle: "Pilih jenis kelamin responden",
+                              child: _buildDropdown(
+                                value: controller.selectedKelamin.value,
+                                items: dummyJenisKelamin,
+                                onChanged: (value) =>
+                                    controller.selectedKelamin.value =
+                                        value ?? dummyJenisKelamin.first,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Obx(
+                            () => _buildFormSection(
+                              icon: Icons.attach_money,
+                              title: "Tingkat Penghasilan",
+                              subtitle: "Pilih tingkat penghasilan responden",
+                              child: _buildDropdown(
+                                value: controller.selectedPenghasilan.value,
+                                items: dummyTingkatPenghasilan,
+                                onChanged: (value) =>
+                                    controller.selectedPenghasilan.value =
+                                        value ?? dummyTingkatPenghasilan.first,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Obx(
+                            () => _buildFormSection(
+                              icon: Icons.school,
+                              title: "Pendidikan Terakhir",
+                              subtitle: "Pilih tingkat pendidikan responden",
+                              child: _buildDropdown(
+                                value: controller.selectedPendidikan.value,
+                                items: dummyPendidikanTerakhir,
+                                onChanged: (value) =>
+                                    controller.selectedPendidikan.value =
+                                        value ?? dummyPendidikanTerakhir.first,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildFormSection(
+                            icon: Icons.tune,
+                            title: "Kriteria Lainnya",
+                            subtitle: "Tambahkan kriteria khusus (opsional)",
+                            child: Column(
+                              children: [
+                                TextField(
+                                  controller: controller.kriteriaController,
+                                  maxLines: 3,
+                                  style: GoogleFonts.poppins(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 14,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        "Contoh: Mahasiswa aktif, berdomisili di Jabodetabek, pengguna e-commerce...",
+                                    hintStyle: GoogleFonts.poppins(
+                                      color: AppColors.textLight,
+                                      fontSize: 13,
+                                    ),
+                                    filled: true,
+                                    fillColor: AppColors.background,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.border,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.border,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.all(16),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Kriteria akan membantu menemukan responden yang lebih spesifik',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: AppColors.textLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          // Button yang diperkecil
+                          _buildContinueButton(),
+                        ],
+                      ),
                     ),
-                  ),
-                  // Tips section
-                  const SizedBox(height: 24),
-                  _buildTipsSection(),
-                ],
+                    // Tips section
+                    const SizedBox(height: 24),
+                    _buildTipsSection(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -243,9 +301,19 @@ class SourcelinkView extends GetView<SourcelinkController> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 16),
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                    ),
                   ),
-                  Text(subtitle, style: GoogleFonts.poppins(color: AppColors.textLight, fontSize: 12)),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      color: AppColors.textLight,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -257,7 +325,11 @@ class SourcelinkView extends GetView<SourcelinkController> {
     );
   }
 
-  Widget _buildDropdown({required String value, required List<String> items, required Function(String?) onChanged}) {
+  Widget _buildDropdown({
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
     return DropdownButtonFormField<String>(
       value: value,
       isExpanded: true,
@@ -279,13 +351,21 @@ class SourcelinkView extends GetView<SourcelinkController> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       items: items
           .map(
             (item) => DropdownMenuItem(
               value: item,
-              child: Text(item, style: GoogleFonts.poppins(fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+              child: Text(
+                item,
+                style: GoogleFonts.poppins(fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           )
           .toList(),
@@ -300,7 +380,9 @@ class SourcelinkView extends GetView<SourcelinkController> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           elevation: 2,
           shadowColor: AppColors.primary.withOpacity(0.3),
@@ -317,7 +399,11 @@ class SourcelinkView extends GetView<SourcelinkController> {
           children: [
             Text(
               "Lanjutkan",
-              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(width: 6),
             const Icon(Icons.arrow_forward_rounded, size: 16),
@@ -345,12 +431,19 @@ class SourcelinkView extends GetView<SourcelinkController> {
               children: [
                 Text(
                   'Tips',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Pilih kriteria yang spesifik untuk mendapatkan responden yang lebih relevan dengan penelitian Anda',
-                  style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
