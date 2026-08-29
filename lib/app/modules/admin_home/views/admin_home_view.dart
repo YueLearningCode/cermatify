@@ -16,6 +16,7 @@ import '../controllers/admin_home_controller.dart';
 int adminStatisticColumnCount(double width) {
   if (width >= 1040) return 4;
   if (width >= 560) return 2;
+  if (width >= 320) return 2;
   return 1;
 }
 
@@ -24,6 +25,10 @@ int adminActionColumnCount(double width) {
   if (width >= 620) return 2;
   return 1;
 }
+
+double adminStatisticCardExtent(double width) => width < 560 ? 132 : 148;
+
+double adminActionCardExtent(double width) => width < 620 ? 120 : 154;
 
 class AdminHomeView extends GetView<AdminHomeController> {
   const AdminHomeView({super.key});
@@ -48,7 +53,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                       horizontalPadding,
                       28,
                       horizontalPadding,
-                      48,
+                      viewport.maxWidth < AppBreakpoints.mobile ? 112 : 48,
                     ),
                     child: Center(
                       child: ConstrainedBox(
@@ -57,7 +62,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildWelcomeHeader(viewport.maxWidth),
-                            const SizedBox(height: 32),
+                            SizedBox(height: viewport.maxWidth < 600 ? 26 : 32),
                             const _SectionHeading(
                               title: 'Ringkasan aktivitas',
                               subtitle:
@@ -65,7 +70,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
                             ),
                             const SizedBox(height: 16),
                             _buildStatistics(),
-                            const SizedBox(height: 36),
+                            SizedBox(height: viewport.maxWidth < 600 ? 30 : 36),
                             const _SectionHeading(
                               title: 'Akses cepat',
                               subtitle:
@@ -139,7 +144,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(compact ? 22 : 30),
+      padding: EdgeInsets.all(compact ? 20 : 30),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
@@ -159,7 +164,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildWelcomeCopy(compact: true),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 identity,
               ],
             )
@@ -199,7 +204,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.poppins(
-            fontSize: compact ? 23 : 30,
+            fontSize: compact ? 22 : 30,
             height: 1.2,
             fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
@@ -209,7 +214,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
         Text(
           'Kelola pengguna, transaksi, dan layanan Cermatify dari satu dashboard.',
           style: GoogleFonts.poppins(
-            fontSize: compact ? 13 : 14,
+            fontSize: compact ? 12.5 : 14,
             height: 1.6,
             color: AppColors.textSecondary,
           ),
@@ -220,25 +225,25 @@ class AdminHomeView extends GetView<AdminHomeController> {
 
   Widget _buildStatistics() {
     final items = [
-      _DashboardStat(
+      AdminDashboardStatCard(
         title: 'Jumlah pengguna',
         value: controller.totalUsers.value.toString(),
         icon: Icons.people_alt_outlined,
         color: AppColors.primaryColor,
       ),
-      _DashboardStat(
+      AdminDashboardStatCard(
         title: 'Master data',
         value: controller.totalMasterData.value.toString(),
         icon: Icons.dataset_outlined,
         color: AppColors.greenColor,
       ),
-      const _DashboardStat(
+      const AdminDashboardStatCard(
         title: 'Status layanan',
         value: '100%',
         icon: Icons.verified_outlined,
         color: AppColors.greenColor,
       ),
-      const _DashboardStat(
+      const AdminDashboardStatCard(
         title: 'Kondisi sistem',
         value: 'Online',
         icon: Icons.cloud_done_outlined,
@@ -257,7 +262,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
             crossAxisCount: columns,
             crossAxisSpacing: 14,
             mainAxisSpacing: 14,
-            mainAxisExtent: 148,
+            mainAxisExtent: adminStatisticCardExtent(constraints.maxWidth),
           ),
           itemBuilder: (context, index) => items[index],
         );
@@ -332,7 +337,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
             crossAxisCount: columns,
             crossAxisSpacing: 14,
             mainAxisSpacing: 14,
-            mainAxisExtent: 154,
+            mainAxisExtent: adminActionCardExtent(constraints.maxWidth),
           ),
           itemBuilder: (context, index) => actions[index],
         );
@@ -373,8 +378,9 @@ class _SectionHeading extends StatelessWidget {
   }
 }
 
-class _DashboardStat extends StatelessWidget {
-  const _DashboardStat({
+class AdminDashboardStatCard extends StatelessWidget {
+  const AdminDashboardStatCard({
+    super.key,
     required this.title,
     required this.value,
     required this.icon,
@@ -387,66 +393,88 @@ class _DashboardStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.07),
-            blurRadius: 18,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(9),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 21),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  title,
-                  maxLines: 2,
-                  textAlign: TextAlign.right,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    height: 1.3,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 190;
+        final valueStyle = GoogleFonts.poppins(
+          fontSize: compact ? 21 : 24,
+          fontWeight: FontWeight.w800,
+          color: AppColors.textPrimary,
+        );
+        final titleStyle = GoogleFonts.poppins(
+          fontSize: compact ? 10 : 11,
+          height: 1.3,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textSecondary,
+        );
+
+        return Container(
+          padding: EdgeInsets.all(compact ? 14 : 18),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.07),
+                blurRadius: 18,
+                offset: const Offset(0, 7),
               ),
             ],
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.all(compact ? 7 : 9),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: compact ? 18 : 21),
+              ),
+              if (compact) ...[
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: valueStyle,
+                ),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: titleStyle,
+                ),
+              ] else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: valueStyle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        textAlign: TextAlign.right,
+                        overflow: TextOverflow.ellipsis,
+                        style: titleStyle,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
