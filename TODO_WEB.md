@@ -77,6 +77,8 @@ Kriteria selesai:
 > Pending sementara sejak 24 Agustus 2026 karena Firebase tidak dapat diakses.
 > Checklist yang memerlukan Console atau koneksi Firebase dilanjutkan setelah
 > layanan tersedia kembali.
+> Deployment Web untuk sementara tetap diizinkan tanpa App Check. Jangan
+> aktifkan enforcement sebelum `FIREBASE_RECAPTCHA_SITE_KEY` dipasang kembali.
 
 - [x] Verifikasi konfigurasi Firebase Web di `firebase_options.dart`.
 - [ ] Tambahkan `localhost` ke Firebase Authorized Domains untuk development.

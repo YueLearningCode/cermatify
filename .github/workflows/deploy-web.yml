@@ -69,7 +69,9 @@ jobs:
           FIREBASE_RECAPTCHA_SITE_KEY: ${{ vars.FIREBASE_RECAPTCHA_SITE_KEY }}
         run: |
           test -n "$CLOUDINARY_UPLOAD_PRESET"
-          test -n "$FIREBASE_RECAPTCHA_SITE_KEY"
+          if [ -z "$FIREBASE_RECAPTCHA_SITE_KEY" ]; then
+            echo "::warning::FIREBASE_RECAPTCHA_SITE_KEY belum diatur; Firebase App Check dinonaktifkan sementara."
+          fi
 
       - name: Build web
         env:

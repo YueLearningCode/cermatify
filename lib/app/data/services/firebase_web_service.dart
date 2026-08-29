@@ -14,14 +14,9 @@ abstract final class FirebaseWebService {
     }
 
     if (_recaptchaSiteKey.trim().isEmpty) {
-      if (kReleaseMode) {
-        throw StateError(
-          'FIREBASE_RECAPTCHA_SITE_KEY wajib diisi untuk build web release.',
-        );
-      }
-
       debugPrint(
-        'Firebase App Check dilewati: FIREBASE_RECAPTCHA_SITE_KEY belum diisi.',
+        'PERINGATAN: Firebase App Check dilewati karena '
+        'FIREBASE_RECAPTCHA_SITE_KEY belum diisi.',
       );
     } else {
       await FirebaseAppCheck.instance.activate(
