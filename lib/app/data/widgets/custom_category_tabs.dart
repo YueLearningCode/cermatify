@@ -19,7 +19,8 @@ class CustomCategoryTabs extends StatefulWidget {
   State<CustomCategoryTabs> createState() => _CustomCategoryTabsState();
 }
 
-class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProviderStateMixin {
+class _CustomCategoryTabsState extends State<CustomCategoryTabs>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
@@ -28,15 +29,20 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
-    _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOutCubic));
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(begin: Offset.zero, end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOutCubic,
+          ),
+        );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
     // Set initial state to show the default selected tab
     previousIndex = widget.selectedIndex;
@@ -60,8 +66,11 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
 
     if (fromIndex < toIndex) {
       // Sliding from left to right
-      _slideAnimation = Tween<Offset>(begin: Offset(-1.0 * (isLongDistance ? 1.2 : 1.0), 0.0), end: Offset.zero)
-          .animate(
+      _slideAnimation =
+          Tween<Offset>(
+            begin: Offset(-1.0 * (isLongDistance ? 1.2 : 1.0), 0.0),
+            end: Offset.zero,
+          ).animate(
             CurvedAnimation(
               parent: _animationController,
               curve: isLongDistance ? Curves.easeInOutCubic : Curves.easeInOut,
@@ -69,9 +78,16 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
           );
     } else {
       // Sliding from right to left
-      _slideAnimation = Tween<Offset>(begin: Offset(1.0 * (isLongDistance ? 1.2 : 1.0), 0.0), end: Offset.zero).animate(
-        CurvedAnimation(parent: _animationController, curve: isLongDistance ? Curves.easeInOutCubic : Curves.easeInOut),
-      );
+      _slideAnimation =
+          Tween<Offset>(
+            begin: Offset(1.0 * (isLongDistance ? 1.2 : 1.0), 0.0),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController,
+              curve: isLongDistance ? Curves.easeInOutCubic : Curves.easeInOut,
+            ),
+          );
     }
 
     // Adjust duration based on distance
@@ -108,17 +124,25 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
               onTap: () => widget.onCategoryChanged(index),
               borderRadius: BorderRadius.circular(25),
               child: Container(
-                margin: EdgeInsets.only(right: index < widget.categories.length - 1 ? 4.0 : 0.0),
+                margin: EdgeInsets.only(
+                  right: index < widget.categories.length - 1 ? 4.0 : 0.0,
+                ),
                 child: Stack(
                   children: [
                     // Background container for all tabs
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 12.0,
+                      ),
                       child: Text(
                         category,
                         textAlign: TextAlign.center,
-                        style: AppStyles.body1(color: AppColors.black414, fontWeight: FontWeight.w400),
+                        style: AppStyles.body1(
+                          color: AppColors.black414,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                     // Animated selected tab
@@ -129,13 +153,18 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
                           opacity: _fadeAnimation,
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.whiteColor,
                               borderRadius: BorderRadius.circular(25.0),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.blackColor.withValues(alpha: 0.1),
+                                  color: AppColors.blackColor.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   blurRadius: 4.0,
                                   offset: const Offset(0, 2),
                                 ),
@@ -144,7 +173,10 @@ class _CustomCategoryTabsState extends State<CustomCategoryTabs> with TickerProv
                             child: Text(
                               category,
                               textAlign: TextAlign.center,
-                              style: AppStyles.body1(color: AppColors.black414, fontWeight: FontWeight.w600),
+                              style: AppStyles.body1(
+                                color: AppColors.black414,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),

@@ -5,8 +5,6 @@ import '../controllers/paperlink_controller.dart';
 class PaperlinkBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<PaperlinkController>(
-      () => PaperlinkController(),
-    );
+    Get.lazyPut<PaperlinkController>(() => PaperlinkController());
   }
 }

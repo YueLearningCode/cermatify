@@ -242,7 +242,9 @@ class KuesionerView extends GetView<KuesionerController> {
                             // Main Card
                             Card(
                               elevation: 6,
-                              shadowColor: AppColors.primary.withValues(alpha: 0.15),
+                              shadowColor: AppColors.primary.withValues(
+                                alpha: 0.15,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),

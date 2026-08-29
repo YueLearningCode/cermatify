@@ -32,8 +32,6 @@ class KuesionerController extends GetxController {
     _loadSignedByMe();
   }
 
-
-
   void loadKuesioner() {
     // Fetch from Firestore and filter by responden attributes if available
     _loadKuesionerFiltered();
@@ -100,7 +98,8 @@ class KuesionerController extends GetxController {
       String? normalizeIncome(String? value) {
         if (value == null || value.isEmpty) return null;
         // Map different income formats to a common format
-        if (value.contains('< Rp 2.000.000') || value.contains('Rp 0 - Rp 2.000.000')) {
+        if (value.contains('< Rp 2.000.000') ||
+            value.contains('Rp 0 - Rp 2.000.000')) {
           return 'Rp 0 - Rp 2.000.000';
         }
         if (value.contains('Rp 2.000.000 - Rp 5.000.000')) {
@@ -112,7 +111,8 @@ class KuesionerController extends GetxController {
         if (value.contains('Rp 10.000.000 - Rp 20.000.000')) {
           return 'Rp 10.000.000 - Rp 20.000.000';
         }
-        if (value.contains('> Rp 20.000.000') || value.contains('Rp 20.000.001')) {
+        if (value.contains('> Rp 20.000.000') ||
+            value.contains('Rp 20.000.001')) {
           return '> Rp 20.000.000';
         }
         return value; // Return as-is if no match
@@ -123,20 +123,25 @@ class KuesionerController extends GetxController {
         if (target == null) return true; // no targeting = open to all
 
         // Special handling for income to normalize different formats
-        if (target is String && target.contains('Rp') && userVal.contains('Rp')) {
+        if (target is String &&
+            target.contains('Rp') &&
+            userVal.contains('Rp')) {
           final normalizedTarget = normalizeIncome(target);
           final normalizedUser = normalizeIncome(userVal);
           return normalizedTarget == normalizedUser;
         }
 
         if (target is String) return target == userVal;
-        if (target is List) return target.map((e) => e?.toString()).contains(userVal);
+        if (target is List) {
+          return target.map((e) => e?.toString()).contains(userVal);
+        }
         return true;
       }
 
       final String? usia = respondenData['rentangUsia'] as String?;
       final String? kelamin = respondenData['jenisKelamin'] as String?;
-      final String? penghasilan = respondenData['tingkatPenghasilan'] as String?;
+      final String? penghasilan =
+          respondenData['tingkatPenghasilan'] as String?;
       final String? pendidikan = respondenData['pendidikanTerakhir'] as String?;
 
       // Get current user ID to filter out kuesioners they've already signed up for
@@ -147,9 +152,11 @@ class KuesionerController extends GetxController {
             final data = doc.data();
 
             // Check if user is already a respondent
-            final List<dynamic> signedBy = (data['signedBy'] as List<dynamic>?) ?? [];
+            final List<dynamic> signedBy =
+                (data['signedBy'] as List<dynamic>?) ?? [];
             final bool alreadyRespondent =
-                currentUid.isNotEmpty && signedBy.map((e) => e.toString()).contains(currentUid);
+                currentUid.isNotEmpty &&
+                signedBy.map((e) => e.toString()).contains(currentUid);
 
             // Exclude kuesioners where user is already a respondent from recommendations
             if (alreadyRespondent) {
@@ -158,7 +165,8 @@ class KuesionerController extends GetxController {
 
             // Check if user is the creator
             final String userId = data['userId'] as String? ?? '';
-            final bool isCreator = currentUid.isNotEmpty && currentUid == userId;
+            final bool isCreator =
+                currentUid.isNotEmpty && currentUid == userId;
 
             // Exclude kuesioners created by the user from recommendations
             if (isCreator) {
@@ -168,18 +176,36 @@ class KuesionerController extends GetxController {
             // Match demographic criteria
             final bool usiaMatch = match(data['rentangUsia'], usia);
             final bool kelaminMatch = match(data['jenisKelamin'], kelamin);
-            final bool penghasilanMatch = match(data['tingkatPenghasilan'], penghasilan);
-            final bool pendidikanMatch = match(data['pendidikanTerakhir'], pendidikan);
+            final bool penghasilanMatch = match(
+              data['tingkatPenghasilan'],
+              penghasilan,
+            );
+            final bool pendidikanMatch = match(
+              data['pendidikanTerakhir'],
+              pendidikan,
+            );
 
-            final bool allMatch = usiaMatch && kelaminMatch && penghasilanMatch && pendidikanMatch;
+            final bool allMatch =
+                usiaMatch &&
+                kelaminMatch &&
+                penghasilanMatch &&
+                pendidikanMatch;
 
             // Debug logging (can be removed in production)
             if (!allMatch) {
               AppLogger.info('Kuesioner ${doc.id} filtered out:');
-              AppLogger.info('  Usia: ${data['rentangUsia']} vs $usia -> $usiaMatch');
-              AppLogger.info('  Kelamin: ${data['jenisKelamin']} vs $kelamin -> $kelaminMatch');
-              AppLogger.info('  Penghasilan: ${data['tingkatPenghasilan']} vs $penghasilan -> $penghasilanMatch');
-              AppLogger.info('  Pendidikan: ${data['pendidikanTerakhir']} vs $pendidikan -> $pendidikanMatch');
+              AppLogger.info(
+                '  Usia: ${data['rentangUsia']} vs $usia -> $usiaMatch',
+              );
+              AppLogger.info(
+                '  Kelamin: ${data['jenisKelamin']} vs $kelamin -> $kelaminMatch',
+              );
+              AppLogger.info(
+                '  Penghasilan: ${data['tingkatPenghasilan']} vs $penghasilan -> $penghasilanMatch',
+              );
+              AppLogger.info(
+                '  Pendidikan: ${data['pendidikanTerakhir']} vs $pendidikan -> $pendidikanMatch',
+              );
             }
 
             return allMatch;
@@ -206,7 +232,10 @@ class KuesionerController extends GetxController {
         createdByMeList.clear();
         return;
       }
-      final snapshot = await _firestore.collection('kuesioners').where('userId', isEqualTo: uid).get();
+      final snapshot = await _firestore
+          .collection('kuesioners')
+          .where('userId', isEqualTo: uid)
+          .get();
       final items = snapshot.docs.map((doc) {
         return Kuesioner.fromJson(doc.data(), doc.id);
       }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -224,7 +253,10 @@ class KuesionerController extends GetxController {
         signedByMeList.clear();
         return;
       }
-      final snapshot = await _firestore.collection('kuesioners').where('signedBy', arrayContains: uid).get();
+      final snapshot = await _firestore
+          .collection('kuesioners')
+          .where('signedBy', arrayContains: uid)
+          .get();
       final items = snapshot.docs.map((doc) {
         return Kuesioner.fromJson(doc.data(), doc.id);
       }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));

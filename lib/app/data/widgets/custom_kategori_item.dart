@@ -11,7 +11,12 @@ class CustomKategoriItem extends StatelessWidget {
   final String foto;
   final String judul;
   final VoidCallback onTap;
-  const CustomKategoriItem({super.key, required this.foto, required this.judul, required this.onTap});
+  const CustomKategoriItem({
+    super.key,
+    required this.foto,
+    required this.judul,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +39,12 @@ class CustomKategoriItem extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SvgPicture.asset(foto, width: 24, height: 24, color: AppColors.whiteColor).bottomPadded6(),
+                  SvgPicture.asset(
+                    foto,
+                    width: 24,
+                    height: 24,
+                    color: AppColors.whiteColor,
+                  ).bottomPadded6(),
                   Text(
                     judul,
                     textAlign: TextAlign.center,

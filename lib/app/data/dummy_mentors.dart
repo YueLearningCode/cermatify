@@ -9,7 +9,8 @@ final List<Mentor> dummyMentors = [
     layanan: 'Bimbingan Penulisan Paper Ilmiah',
     image: 'https://via.placeholder.com/150',
     email: 'ahmad.fauzi@ui.ac.id',
-    bio: 'Dosen dengan pengalaman 10 tahun dalam penelitian dan publikasi jurnal internasional.',
+    bio:
+        'Dosen dengan pengalaman 10 tahun dalam penelitian dan publikasi jurnal internasional.',
     rating: 4.8,
     totalSessions: 150,
   ),
@@ -21,7 +22,8 @@ final List<Mentor> dummyMentors = [
     layanan: 'Bimbingan Skripsi/Tesis/Disertasi',
     image: 'https://via.placeholder.com/150',
     email: 'siti.nurhaliza@itb.ac.id',
-    bio: 'Profesor dengan spesialisasi penelitian medis dan publikasi jurnal Scopus.',
+    bio:
+        'Profesor dengan spesialisasi penelitian medis dan publikasi jurnal Scopus.',
     rating: 4.9,
     totalSessions: 200,
   ),
@@ -33,7 +35,8 @@ final List<Mentor> dummyMentors = [
     layanan: 'Bimbingan Publikasi Jurnal Scopus',
     image: 'https://via.placeholder.com/150',
     email: 'budi.santoso@ugm.ac.id',
-    bio: 'Peneliti aktif dengan 50+ publikasi di jurnal internasional bereputasi.',
+    bio:
+        'Peneliti aktif dengan 50+ publikasi di jurnal internasional bereputasi.',
     rating: 4.7,
     totalSessions: 120,
   ),
@@ -45,7 +48,8 @@ final List<Mentor> dummyMentors = [
     layanan: 'Bimbingan Penulisan Paper Ilmiah',
     image: 'https://via.placeholder.com/150',
     email: 'rina.wati@undip.ac.id',
-    bio: 'Dokter dan peneliti dengan fokus pada penelitian klinis dan publikasi.',
+    bio:
+        'Dokter dan peneliti dengan fokus pada penelitian klinis dan publikasi.',
     rating: 4.6,
     totalSessions: 90,
   ),
@@ -57,7 +61,8 @@ final List<Mentor> dummyMentors = [
     layanan: 'Bimbingan Analisis Data Kuantitatif',
     image: 'https://via.placeholder.com/150',
     email: 'joko.widodo@ui.ac.id',
-    bio: 'Ahli dalam analisis data dan machine learning dengan pengalaman industri.',
+    bio:
+        'Ahli dalam analisis data dan machine learning dengan pengalaman industri.',
     rating: 4.8,
     totalSessions: 180,
   ),

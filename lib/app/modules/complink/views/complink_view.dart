@@ -227,7 +227,9 @@ class ComplinkView extends GetView<ComplinkController> {
                                     "Dapatkan bimbingan untuk kompetisi dan beasiswa dari mentor terbaik",
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
-                                      color: AppColors.surface.withValues(alpha: 0.8),
+                                      color: AppColors.surface.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       height: 1.4,
                                     ),
                                   ),
@@ -287,7 +289,9 @@ class ComplinkView extends GetView<ComplinkController> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             elevation: 4,
-                            shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                            shadowColor: AppColors.primary.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -314,7 +318,9 @@ class ComplinkView extends GetView<ComplinkController> {
                           color: AppColors.primaryLight.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: AppColors.primaryLight.withValues(alpha: 0.3),
+                            color: AppColors.primaryLight.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ),
                         child: Row(

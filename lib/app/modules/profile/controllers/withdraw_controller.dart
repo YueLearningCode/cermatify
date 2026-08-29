@@ -62,7 +62,11 @@ class WithdrawController extends GetxController {
       final currentSaldo = (userData['saldo'] as int?) ?? 0;
 
       // Parse nominal
-      final nominal = int.tryParse(nominalController.text.trim().replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+      final nominal =
+          int.tryParse(
+            nominalController.text.trim().replaceAll(RegExp(r'[^\d]'), ''),
+          ) ??
+          0;
 
       // Validate nominal
       if (nominal < minWithdraw) {
@@ -78,7 +82,8 @@ class WithdrawController extends GetxController {
       if (nominal > currentSaldo) {
         CustomSnackbar.show(
           title: 'Error',
-          message: 'Saldo tidak mencukupi. Saldo Anda: ${_formatPrice(currentSaldo)}',
+          message:
+              'Saldo tidak mencukupi. Saldo Anda: ${_formatPrice(currentSaldo)}',
           backgroundColor: AppColors.redColor,
           isNav: false,
         );
@@ -110,7 +115,8 @@ class WithdrawController extends GetxController {
 
       CustomSnackbar.show(
         title: 'Sukses',
-        message: 'Permintaan withdraw berhasil diajukan. Menunggu persetujuan admin.',
+        message:
+            'Permintaan withdraw berhasil diajukan. Menunggu persetujuan admin.',
         backgroundColor: AppColors.greenColor,
         isNav: false,
       );

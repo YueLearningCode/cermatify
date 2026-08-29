@@ -42,7 +42,10 @@ class ListMentorView extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -52,7 +55,11 @@ class ListMentorView extends StatelessWidget {
           Flexible(
             child: Text(
               label,
-              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -88,7 +95,10 @@ class ListMentorView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Hasil Mentor", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          "Hasil Mentor",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
@@ -105,7 +115,11 @@ class ListMentorView extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 boxShadow: [
-                  BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2)),
+                  BoxShadow(
+                    color: AppColors.border.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
                 ],
               ),
               child: SingleChildScrollView(
@@ -121,11 +135,16 @@ class ListMentorView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    if (kampus != null && kampus!.isNotEmpty) _buildFilterBadge(Icons.account_balance_rounded, kampus!),
-                    if (kampus != null && kampus!.isNotEmpty) const SizedBox(width: 8),
-                    if (jurusan != null && jurusan!.isNotEmpty) _buildFilterBadge(Icons.menu_book_rounded, jurusan!),
-                    if (jurusan != null && jurusan!.isNotEmpty) const SizedBox(width: 8),
-                    if (layanan != null && layanan!.isNotEmpty) _buildFilterBadge(Icons.school_rounded, layanan!),
+                    if (kampus != null && kampus!.isNotEmpty)
+                      _buildFilterBadge(Icons.account_balance_rounded, kampus!),
+                    if (kampus != null && kampus!.isNotEmpty)
+                      const SizedBox(width: 8),
+                    if (jurusan != null && jurusan!.isNotEmpty)
+                      _buildFilterBadge(Icons.menu_book_rounded, jurusan!),
+                    if (jurusan != null && jurusan!.isNotEmpty)
+                      const SizedBox(width: 8),
+                    if (layanan != null && layanan!.isNotEmpty)
+                      _buildFilterBadge(Icons.school_rounded, layanan!),
                   ],
                 ),
               ),
@@ -142,7 +161,9 @@ class ListMentorView extends StatelessWidget {
                   return Center(
                     child: Text(
                       "Terjadi kesalahan memuat mentor",
-                      style: GoogleFonts.poppins(color: AppColors.textSecondary),
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   );
                 }
@@ -151,7 +172,8 @@ class ListMentorView extends StatelessWidget {
                     .map((d) {
                       final data = d.data();
                       // Filter to show only verified mentors (verificationStatus == 'verified')
-                      final verificationStatus = data['verificationStatus'] as String?;
+                      final verificationStatus =
+                          data['verificationStatus'] as String?;
                       if (verificationStatus != 'verified') return null;
 
                       return Mentor(
@@ -160,11 +182,21 @@ class ListMentorView extends StatelessWidget {
                         kampus: _toText(data['kampus']),
                         jurusan: _toText(data['jurusan']),
                         layanan: _toText(data['layanan']),
-                        image: _toText(data['image']) == '-' ? '' : _toText(data['image']),
-                        email: _toText(data['email']) == '-' ? '' : _toText(data['email']),
-                        bio: _toText(data['bio']) == '-' ? '' : _toText(data['bio']),
-                        rating: (data['rating'] is num) ? (data['rating'] as num).toDouble() : 0.0,
-                        totalSessions: (data['totalSessions'] is num) ? (data['totalSessions'] as num).toInt() : 0,
+                        image: _toText(data['image']) == '-'
+                            ? ''
+                            : _toText(data['image']),
+                        email: _toText(data['email']) == '-'
+                            ? ''
+                            : _toText(data['email']),
+                        bio: _toText(data['bio']) == '-'
+                            ? ''
+                            : _toText(data['bio']),
+                        rating: (data['rating'] is num)
+                            ? (data['rating'] as num).toDouble()
+                            : 0.0,
+                        totalSessions: (data['totalSessions'] is num)
+                            ? (data['totalSessions'] as num).toInt()
+                            : 0,
                       );
                     })
                     .whereType<Mentor>()
@@ -175,7 +207,9 @@ class ListMentorView extends StatelessWidget {
                 if (layananFilter != null && layananFilter.isNotEmpty) {
                   final String needle = layananFilter.toLowerCase();
                   filteredMentors = mentors.where((m) {
-                    final String layananText = (m.layanan).toString().toLowerCase();
+                    final String layananText = (m.layanan)
+                        .toString()
+                        .toLowerCase();
                     return layananText.contains(needle);
                   }).toList();
                 }
@@ -185,7 +219,11 @@ class ListMentorView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.person_search_outlined, size: 80, color: AppColors.textLight),
+                        Icon(
+                          Icons.person_search_outlined,
+                          size: 80,
+                          color: AppColors.textLight,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           "Tidak ada mentor ditemukan",
@@ -198,7 +236,10 @@ class ListMentorView extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           "Coba ubah filter pencarian Anda",
-                          style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -211,7 +252,9 @@ class ListMentorView extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final mentor = filteredMentors[index];
                     return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       margin: const EdgeInsets.only(bottom: 16),
                       elevation: 2,
                       shadowColor: AppColors.border.withValues(alpha: 0.1),
@@ -220,15 +263,28 @@ class ListMentorView extends StatelessWidget {
                         leading: CircleAvatar(
                           radius: 22,
                           backgroundColor: AppColors.primaryLight,
-                          backgroundImage: mentor.image.isNotEmpty ? NetworkImage(mentor.image) : null,
-                          child: mentor.image.isEmpty ? const Icon(Icons.person, color: Colors.white) : null,
+                          backgroundImage: mentor.image.isNotEmpty
+                              ? NetworkImage(mentor.image)
+                              : null,
+                          child: mentor.image.isEmpty
+                              ? const Icon(Icons.person, color: Colors.white)
+                              : null,
                         ),
-                        title: Text(mentor.name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+                        title: Text(
+                          mentor.name,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             "${mentor.layanan} - ${mentor.jurusan}\n${mentor.kampus}",
-                            style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textSecondary),
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ),
                         trailing: ElevatedButton(
@@ -240,7 +296,9 @@ class ListMentorView extends StatelessWidget {
                                   mentor: mentor,
                                   layananId: layananId,
                                   layananPrice: layananPrice,
-                                  layananType: layananType ?? 'paperlink', // Default to paperlink if not provided
+                                  layananType:
+                                      layananType ??
+                                      'paperlink', // Default to paperlink if not provided
                                 ),
                               ),
                             );
@@ -248,10 +306,21 @@ class ListMentorView extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: AppColors.surface,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                           ),
-                          child: Text("Detail", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
+                          child: Text(
+                            "Detail",
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     );

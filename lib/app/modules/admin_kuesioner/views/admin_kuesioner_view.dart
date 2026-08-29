@@ -15,7 +15,11 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
       appBar: AppBar(
         title: Text(
           'Pengelolaan Kuesioner',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
@@ -32,7 +36,11 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
               children: [
                 Text(
                   'Filter by Status',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Obx(
@@ -40,17 +48,30 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildFilterChip('All', 'all', controller.selectedStatusFilter.value == 'all'),
+                        _buildFilterChip(
+                          'All',
+                          'all',
+                          controller.selectedStatusFilter.value == 'all',
+                        ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
                           'Waiting Verification',
                           'waiting verification',
-                          controller.selectedStatusFilter.value == 'waiting verification',
+                          controller.selectedStatusFilter.value ==
+                              'waiting verification',
                         ),
                         const SizedBox(width: 8),
-                        _buildFilterChip('Approved', 'approved', controller.selectedStatusFilter.value == 'approved'),
+                        _buildFilterChip(
+                          'Approved',
+                          'approved',
+                          controller.selectedStatusFilter.value == 'approved',
+                        ),
                         const SizedBox(width: 8),
-                        _buildFilterChip('Rejected', 'rejected', controller.selectedStatusFilter.value == 'rejected'),
+                        _buildFilterChip(
+                          'Rejected',
+                          'rejected',
+                          controller.selectedStatusFilter.value == 'rejected',
+                        ),
                       ],
                     ),
                   ),
@@ -70,7 +91,11 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.assignment_outlined, size: 80, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.assignment_outlined,
+                        size: 80,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Tidak ada kuesioner',
@@ -83,7 +108,10 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                       const SizedBox(height: 8),
                       Text(
                         'Kuesioner akan muncul di sini',
-                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -113,7 +141,10 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.background,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.border, width: isSelected ? 2 : 1),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Text(
           label,
@@ -138,7 +169,13 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,22 +185,38 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Text(
                     statusText,
-                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.surface),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.surface,
+                    ),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   _formatDate(kuesioner.createdAt),
-                  style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -181,27 +234,40 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                       child: _buildStatItem(
                         icon: Icons.link_rounded,
                         label: 'Link',
-                        value: (kuesioner.link != null && kuesioner.link!.isNotEmpty) ? 'Ada' : 'Tidak Ada',
-                        color: (kuesioner.link != null && kuesioner.link!.isNotEmpty)
+                        value:
+                            (kuesioner.link != null &&
+                                kuesioner.link!.isNotEmpty)
+                            ? 'Ada'
+                            : 'Tidak Ada',
+                        color:
+                            (kuesioner.link != null &&
+                                kuesioner.link!.isNotEmpty)
                             ? AppColors.greenColor
                             : AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        stream: FirebaseFirestore.instance.collection('kuesioners').doc(kuesioner.id).snapshots(),
-                        builder: (context, snapshot) {
-                          final List<dynamic> signedBy = (snapshot.data?.data()?['signedBy'] as List<dynamic>?) ?? [];
-                          final int jumlahResponden = signedBy.length;
-                          return _buildStatItem(
-                            icon: Icons.people_outline_rounded,
-                            label: 'Responden',
-                            value: '$jumlahResponden',
-                            color: AppColors.primary,
-                          );
-                        },
-                      ),
+                      child:
+                          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                            stream: FirebaseFirestore.instance
+                                .collection('kuesioners')
+                                .doc(kuesioner.id)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              final List<dynamic> signedBy =
+                                  (snapshot.data?.data()?['signedBy']
+                                      as List<dynamic>?) ??
+                                  [];
+                              final int jumlahResponden = signedBy.length;
+                              return _buildStatItem(
+                                icon: Icons.people_outline_rounded,
+                                label: 'Responden',
+                                value: '$jumlahResponden',
+                                color: AppColors.primary,
+                              );
+                            },
+                          ),
                     ),
                   ],
                 ),
@@ -210,12 +276,19 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                 if (kuesioner.link != null && kuesioner.link!.isNotEmpty) ...[
                   Row(
                     children: [
-                      Icon(Icons.link, size: 16, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.link,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           kuesioner.link!,
-                          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -227,18 +300,29 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                 // Creator Info
                 if (kuesioner.userId != null && kuesioner.userId!.isNotEmpty)
                   FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    future: FirebaseFirestore.instance.collection('users').doc(kuesioner.userId).get(),
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(kuesioner.userId)
+                        .get(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData && snapshot.data!.exists) {
                         final userData = snapshot.data!.data();
-                        final userName = userData?['nama'] as String? ?? 'Unknown User';
+                        final userName =
+                            userData?['nama'] as String? ?? 'Unknown User';
                         return Row(
                           children: [
-                            Icon(Icons.person_outline_rounded, size: 16, color: AppColors.textSecondary),
+                            Icon(
+                              Icons.person_outline_rounded,
+                              size: 16,
+                              color: AppColors.textSecondary,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Dibuat oleh: ',
-                              style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                             Text(
                               userName,
@@ -254,7 +338,8 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                       return const SizedBox.shrink();
                     },
                   ),
-                if (kuesioner.userId != null && kuesioner.userId!.isNotEmpty) const SizedBox(height: 12),
+                if (kuesioner.userId != null && kuesioner.userId!.isNotEmpty)
+                  const SizedBox(height: 12),
                 // Criteria
                 if (kuesioner.rentangUsia != null ||
                     kuesioner.jenisKelamin != null ||
@@ -262,17 +347,25 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                     kuesioner.pendidikanTerakhir != null) ...[
                   Text(
                     'Kriteria Responden:',
-                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      if (kuesioner.rentangUsia != null) _buildCriteriaChip('Usia: ${kuesioner.rentangUsia}'),
-                      if (kuesioner.jenisKelamin != null) _buildCriteriaChip('${kuesioner.jenisKelamin}'),
-                      if (kuesioner.tingkatPenghasilan != null) _buildCriteriaChip('${kuesioner.tingkatPenghasilan}'),
-                      if (kuesioner.pendidikanTerakhir != null) _buildCriteriaChip('${kuesioner.pendidikanTerakhir}'),
+                      if (kuesioner.rentangUsia != null)
+                        _buildCriteriaChip('Usia: ${kuesioner.rentangUsia}'),
+                      if (kuesioner.jenisKelamin != null)
+                        _buildCriteriaChip('${kuesioner.jenisKelamin}'),
+                      if (kuesioner.tingkatPenghasilan != null)
+                        _buildCriteriaChip('${kuesioner.tingkatPenghasilan}'),
+                      if (kuesioner.pendidikanTerakhir != null)
+                        _buildCriteriaChip('${kuesioner.pendidikanTerakhir}'),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -302,13 +395,21 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                         child: OutlinedButton(
                           onPressed: controller.isUpdating.value
                               ? null
-                              : () => controller.updateKuesionerStatus(kuesioner.id, 'rejected'),
+                              : () => controller.updateKuesionerStatus(
+                                  kuesioner.id,
+                                  'rejected',
+                                ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.redColor,
                             side: const BorderSide(color: AppColors.redColor),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: Text('Reject', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                          child: Text(
+                            'Reject',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -316,7 +417,10 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                         child: ElevatedButton(
                           onPressed: controller.isUpdating.value
                               ? null
-                              : () => controller.updateKuesionerStatus(kuesioner.id, 'approved'),
+                              : () => controller.updateKuesionerStatus(
+                                  kuesioner.id,
+                                  'approved',
+                                ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.greenColor,
                             foregroundColor: AppColors.surface,
@@ -328,10 +432,17 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                                   width: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.surface,
+                                    ),
                                   ),
                                 )
-                              : Text('Approve', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                              : Text(
+                                  'Approve',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -350,13 +461,23 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
       decoration: BoxDecoration(
         color: AppColors.primaryLight.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.primaryLight.withValues(alpha: 0.3),
+        ),
       ),
-      child: Text(label, style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textPrimary)),
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textPrimary),
+      ),
     );
   }
 
-  Widget _buildStatItem({required IconData icon, required String label, required String value, required Color color}) {
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -372,11 +493,21 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textSecondary)),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: color),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
                 ),
               ],
             ),

@@ -32,10 +32,8 @@ void main() {
     );
   }
 
-  testWidgets('uses bottom navigation below desktop breakpoint', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(800, 900);
+  testWidgets('uses bottom navigation on mobile', (tester) async {
+    tester.view.physicalSize = const Size(599, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -46,8 +44,8 @@ void main() {
     expect(find.byType(NavigationRail), findsNothing);
   });
 
-  testWidgets('uses navigation rail at desktop breakpoint', (tester) async {
-    tester.view.physicalSize = const Size(1024, 900);
+  testWidgets('uses navigation rail from tablet breakpoint', (tester) async {
+    tester.view.physicalSize = const Size(600, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);

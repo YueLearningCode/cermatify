@@ -15,12 +15,14 @@ class AdminWithdrawController extends GetxController {
 
   final withdraws = <WithdrawModel>[].obs;
   final isLoading = false.obs;
-  final selectedStatusFilter = 'all'.obs; // 'all', 'pending', 'approved', 'rejected', 'completed'
+  final selectedStatusFilter =
+      'all'.obs; // 'all', 'pending', 'approved', 'rejected', 'completed'
 
   // Chat from users (mentors and regular users)
   final mentorChats = <ChatMessage>[].obs;
   final isLoadingChats = false.obs;
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _chatRoomsSubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
+  _chatRoomsSubscription;
   final RxMap<String, String> userNames = <String, String>{}.obs;
 
   String get currentUserId => _auth.currentUser?.uid ?? '';
@@ -50,7 +52,9 @@ class AdminWithdrawController extends GetxController {
       }
 
       try {
-        final querySnapshot = await query.orderBy('createdAt', descending: true).get();
+        final querySnapshot = await query
+            .orderBy('createdAt', descending: true)
+            .get();
         withdraws.value = querySnapshot.docs.map((doc) {
           return WithdrawModel.fromJson(doc.data(), doc.id);
         }).toList();
@@ -77,12 +81,19 @@ class AdminWithdrawController extends GetxController {
     }
   }
 
-  Future<void> updateWithdrawStatus(String withdrawId, String newStatus, {String? notes}) async {
+  Future<void> updateWithdrawStatus(
+    String withdrawId,
+    String newStatus, {
+    String? notes,
+  }) async {
     try {
       isLoading.value = true;
 
       // Get current withdraw data to check previous status
-      final withdrawDoc = await _firestore.collection('withdraws').doc(withdrawId).get();
+      final withdrawDoc = await _firestore
+          .collection('withdraws')
+          .doc(withdrawId)
+          .get();
       if (!withdrawDoc.exists) {
         CustomSnackbar.show(
           title: 'Error',
@@ -100,7 +111,10 @@ class AdminWithdrawController extends GetxController {
 
       // Handle saldo changes based on status transition
       if (mentorId != null && mentorId.isNotEmpty && nominal > 0) {
-        final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+        final mentorDoc = await _firestore
+            .collection('users')
+            .doc(mentorId)
+            .get();
         if (!mentorDoc.exists) {
           CustomSnackbar.show(
             title: 'Error',
@@ -138,18 +152,27 @@ class AdminWithdrawController extends GetxController {
 
         // Update mentor saldo if it changed
         if (newSaldo != currentSaldo) {
-          await _firestore.collection('users').doc(mentorId).update({'saldo': newSaldo});
+          await _firestore.collection('users').doc(mentorId).update({
+            'saldo': newSaldo,
+          });
         }
       }
 
       // Update withdraw status
-      final updateData = {'status': newStatus, 'updatedAt': FieldValue.serverTimestamp(), 'adminId': currentUserId};
+      final updateData = {
+        'status': newStatus,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'adminId': currentUserId,
+      };
 
       if (notes != null && notes.isNotEmpty) {
         updateData['notes'] = notes;
       }
 
-      await _firestore.collection('withdraws').doc(withdrawId).update(updateData);
+      await _firestore
+          .collection('withdraws')
+          .doc(withdrawId)
+          .update(updateData);
 
       // Refresh withdraws list
       await fetchWithdraws();
@@ -212,7 +235,11 @@ class AdminWithdrawController extends GetxController {
       return withdraws;
     }
     return withdraws
-        .where((withdraw) => withdraw.status.toLowerCase() == selectedStatusFilter.value.toLowerCase())
+        .where(
+          (withdraw) =>
+              withdraw.status.toLowerCase() ==
+              selectedStatusFilter.value.toLowerCase(),
+        )
         .toList();
   }
 
@@ -234,7 +261,8 @@ class AdminWithdrawController extends GetxController {
             final List<dynamic> users = (data['users'] as List<dynamic>? ?? []);
             final String lastSenderId = data['lastSenderId'] as String? ?? '';
             final String lastMessage = data['lastMessage'] as String? ?? '';
-            final DateTime ts = (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+            final DateTime ts =
+                (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
             final String? orderId = data['orderId'] as String?;
 
             // Get partner ID (the other user in the room, should be a mentor)
@@ -246,16 +274,23 @@ class AdminWithdrawController extends GetxController {
 
             // Get partner user data (mentor or regular user)
             try {
-              final partnerDoc = await _firestore.collection('users').doc(partnerId).get();
+              final partnerDoc = await _firestore
+                  .collection('users')
+                  .doc(partnerId)
+                  .get();
               if (partnerDoc.exists) {
                 final partnerData = partnerDoc.data();
 
                 // Show chats from all users (mentors and regular users)
-                final String receiverId = lastSenderId == currentUserId ? partnerId : currentUserId;
+                final String receiverId = lastSenderId == currentUserId
+                    ? partnerId
+                    : currentUserId;
                 chats.add(
                   ChatMessage(
                     id: doc.id,
-                    senderId: lastSenderId.isNotEmpty ? lastSenderId : partnerId,
+                    senderId: lastSenderId.isNotEmpty
+                        ? lastSenderId
+                        : partnerId,
                     receiverId: receiverId,
                     message: lastMessage,
                     timestamp: ts,
@@ -265,7 +300,8 @@ class AdminWithdrawController extends GetxController {
 
                 // Cache user name
                 if (!userNames.containsKey(partnerId)) {
-                  final userName = partnerData?['nama'] ?? partnerData?['name'] ?? 'User';
+                  final userName =
+                      partnerData?['nama'] ?? partnerData?['name'] ?? 'User';
                   userNames[partnerId] = userName;
                 }
               }

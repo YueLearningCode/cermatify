@@ -43,7 +43,11 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
       appBar: AppBar(
         title: Text(
           'Withdraw Management',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: AppColors.surface, fontSize: 18),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            color: AppColors.surface,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppColors.primary,
@@ -71,13 +75,20 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
             // Withdraw List
             Text(
               'Daftar Withdraw',
-              style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 14),
             Obx(
               () => controller.isLoading.value
                   ? const Center(
-                      child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()),
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
                     )
                   : controller.filteredWithdraws.isEmpty
                   ? _buildEmptyWithdrawState()
@@ -90,14 +101,24 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
               children: [
                 Text(
                   'Chat dari User',
-                  style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 Obx(
                   () => IconButton(
                     icon: controller.isLoadingChats.value
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Icon(Icons.refresh_rounded, size: 20),
-                    onPressed: controller.isLoadingChats.value ? null : () => controller.refreshChats(),
+                    onPressed: controller.isLoadingChats.value
+                        ? null
+                        : () => controller.refreshChats(),
                     tooltip: 'Refresh',
                   ),
                 ),
@@ -107,7 +128,10 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
             Obx(
               () => controller.isLoadingChats.value
                   ? const Center(
-                      child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()),
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
                     )
                   : controller.mentorChats.isEmpty
                   ? _buildEmptyChatState()
@@ -126,10 +150,14 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           decoration: BoxDecoration(
-            color: controller.selectedStatusFilter.value == status ? AppColors.primary : AppColors.surface,
+            color: controller.selectedStatusFilter.value == status
+                ? AppColors.primary
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: controller.selectedStatusFilter.value == status ? AppColors.primary : AppColors.border,
+              color: controller.selectedStatusFilter.value == status
+                  ? AppColors.primary
+                  : AppColors.border,
             ),
           ),
           child: Center(
@@ -138,7 +166,9 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: controller.selectedStatusFilter.value == status ? AppColors.surface : AppColors.textPrimary,
+                color: controller.selectedStatusFilter.value == status
+                    ? AppColors.surface
+                    : AppColors.textPrimary,
               ),
             ),
           ),
@@ -157,11 +187,19 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
       ),
       child: Column(
         children: [
-          Icon(Icons.account_balance_wallet_outlined, size: 48, color: AppColors.textSecondary),
+          Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 48,
+            color: AppColors.textSecondary,
+          ),
           const SizedBox(height: 12),
           Text(
             'Belum ada permintaan withdraw',
-            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -179,7 +217,11 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: AppColors.border.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: AppColors.border.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: Column(
@@ -213,9 +255,14 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: controller.getStatusColor(withdraw.status).withValues(alpha: 0.1),
+                        color: controller
+                            .getStatusColor(withdraw.status)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -230,14 +277,30 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildInfoRow(Icons.account_circle_outlined, 'Nama Rekening/E-Wallet', withdraw.namaRekening),
+                _buildInfoRow(
+                  Icons.account_circle_outlined,
+                  'Nama Rekening/E-Wallet',
+                  withdraw.namaRekening,
+                ),
                 const SizedBox(height: 8),
-                _buildInfoRow(Icons.credit_card_outlined, 'Nomor Rekening/E-Wallet', withdraw.nomorRekening),
+                _buildInfoRow(
+                  Icons.credit_card_outlined,
+                  'Nomor Rekening/E-Wallet',
+                  withdraw.nomorRekening,
+                ),
                 const SizedBox(height: 8),
-                _buildInfoRow(Icons.calendar_today_outlined, 'Tanggal', _formatDate(withdraw.createdAt)),
+                _buildInfoRow(
+                  Icons.calendar_today_outlined,
+                  'Tanggal',
+                  _formatDate(withdraw.createdAt),
+                ),
                 if (withdraw.notes != null && withdraw.notes!.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.note_outlined, 'Catatan', withdraw.notes!),
+                  _buildInfoRow(
+                    Icons.note_outlined,
+                    'Catatan',
+                    withdraw.notes!,
+                  ),
                 ],
                 if (withdraw.status == 'pending') ...[
                   const SizedBox(height: 16),
@@ -247,13 +310,21 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                         child: OutlinedButton(
                           onPressed: controller.isLoading.value
                               ? null
-                              : () => controller.updateWithdrawStatus(withdraw.id, 'rejected'),
+                              : () => controller.updateWithdrawStatus(
+                                  withdraw.id,
+                                  'rejected',
+                                ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.redColor,
                             side: const BorderSide(color: AppColors.redColor),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: Text('Reject', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                          child: Text(
+                            'Reject',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -261,13 +332,21 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                         child: ElevatedButton(
                           onPressed: controller.isLoading.value
                               ? null
-                              : () => controller.updateWithdrawStatus(withdraw.id, 'approved'),
+                              : () => controller.updateWithdrawStatus(
+                                  withdraw.id,
+                                  'approved',
+                                ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.greenColor,
                             foregroundColor: AppColors.surface,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: Text('Approve', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                          child: Text(
+                            'Approve',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -288,12 +367,20 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
         const SizedBox(width: 8),
         Text(
           '$label: ',
-          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -312,11 +399,19 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
       ),
       child: Column(
         children: [
-          Icon(Icons.chat_bubble_outline_rounded, size: 48, color: AppColors.textSecondary),
+          Icon(
+            Icons.chat_bubble_outline_rounded,
+            size: 48,
+            color: AppColors.textSecondary,
+          ),
           const SizedBox(height: 12),
           Text(
             'Belum ada chat dari user',
-            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -327,7 +422,9 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
     return Obx(
       () => Column(
         children: controller.mentorChats.take(5).map((chat) {
-          final userId = chat.senderId == controller.currentUserId ? chat.receiverId : chat.senderId;
+          final userId = chat.senderId == controller.currentUserId
+              ? chat.receiverId
+              : chat.senderId;
           final userName = controller.getMentorName(userId);
 
           return Container(
@@ -336,7 +433,11 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: AppColors.border.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: AppColors.border.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: Material(
@@ -346,18 +447,26 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                 onTap: () async {
                   // Get user data (mentor or regular user)
                   try {
-                    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+                    final userDoc = await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
+                        .get();
                     final userData = userDoc.data();
-                    final userName = userData?['nama'] ?? userData?['name'] ?? 'User';
+                    final userName =
+                        userData?['nama'] ?? userData?['name'] ?? 'User';
                     final userImage = userData?['image'] ?? '';
                     final userEmail = userData?['email'] ?? '';
 
                     // Create or get chat room
-                    final ChatController chatController = Get.isRegistered<ChatController>()
+                    final ChatController chatController =
+                        Get.isRegistered<ChatController>()
                         ? Get.find<ChatController>()
                         : Get.put(ChatController());
 
-                    await chatController.createOrGetChatRoom(mentorId: userId, orderId: chat.orderId);
+                    await chatController.createOrGetChatRoom(
+                      mentorId: userId,
+                      orderId: chat.orderId,
+                    );
 
                     // Navigate to chat room
                     Get.to(
@@ -394,15 +503,23 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
                       Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
+                          gradient: LinearGradient(
+                            colors: [AppColors.primary, AppColors.primaryLight],
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: CircleAvatar(
                           radius: 24,
                           backgroundColor: AppColors.primaryLight,
                           child: Text(
-                            userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                            style: const TextStyle(color: AppColors.surface, fontWeight: FontWeight.bold, fontSize: 16),
+                            userName.isNotEmpty
+                                ? userName[0].toUpperCase()
+                                : 'U',
+                            style: const TextStyle(
+                              color: AppColors.surface,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),

@@ -118,7 +118,10 @@ class ProfileView extends GetView<ProfileController> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
           constraints: const BoxConstraints(maxWidth: 480),
           scrollable: true,
           backgroundColor: AppColors.surface,
@@ -282,7 +285,9 @@ class ProfileView extends GetView<ProfileController> {
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        AppColors.surface.withValues(alpha: 0.8),
+                                        AppColors.surface.withValues(
+                                          alpha: 0.8,
+                                        ),
                                         AppColors.primaryLight,
                                       ],
                                     ),
@@ -315,26 +320,27 @@ class ProfileView extends GetView<ProfileController> {
                                       style: IconButton.styleFrom(
                                         backgroundColor: AppColors.primary,
                                         foregroundColor: AppColors.surface,
-                                        disabledBackgroundColor: AppColors.primary,
+                                        disabledBackgroundColor:
+                                            AppColors.primary,
                                         padding: const EdgeInsets.all(8),
                                       ),
                                       icon: controller.isLoading.value
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(AppColors.surface),
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.camera_alt_rounded,
-                                                color: AppColors.surface,
-                                                size: 18,
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(AppColors.surface),
                                               ),
+                                            )
+                                          : const Icon(
+                                              Icons.camera_alt_rounded,
+                                              color: AppColors.surface,
+                                              size: 18,
+                                            ),
                                     ),
                                   ),
                                 ),
@@ -368,7 +374,9 @@ class ProfileView extends GetView<ProfileController> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface.withValues(alpha: 0.2),
+                                  color: AppColors.surface.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -484,7 +492,9 @@ class ProfileView extends GetView<ProfileController> {
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                         colors: [
-                                          AppColors.primary.withValues(alpha: 0.1),
+                                          AppColors.primary.withValues(
+                                            alpha: 0.1,
+                                          ),
                                           AppColors.primaryLight.withValues(
                                             alpha: 0.1,
                                           ),

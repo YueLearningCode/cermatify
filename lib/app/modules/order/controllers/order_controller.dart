@@ -55,14 +55,18 @@ class OrderController extends GetxController {
 
       final secureUrl = await _mediaUploadService.uploadImage(
         bytes: image.bytes,
-        filename: 'payment_proof_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
+        filename:
+            'payment_proof_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
 
       // Get layanan type from layananId if not provided
       String? finalLayananType = layananType;
       if (finalLayananType == null || finalLayananType.isEmpty) {
         try {
-          final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+          final layananDoc = await _firestore
+              .collection('layanan')
+              .doc(layananId)
+              .get();
           if (layananDoc.exists) {
             final layananData = layananDoc.data();
             finalLayananType = layananData?['type']?.toString();
@@ -77,15 +81,19 @@ class OrderController extends GetxController {
         'userId': user.uid,
         'mentorId': mentorId,
         'layananId': layananId,
-        'layananType': finalLayananType, // Store layanan type (paperlink/complink)
+        'layananType':
+            finalLayananType, // Store layanan type (paperlink/complink)
         'price': price,
         'paymentProofUrl': secureUrl,
-        'status': 'waiting verification', // waiting verification, progress, rejected, completed
+        'status':
+            'waiting verification', // waiting verification, progress, rejected, completed
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      final DocumentReference orderRef = await _firestore.collection('orders').add(orderData);
+      final DocumentReference orderRef = await _firestore
+          .collection('orders')
+          .add(orderData);
 
       // Return orderId for chat room creation
       return orderRef.id;

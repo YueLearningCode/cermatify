@@ -15,7 +15,10 @@ class CustomRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppStyles.body1(fontWeight: FontWeight.normal, color: AppColors.greyTextSecondaryColor),
+          style: AppStyles.body1(
+            fontWeight: FontWeight.normal,
+            color: AppColors.greyTextSecondaryColor,
+          ),
         ),
         Spacer(),
         LimitedBox(

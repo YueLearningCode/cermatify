@@ -34,7 +34,10 @@ class FaqView extends GetView<FaqController> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.primary.withValues(alpha: 0.03), AppColors.background],
+            colors: [
+              AppColors.primary.withValues(alpha: 0.03),
+              AppColors.background,
+            ],
           ),
         ),
         child: ListView.builder(
@@ -111,7 +114,9 @@ class FaqView extends GetView<FaqController> {
                           color: AppColors.primaryLight.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primaryLight.withValues(alpha: 0.2),
+                            color: AppColors.primaryLight.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                         child: Row(

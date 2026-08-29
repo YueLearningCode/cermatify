@@ -12,7 +12,8 @@ final List<ChatMessage> dummyChats = [
     id: 'c2',
     senderId: 'm1',
     receiverId: 'u1',
-    message: 'Halo! Tentu, saya akan membantu Anda. Silakan jelaskan topik paper Anda',
+    message:
+        'Halo! Tentu, saya akan membantu Anda. Silakan jelaskan topik paper Anda',
     timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 50)),
   ),
   ChatMessage(
@@ -26,7 +27,8 @@ final List<ChatMessage> dummyChats = [
     id: 'c4',
     senderId: 'm1',
     receiverId: 'u1',
-    message: 'Bagus! Machine learning adalah topik yang menarik. Bagian mana yang ingin Anda diskusikan?',
+    message:
+        'Bagus! Machine learning adalah topik yang menarik. Bagian mana yang ingin Anda diskusikan?',
     timestamp: DateTime.now().subtract(const Duration(hours: 1)),
   ),
   ChatMessage(
@@ -40,7 +42,8 @@ final List<ChatMessage> dummyChats = [
     id: 'c6',
     senderId: 'm2',
     receiverId: 'u1',
-    message: 'Ya, ada beberapa beasiswa yang bisa Anda daftar. Saya akan kirimkan informasinya',
+    message:
+        'Ya, ada beberapa beasiswa yang bisa Anda daftar. Saya akan kirimkan informasinya',
     timestamp: DateTime.now().subtract(const Duration(hours: 23)),
   ),
   ChatMessage(

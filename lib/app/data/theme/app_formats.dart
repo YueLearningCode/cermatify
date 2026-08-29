@@ -37,7 +37,10 @@ class AppFormats {
   static String edMy(source) {
     switch (source.runtimeType) {
       case const (String):
-        return DateFormat('EEEE, d MM yy', 'id_ID').format(DateTime.parse(source));
+        return DateFormat(
+          'EEEE, d MM yy',
+          'id_ID',
+        ).format(DateTime.parse(source));
       case const (DateTime):
         return DateFormat('EEEE, d MM yy', 'id_ID').format(source);
       default:
@@ -50,7 +53,10 @@ class AppFormats {
   static String fulledMy(source) {
     switch (source.runtimeType) {
       case const (String):
-        return DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.parse(source));
+        return DateFormat(
+          'EEEE, d MMMM yyyy',
+          'id_ID',
+        ).format(DateTime.parse(source));
       case const (DateTime):
         return DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(source);
       default:

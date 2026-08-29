@@ -33,6 +33,40 @@ Catatan penting:
 - Upload gambar memerlukan konfigurasi Cloudinary dan koneksi internet.
 - Linux belum dikonfigurasi untuk Firebase pada `lib/firebase_options.dart`, jadi target Linux akan error jika menjalankan kode Firebase saat startup.
 
+## Roadmap Responsive Seluruh View
+
+Target layout proyek menggunakan pendekatan mobile-first tanpa memisahkan source
+Android dan Web. Controller, validasi, serta akses data tetap sama; hanya susunan
+widget yang beradaptasi terhadap lebar viewport.
+
+Breakpoint standar:
+
+| Mode | Lebar viewport | Pola utama |
+| --- | ---: | --- |
+| Mobile | `< 600 px` | Satu kolom dan bottom navigation |
+| Tablet | `600-1023 px` | Konten lebih lebar/grid dan navigation rail ringkas |
+| Desktop | `1024-1279 px` | Navigation rail dan panel konten terpusat |
+| Desktop lebar | `>= 1280 px` | Navigation rail dengan label dan multi-panel |
+
+Checklist pengerjaan:
+
+- [x] Definisikan breakpoint mobile, tablet, desktop, dan desktop lebar.
+- [x] Sediakan responsive navigation dan pembatas lebar konten global.
+- [x] Tambahkan primitive layout adaptif, gutter, grid, form, dan dialog.
+- [x] Ubah landing page dari layout mobile 430 px menjadi hero tablet/desktop.
+- [x] Adaptasikan login, register, splash, dan halaman 404.
+- [x] Adaptasikan dashboard pengguna, home, FAQ, dan group.
+- [ ] Adaptasikan Paperlink, Sourcelink, Complink, dan Kuesioner.
+- [ ] Adaptasikan order, riwayat order, form pembayaran, dan dialog transaksi.
+- [x] Adaptasikan profile, edit profile, ubah password, dan withdraw.
+- [ ] Buat chat list/room menjadi layout dua panel pada desktop.
+- [ ] Adaptasikan dashboard dan seluruh halaman admin.
+- [ ] Adaptasikan daftar pengguna, mentor, dan halaman detail.
+- [ ] Uji viewport `320`, `375`, `600`, `768`, `1024`, `1366`, `1440`, dan `1920` px.
+- [ ] Jalankan `flutter analyze`, seluruh test, build Web, dan build Android.
+
+Progres teknis yang lebih rinci tetap dicatat pada [`TODO_WEB.md`](TODO_WEB.md).
+
 ## Spesifikasi Project
 
 | Bagian | Nilai |

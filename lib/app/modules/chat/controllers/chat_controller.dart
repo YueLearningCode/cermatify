@@ -73,7 +73,9 @@ class ChatController extends GetxController {
   // Check if current user is a mentor
   bool get isMentor {
     try {
-      return Get.isRegistered<HomeController>() ? Get.find<HomeController>().isMentor.value : false;
+      return Get.isRegistered<HomeController>()
+          ? Get.find<HomeController>().isMentor.value
+          : false;
     } catch (_) {
       return false;
     }
@@ -100,15 +102,21 @@ class ChatController extends GetxController {
           final chats = snapshot.docs
               .map((doc) {
                 final data = doc.data();
-                final List<dynamic> users = (data['users'] as List<dynamic>? ?? []);
-                final String lastSenderId = data['lastSenderId'] as String? ?? '';
+                final List<dynamic> users =
+                    (data['users'] as List<dynamic>? ?? []);
+                final String lastSenderId =
+                    data['lastSenderId'] as String? ?? '';
                 final String lastMessage = data['lastMessage'] as String? ?? '';
-                final DateTime ts = (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+                final DateTime ts =
+                    (data['updatedAt'] as Timestamp?)?.toDate() ??
+                    DateTime.now();
                 // partner is the other user in the room
                 final String partnerId = users
                     .map((e) => e.toString())
                     .firstWhere((id) => id != currentUserId, orElse: () => '');
-                final String receiverId = lastSenderId == currentUserId ? partnerId : currentUserId;
+                final String receiverId = lastSenderId == currentUserId
+                    ? partnerId
+                    : currentUserId;
                 final String? orderId = data['orderId'] as String?;
                 return ChatMessage(
                   id: doc.id,
@@ -146,14 +154,17 @@ class ChatController extends GetxController {
             final data = doc.data();
             final String status = data['status']?.toString() ?? '';
             // Filter for 'progress' status client-side
-            if (status.toLowerCase() != 'progress' && status.toLowerCase() != 'approved') {
+            if (status.toLowerCase() != 'progress' &&
+                status.toLowerCase() != 'approved') {
               continue;
             }
             final String customerId = data['userId']?.toString() ?? '';
             if (customerId.isNotEmpty && customerId != currentUserId) {
               customerIds.add(customerId);
-              final updatedAt = (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
-              if (!customerLastUpdate.containsKey(customerId) || updatedAt.isAfter(customerLastUpdate[customerId]!)) {
+              final updatedAt =
+                  (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+              if (!customerLastUpdate.containsKey(customerId) ||
+                  updatedAt.isAfter(customerLastUpdate[customerId]!)) {
                 customerLastUpdate[customerId] = updatedAt;
                 customerOrderIds[customerId] = doc.id;
               }
@@ -165,17 +176,22 @@ class ChatController extends GetxController {
           for (var customerId in customerIds) {
             // Try to get last message from chat room
             final String roomId = buildRoomId(customerId);
-            final roomDoc = await _firestore.collection('chatRooms').doc(roomId).get();
+            final roomDoc = await _firestore
+                .collection('chatRooms')
+                .doc(roomId)
+                .get();
 
             String lastMessage = '';
             String lastSenderId = '';
-            DateTime timestamp = customerLastUpdate[customerId] ?? DateTime.now();
+            DateTime timestamp =
+                customerLastUpdate[customerId] ?? DateTime.now();
 
             if (roomDoc.exists) {
               final roomData = roomDoc.data();
               lastMessage = roomData?['lastMessage']?.toString() ?? '';
               lastSenderId = roomData?['lastSenderId']?.toString() ?? '';
-              final roomUpdatedAt = (roomData?['updatedAt'] as Timestamp?)?.toDate();
+              final roomUpdatedAt = (roomData?['updatedAt'] as Timestamp?)
+                  ?.toDate();
               if (roomUpdatedAt != null && roomUpdatedAt.isAfter(timestamp)) {
                 timestamp = roomUpdatedAt;
               }
@@ -218,7 +234,10 @@ class ChatController extends GetxController {
         final doc = await _firestore.collection('users').doc(userId).get();
         if (doc.exists) {
           final data = doc.data();
-          final String displayName = (data?['nama'] as String?) ?? (data?['name'] as String?) ?? 'Mentor';
+          final String displayName =
+              (data?['nama'] as String?) ??
+              (data?['name'] as String?) ??
+              'Mentor';
           userNames[userId] = displayName;
         } else {
           userNames[userId] = 'Mentor';
@@ -238,30 +257,38 @@ class ChatController extends GetxController {
     }
     isSearching.value = true;
     filteredChats.value = allChats.where((chat) {
-      final partnerId = chat.senderId == currentUserId ? chat.receiverId : chat.senderId;
-      return chat.message.toLowerCase().contains(query) || partnerId.toLowerCase().contains(query);
+      final partnerId = chat.senderId == currentUserId
+          ? chat.receiverId
+          : chat.senderId;
+      return chat.message.toLowerCase().contains(query) ||
+          partnerId.toLowerCase().contains(query);
     }).toList();
   }
 
   void loadMessages(String mentorId, {String? orderId}) {
     final String roomId = buildRoomId(mentorId, orderId: orderId);
     // Bind realtime stream from Firestore
-    _firestore.collection('chatRooms').doc(roomId).collection('messages').orderBy('timestamp').snapshots().listen((
-      snapshot,
-    ) {
-      final msgs = snapshot.docs.map((d) {
-        final data = d.data();
-        return ChatMessage(
-          id: d.id,
-          senderId: data['senderId'] as String? ?? '',
-          receiverId: data['receiverId'] as String? ?? '',
-          message: data['message'] as String? ?? '',
-          timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-        );
-      }).toList();
-      chatMessages.value = msgs;
-      scrollToBottom();
-    });
+    _firestore
+        .collection('chatRooms')
+        .doc(roomId)
+        .collection('messages')
+        .orderBy('timestamp')
+        .snapshots()
+        .listen((snapshot) {
+          final msgs = snapshot.docs.map((d) {
+            final data = d.data();
+            return ChatMessage(
+              id: d.id,
+              senderId: data['senderId'] as String? ?? '',
+              receiverId: data['receiverId'] as String? ?? '',
+              message: data['message'] as String? ?? '',
+              timestamp:
+                  (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            );
+          }).toList();
+          chatMessages.value = msgs;
+          scrollToBottom();
+        });
   }
 
   void scrollToBottom() {
@@ -292,7 +319,9 @@ class ChatController extends GetxController {
     isSending.value = true;
 
     final String roomId = buildRoomId(mentorId, orderId: orderId);
-    final DocumentReference<Map<String, dynamic>> roomRef = _firestore.collection('chatRooms').doc(roomId);
+    final DocumentReference<Map<String, dynamic>> roomRef = _firestore
+        .collection('chatRooms')
+        .doc(roomId);
     // Ensure room exists
     final roomData = {
       'roomId': roomId,
@@ -318,7 +347,8 @@ class ChatController extends GetxController {
       'receiverId': mentorId,
       'message': messageText,
       'timestamp': FieldValue.serverTimestamp(),
-      'localTime': now.toIso8601String(), // optional local for ordering fallback
+      'localTime': now
+          .toIso8601String(), // optional local for ordering fallback
     });
 
     // After successful send, rely on Firestore stream to update the UI
@@ -338,12 +368,17 @@ class ChatController extends GetxController {
     }
   }
 
-  Future<String> createOrGetChatRoom({required String mentorId, String? orderId}) async {
+  Future<String> createOrGetChatRoom({
+    required String mentorId,
+    String? orderId,
+  }) async {
     await ensureSignedIn();
     final String userId = currentUserId;
     final String roomId = buildRoomId(mentorId, orderId: orderId);
 
-    final DocumentReference<Map<String, dynamic>> roomRef = _firestore.collection('chatRooms').doc(roomId);
+    final DocumentReference<Map<String, dynamic>> roomRef = _firestore
+        .collection('chatRooms')
+        .doc(roomId);
 
     final DocumentSnapshot<Map<String, dynamic>> snapshot = await roomRef.get();
     final List<String> ids = [userId, mentorId]..sort();
@@ -367,7 +402,10 @@ class ChatController extends GetxController {
     } else {
       // Update orderId if it wasn't set before
       if (orderId != null && orderId.isNotEmpty) {
-        await roomRef.update({'orderId': orderId, 'updatedAt': FieldValue.serverTimestamp()});
+        await roomRef.update({
+          'orderId': orderId,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
       } else {
         await roomRef.update({'updatedAt': FieldValue.serverTimestamp()});
       }

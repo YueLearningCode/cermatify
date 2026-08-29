@@ -61,15 +61,24 @@ class AdminHomeView extends GetView<AdminHomeController> {
                           () => Container(
                             padding: const EdgeInsets.all(1.5),
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primaryLight,
+                                ],
+                              ),
                               shape: BoxShape.circle,
                             ),
                             child: CircleAvatar(
                               radius: 20,
                               backgroundColor: AppColors.surface,
-                              backgroundImage: controller.userImage.value.isNotEmpty
-                                  ? NetworkImage(controller.userImage.value) as ImageProvider
-                                  : const AssetImage('assets/images/profile_dummy.jpg'),
+                              backgroundImage:
+                                  controller.userImage.value.isNotEmpty
+                                  ? NetworkImage(controller.userImage.value)
+                                        as ImageProvider
+                                  : const AssetImage(
+                                      'assets/images/profile_dummy.jpg',
+                                    ),
                             ),
                           ),
                         ),
@@ -180,7 +189,10 @@ class AdminHomeView extends GetView<AdminHomeController> {
                           color: AppColors.orangeColor,
                           onTap: () {
                             // Navigate to Orders view with binding
-                            Get.to(() => const AdminOrdersView(), binding: AdminOrdersBinding());
+                            Get.to(
+                              () => const AdminOrdersView(),
+                              binding: AdminOrdersBinding(),
+                            );
                           },
                         ),
                         _buildActionCard(
@@ -189,7 +201,10 @@ class AdminHomeView extends GetView<AdminHomeController> {
                           icon: Icons.account_balance_wallet_rounded,
                           color: AppColors.primaryDark,
                           onTap: () {
-                            Get.to(() => const AdminWithdrawView(), binding: AdminWithdrawBinding());
+                            Get.to(
+                              () => const AdminWithdrawView(),
+                              binding: AdminWithdrawBinding(),
+                            );
                           },
                         ),
                         _buildActionCard(
@@ -198,7 +213,10 @@ class AdminHomeView extends GetView<AdminHomeController> {
                           icon: Icons.assignment_rounded,
                           color: AppColors.yellowColor,
                           onTap: () {
-                            Get.to(() => const AdminKuesionerView(), binding: AdminKuesionerBinding());
+                            Get.to(
+                              () => const AdminKuesionerView(),
+                              binding: AdminKuesionerBinding(),
+                            );
                           },
                         ),
                         // _buildActionCard(
@@ -240,13 +258,24 @@ class AdminHomeView extends GetView<AdminHomeController> {
     );
   }
 
-  Widget _buildStatCard({required String title, required String value, required IconData icon, required Color color}) {
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +285,10 @@ class AdminHomeView extends GetView<AdminHomeController> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Icon(icon, color: color, size: 20),
               ),
             ],
@@ -264,12 +296,20 @@ class AdminHomeView extends GetView<AdminHomeController> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            style: GoogleFonts.poppins(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -293,7 +333,13 @@ class AdminHomeView extends GetView<AdminHomeController> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -308,13 +354,20 @@ class AdminHomeView extends GetView<AdminHomeController> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: AppColors.surface.withValues(alpha: 0.2), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
                     child: Icon(icon, color: AppColors.surface, size: 26),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     title,
-                    style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.surface),
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.surface,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(

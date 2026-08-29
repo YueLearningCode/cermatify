@@ -64,10 +64,18 @@ class SourcelinkController extends GetxController {
       final pendidikan = prefs.getString(_keyPendidikan);
       final kriteria = prefs.getString(_keyKriteria);
 
-      if (usia != null && usia.isNotEmpty) selectedUsia.value = usia;
-      if (kelamin != null && kelamin.isNotEmpty) selectedKelamin.value = kelamin;
-      if (penghasilan != null && penghasilan.isNotEmpty) selectedPenghasilan.value = penghasilan;
-      if (pendidikan != null && pendidikan.isNotEmpty) selectedPendidikan.value = pendidikan;
+      if (usia != null && usia.isNotEmpty) {
+        selectedUsia.value = usia;
+      }
+      if (kelamin != null && kelamin.isNotEmpty) {
+        selectedKelamin.value = kelamin;
+      }
+      if (penghasilan != null && penghasilan.isNotEmpty) {
+        selectedPenghasilan.value = penghasilan;
+      }
+      if (pendidikan != null && pendidikan.isNotEmpty) {
+        selectedPendidikan.value = pendidikan;
+      }
       if (kriteria != null) kriteriaController.text = kriteria;
     } catch (e) {
       AppLogger.info('Error loading criteria: $e');
@@ -104,7 +112,8 @@ class SourcelinkController extends GetxController {
 
     isSubmitting.value = true;
     try {
-      final String uid = _auth.currentUser?.uid ?? (await _auth.signInAnonymously()).user!.uid;
+      final String uid =
+          _auth.currentUser?.uid ?? (await _auth.signInAnonymously()).user!.uid;
       final data = {
         'createdBy': uid,
         'createdAt': FieldValue.serverTimestamp(),

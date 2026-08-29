@@ -35,7 +35,13 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
   bool _hasExistingData = false;
 
   // Dummy data untuk dropdown
-  final List<String> _rentangUsia = ['18-25 tahun', '26-35 tahun', '36-45 tahun', '46-55 tahun', '56 tahun ke atas'];
+  final List<String> _rentangUsia = [
+    '18-25 tahun',
+    '26-35 tahun',
+    '36-45 tahun',
+    '46-55 tahun',
+    '56 tahun ke atas',
+  ];
 
   final List<String> _jenisKelamin = ['Laki-laki', 'Perempuan'];
 
@@ -108,7 +114,9 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
 
       try {
         // Ensure user id
-        final String uid = _auth.currentUser?.uid ?? (await _auth.signInAnonymously()).user!.uid;
+        final String uid =
+            _auth.currentUser?.uid ??
+            (await _auth.signInAnonymously()).user!.uid;
         // Save to data_diri collection with userId
         await _firestore.collection('data_diri').doc(uid).set({
           'userId': uid,
@@ -134,18 +142,26 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
             constraints: const BoxConstraints(maxWidth: 480),
             scrollable: true,
             backgroundColor: AppColors.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Row(
               children: [
                 Icon(Icons.check_circle, color: AppColors.success, size: 24),
                 const SizedBox(width: 8),
                 Text(
                   "Berhasil!",
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ],
             ),
@@ -161,7 +177,10 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                 },
                 child: Text(
                   "Kembali ke Kuesioner",
-                  style: GoogleFonts.poppins(color: AppColors.primary, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.poppins(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -190,14 +209,22 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
           // Header dengan gradient
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, bottom: 30, left: 24, right: 24),
+            padding: const EdgeInsets.only(
+              top: 60,
+              bottom: 30,
+              left: 24,
+              right: 24,
+            ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [AppColors.primary, AppColors.primaryLight],
               ),
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
             ),
             child: Column(
               children: [
@@ -210,20 +237,31 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                     const SizedBox(width: 8),
                     Text(
                       'Data Diri Responden',
-                      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Lengkapi data diri Anda terlebih dahulu',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Data ini akan membantu peneliti dalam menganalisis hasil kuesioner',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -241,12 +279,18 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -263,7 +307,10 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                               const SizedBox(height: 4),
                               Text(
                                 'Data yang Anda berikan akan dijaga kerahasiaannya dan hanya digunakan untuk keperluan penelitian akademis.',
-                                style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ],
                           ),
@@ -285,7 +332,9 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                           offset: const Offset(0, 4),
                         ),
                       ],
-                      border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+                      border: Border.all(
+                        color: AppColors.border.withValues(alpha: 0.5),
+                      ),
                     ),
                     child: Form(
                       key: _formKey,
@@ -302,7 +351,11 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.person_outline_rounded, color: AppColors.primary, size: 24),
+                                Icon(
+                                  Icons.person_outline_rounded,
+                                  color: AppColors.primary,
+                                  size: 24,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   "Data Demografi",
@@ -329,7 +382,12 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                   .map(
                                     (item) => DropdownMenuItem(
                                       value: item,
-                                      child: Text(item, style: GoogleFonts.poppins(color: AppColors.textPrimary)),
+                                      child: Text(
+                                        item,
+                                        style: GoogleFonts.poppins(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -360,7 +418,12 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                   .map(
                                     (item) => DropdownMenuItem(
                                       value: item,
-                                      child: Text(item, style: GoogleFonts.poppins(color: AppColors.textPrimary)),
+                                      child: Text(
+                                        item,
+                                        style: GoogleFonts.poppins(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -391,7 +454,12 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                   .map(
                                     (item) => DropdownMenuItem(
                                       value: item,
-                                      child: Text(item, style: GoogleFonts.poppins(color: AppColors.textPrimary)),
+                                      child: Text(
+                                        item,
+                                        style: GoogleFonts.poppins(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -422,7 +490,12 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                   .map(
                                     (item) => DropdownMenuItem(
                                       value: item,
-                                      child: Text(item, style: GoogleFonts.poppins(color: AppColors.textPrimary)),
+                                      child: Text(
+                                        item,
+                                        style: GoogleFonts.poppins(
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -447,17 +520,26 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                  horizontal: 24,
+                                ),
                                 elevation: 2,
-                                shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                                shadowColor: AppColors.primary.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                               onPressed: _submitForm,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    _hasExistingData ? "Update Data Diri" : "Simpan Data Diri",
+                                    _hasExistingData
+                                        ? "Update Data Diri"
+                                        : "Simpan Data Diri",
                                     style: GoogleFonts.poppins(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -465,7 +547,12 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Icon(_hasExistingData ? Icons.edit_rounded : Icons.check_rounded, size: 20),
+                                  Icon(
+                                    _hasExistingData
+                                        ? Icons.edit_rounded
+                                        : Icons.check_rounded,
+                                    size: 20,
+                                  ),
                                 ],
                               ),
                             ),
@@ -505,12 +592,19 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
             const SizedBox(width: 8),
             Text(
               title,
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: AppColors.textPrimary, fontSize: 14),
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        Text(subtitle, style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight)),
+        Text(
+          subtitle,
+          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
+        ),
         const SizedBox(height: 8),
         child,
       ],

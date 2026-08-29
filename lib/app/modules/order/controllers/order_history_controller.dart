@@ -44,7 +44,10 @@ class OrderHistoryController extends GetxController {
       } catch (e) {
         // If orderBy fails (might need composite index), fetch without orderBy
         AppLogger.info('Error with orderBy, trying without: $e');
-        final querySnapshot = await _firestore.collection('orders').where('userId', isEqualTo: user.uid).get();
+        final querySnapshot = await _firestore
+            .collection('orders')
+            .where('userId', isEqualTo: user.uid)
+            .get();
 
         ordersList = querySnapshot.docs.map((doc) {
           final data = doc.data();
@@ -73,10 +76,16 @@ class OrderHistoryController extends GetxController {
         // Fetch mentor name
         if (mentorId != null && mentorId.isNotEmpty) {
           try {
-            final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+            final mentorDoc = await _firestore
+                .collection('users')
+                .doc(mentorId)
+                .get();
             if (mentorDoc.exists) {
               final mentorData = mentorDoc.data();
-              order['mentorName'] = mentorData?['nama'] ?? mentorData?['name'] ?? 'Unknown Mentor';
+              order['mentorName'] =
+                  mentorData?['nama'] ??
+                  mentorData?['name'] ??
+                  'Unknown Mentor';
             } else {
               order['mentorName'] = 'Unknown Mentor';
             }
@@ -91,7 +100,10 @@ class OrderHistoryController extends GetxController {
         // Fetch layanan name
         if (layananId != null && layananId.isNotEmpty) {
           try {
-            final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+            final layananDoc = await _firestore
+                .collection('layanan')
+                .doc(layananId)
+                .get();
             if (layananDoc.exists) {
               final layananData = layananDoc.data();
               order['layananName'] = layananData?['name'] ?? 'Unknown Layanan';
@@ -155,7 +167,8 @@ class OrderHistoryController extends GetxController {
 
         // If layananType is provided, also check if it matches
         if (layananType != null && layananType.isNotEmpty) {
-          return validStatus && orderLayananType.toLowerCase() == layananType.toLowerCase();
+          return validStatus &&
+              orderLayananType.toLowerCase() == layananType.toLowerCase();
         }
 
         return validStatus;
@@ -171,7 +184,10 @@ class OrderHistoryController extends GetxController {
   // Get orderId from progress order for a mentor with specific layanan type
   // (returns the most recent one)
   // Only includes orders with status 'progress' or 'approved' (not 'waiting verification')
-  Future<String?> getProgressOrderId(String mentorId, {String? layananType}) async {
+  Future<String?> getProgressOrderId(
+    String mentorId, {
+    String? layananType,
+  }) async {
     try {
       final User? user = _auth.currentUser;
       if (user == null) return null;
@@ -194,7 +210,8 @@ class OrderHistoryController extends GetxController {
 
         // If layananType is provided, also check if it matches
         if (layananType != null && layananType.isNotEmpty) {
-          return validStatus && orderLayananType.toLowerCase() == layananType.toLowerCase();
+          return validStatus &&
+              orderLayananType.toLowerCase() == layananType.toLowerCase();
         }
 
         return validStatus;

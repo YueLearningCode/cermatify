@@ -29,7 +29,6 @@ class HomeController extends GetxController {
     _fetchUserData();
   }
 
-
   @override
   void onClose() {
     _timer?.cancel();
@@ -62,7 +61,10 @@ class HomeController extends GetxController {
     try {
       final User? user = _auth.currentUser;
       if (user != null) {
-        final DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        final DocumentSnapshot userDoc = await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
         if (userDoc.exists) {
           final data = userDoc.data() as Map<String, dynamic>;

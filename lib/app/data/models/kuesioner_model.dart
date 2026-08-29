@@ -5,7 +5,10 @@ class QuestionAnswer {
   QuestionAnswer({required this.question, required this.answer});
 
   factory QuestionAnswer.fromJson(Map<String, dynamic> json) {
-    return QuestionAnswer(question: json['question'] as String, answer: json['answer'] as String);
+    return QuestionAnswer(
+      question: json['question'] as String,
+      answer: json['answer'] as String,
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -47,7 +50,11 @@ class Kuesioner {
           ? json['createdAt'] as DateTime
           : (json['createdAt'] as dynamic)?.toDate() ?? DateTime.now(),
       answers:
-          (json['answers'] as List?)?.map((item) => QuestionAnswer.fromJson(item as Map<String, dynamic>)).toList() ??
+          (json['answers'] as List?)
+              ?.map(
+                (item) => QuestionAnswer.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
           [],
       status: json['status'] as String?,
       orderId: json['orderId'] as String?,

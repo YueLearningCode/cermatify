@@ -24,9 +24,9 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isDesktop = AppBreakpoints.isDesktop(constraints.maxWidth);
+        final isMobile = AppBreakpoints.isMobile(constraints.maxWidth);
 
-        if (!isDesktop) {
+        if (isMobile) {
           return Scaffold(
             appBar: appBar,
             body: body,

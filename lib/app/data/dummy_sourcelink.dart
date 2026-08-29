@@ -9,7 +9,11 @@ final List<String> dummyRentangUsia = [
   '65+ tahun',
 ];
 
-final List<String> dummyJenisKelamin = ['Laki-laki', 'Perempuan', 'Tidak ingin menyebutkan'];
+final List<String> dummyJenisKelamin = [
+  'Laki-laki',
+  'Perempuan',
+  'Tidak ingin menyebutkan',
+];
 
 final List<String> dummyTingkatPenghasilan = [
   'Rp 0 - Rp 2.000.000',

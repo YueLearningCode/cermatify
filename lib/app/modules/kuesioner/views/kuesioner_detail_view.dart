@@ -23,13 +23,19 @@ class KuesionerDetailView extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Detail Kuesioner",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 20, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
       ),
       body: Column(
         children: [
@@ -41,11 +47,18 @@ class KuesionerDetailView extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AppColors.primary.withValues(alpha: 0.9), AppColors.primaryDark],
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.9),
+                  AppColors.primaryDark,
+                ],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
               ],
             ),
             child: Row(
@@ -53,8 +66,15 @@ class KuesionerDetailView extends StatelessWidget {
                 Container(
                   width: 60,
                   height: 60,
-                  decoration: BoxDecoration(color: AppColors.surface.withValues(alpha: 0.2), shape: BoxShape.circle),
-                  child: Icon(Icons.assignment_rounded, color: AppColors.surface, size: 30),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.assignment_rounded,
+                    color: AppColors.surface,
+                    size: 30,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -63,22 +83,38 @@ class KuesionerDetailView extends StatelessWidget {
                     children: [
                       Text(
                         "Kuesioner Selesai",
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 18, color: AppColors.surface),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: AppColors.surface,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "Tanggal: ${_formatDate(kuesioner.createdAt)}",
-                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.surface.withValues(alpha: 0.9)),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppColors.surface.withValues(alpha: 0.9),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        stream: FirebaseFirestore.instance.collection('kuesioners').doc(kuesioner.id).snapshots(),
+                        stream: FirebaseFirestore.instance
+                            .collection('kuesioners')
+                            .doc(kuesioner.id)
+                            .snapshots(),
                         builder: (context, snapshot) {
-                          final List<dynamic> signedBy = (snapshot.data?.data()?['signedBy'] as List<dynamic>?) ?? [];
+                          final List<dynamic> signedBy =
+                              (snapshot.data?.data()?['signedBy']
+                                  as List<dynamic>?) ??
+                              [];
                           final int jumlahResponden = signedBy.length;
                           return Text(
                             "Jumlah Responden: $jumlahResponden",
-                            style: GoogleFonts.poppins(fontSize: 13, color: AppColors.surface.withValues(alpha: 0.8)),
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: AppColors.surface.withValues(alpha: 0.8),
+                            ),
                           );
                         },
                       ),
@@ -90,16 +126,27 @@ class KuesionerDetailView extends StatelessWidget {
           ),
           // Actions / Link area driven by Firestore doc (realtime)
           StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance.collection('kuesioners').doc(kuesioner.id).snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('kuesioners')
+                .doc(kuesioner.id)
+                .snapshots(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData || !snapshot.data!.exists) return const SizedBox.shrink();
+              if (!snapshot.hasData || !snapshot.data!.exists) {
+                return const SizedBox.shrink();
+              }
               final data = snapshot.data!.data() ?? {};
-              final String userId = data['userId'] as String? ?? data['createdBy'] as String? ?? '';
+              final String userId =
+                  data['userId'] as String? ??
+                  data['createdBy'] as String? ??
+                  '';
               final String link = data['link'] as String? ?? '';
-              final List<dynamic> signedBy = (data['signedBy'] as List<dynamic>?) ?? [];
-              final bool isCreator = currentUid.isNotEmpty && currentUid == userId;
+              final List<dynamic> signedBy =
+                  (data['signedBy'] as List<dynamic>?) ?? [];
+              final bool isCreator =
+                  currentUid.isNotEmpty && currentUid == userId;
               final bool alreadySigned =
-                  currentUid.isNotEmpty && signedBy.map((e) => e.toString()).contains(currentUid);
+                  currentUid.isNotEmpty &&
+                  signedBy.map((e) => e.toString()).contains(currentUid);
 
               if (isCreator || alreadySigned) {
                 if (link.isEmpty) return const SizedBox.shrink();
@@ -107,12 +154,28 @@ class KuesionerDetailView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Card(
                     elevation: 3,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: ListTile(
-                      leading: const Icon(Icons.link_rounded, color: AppColors.primary),
-                      title: Text('Buka Link Kuesioner', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                      subtitle: Text(link, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.poppins()),
-                      trailing: const Icon(Icons.copy_rounded, color: AppColors.primary),
+                      leading: const Icon(
+                        Icons.link_rounded,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(
+                        'Buka Link Kuesioner',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        link,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(),
+                      ),
+                      trailing: const Icon(
+                        Icons.copy_rounded,
+                        color: AppColors.primary,
+                      ),
                       onTap: () async {
                         await Clipboard.setData(ClipboardData(text: link));
                         Get.snackbar(
@@ -138,10 +201,17 @@ class KuesionerDetailView extends StatelessWidget {
 
                       try {
                         // Check if user is already in signedBy to avoid duplicate rewards
-                        final kuesionerDoc = await firestore.collection('kuesioners').doc(kuesioner.id).get();
+                        final kuesionerDoc = await firestore
+                            .collection('kuesioners')
+                            .doc(kuesioner.id)
+                            .get();
                         final kuesionerData = kuesionerDoc.data();
-                        final List<dynamic> signedBy = (kuesionerData?['signedBy'] as List<dynamic>?) ?? [];
-                        final bool alreadySigned = signedBy.map((e) => e.toString()).contains(currentUid);
+                        final List<dynamic> signedBy =
+                            (kuesionerData?['signedBy'] as List<dynamic>?) ??
+                            [];
+                        final bool alreadySigned = signedBy
+                            .map((e) => e.toString())
+                            .contains(currentUid);
 
                         if (alreadySigned) {
                           Get.snackbar(
@@ -154,22 +224,30 @@ class KuesionerDetailView extends StatelessWidget {
                         }
 
                         // Add user to signedBy array
-                        final docRef = firestore.collection('kuesioners').doc(kuesioner.id);
+                        final docRef = firestore
+                            .collection('kuesioners')
+                            .doc(kuesioner.id);
                         await docRef.set({
                           'signedBy': FieldValue.arrayUnion([currentUid]),
                           'updatedAt': FieldValue.serverTimestamp(),
                         }, SetOptions(merge: true));
 
                         // Update user's saldo - add Rp. 100 (only if not already signed)
-                        final userDocRef = firestore.collection('users').doc(currentUid);
+                        final userDocRef = firestore
+                            .collection('users')
+                            .doc(currentUid);
                         final userDoc = await userDocRef.get();
 
                         if (userDoc.exists) {
                           final userData = userDoc.data();
-                          final currentSaldo = (userData?['saldo'] as int?) ?? 0;
+                          final currentSaldo =
+                              (userData?['saldo'] as int?) ?? 0;
                           final newSaldo = currentSaldo + 100;
 
-                          await userDocRef.update({'saldo': newSaldo, 'updatedAt': FieldValue.serverTimestamp()});
+                          await userDocRef.update({
+                            'saldo': newSaldo,
+                            'updatedAt': FieldValue.serverTimestamp(),
+                          });
                         }
 
                         Get.snackbar(
@@ -191,10 +269,15 @@ class KuesionerDetailView extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.surface,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     icon: const Icon(Icons.person_add_rounded),
-                    label: Text('Ajukan sebagai Responden', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    label: Text(
+                      'Ajukan sebagai Responden',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
               );
@@ -218,14 +301,21 @@ class KuesionerDetailView extends StatelessWidget {
                           // Main Card
                           Card(
                             elevation: 6,
-                            shadowColor: AppColors.primary.withValues(alpha: 0.1),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shadowColor: AppColors.primary.withValues(
+                              alpha: 0.1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [AppColors.surface, AppColors.background.withValues(alpha: 0.5)],
+                                  colors: [
+                                    AppColors.surface,
+                                    AppColors.background.withValues(alpha: 0.5),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -242,12 +332,17 @@ class KuesionerDetailView extends StatelessWidget {
                                         gradient: LinearGradient(
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
-                                          colors: [AppColors.primary, AppColors.primaryDark],
+                                          colors: [
+                                            AppColors.primary,
+                                            AppColors.primaryDark,
+                                          ],
                                         ),
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.primary.withValues(alpha: 0.3),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.3,
+                                            ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
                                           ),
@@ -268,13 +363,19 @@ class KuesionerDetailView extends StatelessWidget {
                                     // Content
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           // Question
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Icon(Icons.help_outline_rounded, color: AppColors.primary, size: 18),
+                                              Icon(
+                                                Icons.help_outline_rounded,
+                                                color: AppColors.primary,
+                                                size: 18,
+                                              ),
                                               const SizedBox(width: 8),
                                               Expanded(
                                                 child: Text(
@@ -282,7 +383,8 @@ class KuesionerDetailView extends StatelessWidget {
                                                   style: GoogleFonts.poppins(
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 15,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                     height: 1.4,
                                                   ),
                                                 ),
@@ -295,15 +397,22 @@ class KuesionerDetailView extends StatelessWidget {
                                             width: double.infinity,
                                             padding: const EdgeInsets.all(16),
                                             decoration: BoxDecoration(
-                                              color: AppColors.primaryLight.withValues(alpha: 0.08),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+                                              color: AppColors.primaryLight
+                                                  .withValues(alpha: 0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: AppColors.primaryLight
+                                                    .withValues(alpha: 0.2),
+                                              ),
                                             ),
                                             child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Icon(
-                                                  Icons.lightbulb_outline_rounded,
+                                                  Icons
+                                                      .lightbulb_outline_rounded,
                                                   color: AppColors.primary,
                                                   size: 18,
                                                 ),
@@ -313,7 +422,8 @@ class KuesionerDetailView extends StatelessWidget {
                                                     qa.answer,
                                                     style: GoogleFonts.poppins(
                                                       fontSize: 14,
-                                                      color: AppColors.textSecondary,
+                                                      color: AppColors
+                                                          .textSecondary,
                                                       height: 1.5,
                                                     ),
                                                   ),
@@ -337,7 +447,9 @@ class KuesionerDetailView extends StatelessWidget {
                               width: 60,
                               height: 60,
                               decoration: BoxDecoration(
-                                color: AppColors.primaryLight.withValues(alpha: 0.05),
+                                color: AppColors.primaryLight.withValues(
+                                  alpha: 0.05,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                             ),

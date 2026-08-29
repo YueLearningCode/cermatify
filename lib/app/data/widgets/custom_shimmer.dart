@@ -15,7 +15,8 @@ extension CustomShimmer on Widget {
 
     return Shimmer.fromColors(
       baseColor: baseColor ?? Colors.grey[300]!, // Warna dasar shimmer
-      highlightColor: highlightColor ?? Colors.grey[100]!, // Warna sorotan shimmer
+      highlightColor:
+          highlightColor ?? Colors.grey[100]!, // Warna sorotan shimmer
       child: this, // Widget yang diberi efek shimmer
     );
   }

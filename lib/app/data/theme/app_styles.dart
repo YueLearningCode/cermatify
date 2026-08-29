@@ -9,7 +9,10 @@ class AppStyles {
   static TextStyle headline1({Color? color}) => TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w600,
-    color: color ?? AppColors.black414, // Menggunakan warna default jika tidak diberikan warna.
+    color:
+        color ??
+        AppColors
+            .black414, // Menggunakan warna default jika tidak diberikan warna.
     fontFamily: GoogleFonts.poppins().fontFamily, // Menggunakan font Poppins.
   );
 
@@ -38,65 +41,129 @@ class AppStyles {
   );
 
   // Gaya teks untuk judul besar dengan ukuran font 40.
-  static TextStyle title1({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 40, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle title1({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 40,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks untuk judul dengan ukuran font 34.
-  static TextStyle title2({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 34, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle title2({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 34,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks untuk judul dengan ukuran font 30.
-  static TextStyle title3({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 30, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle title3({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 30,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks untuk judul dengan ukuran font 28.
-  static TextStyle title4({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 28, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle title4({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 28,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks untuk subtitle dengan ukuran font 24.
   static TextStyle subtitle1({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 24, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+      TextStyle(
+        fontSize: 24,
+        color: color,
+        fontWeight: fontWeight,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+      );
 
   // Gaya teks untuk subtitle dengan ukuran font 20.
   static TextStyle subtitle2({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 20, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+      TextStyle(
+        fontSize: 20,
+        color: color,
+        fontWeight: fontWeight,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+      );
 
   // Gaya teks untuk subtitle dengan ukuran font 18.
   static TextStyle subtitle3({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 18, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+      TextStyle(
+        fontSize: 18,
+        color: color,
+        fontWeight: fontWeight,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+      );
 
   // Gaya teks untuk subtitle dengan ukuran font 16.
   static TextStyle subtitle4({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 16, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+      TextStyle(
+        fontSize: 16,
+        color: color,
+        fontWeight: fontWeight,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+      );
 
   // Gaya teks untuk subtitle dengan ukuran font 15.
   static TextStyle subtitle5({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 15, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+      TextStyle(
+        fontSize: 15,
+        color: color,
+        fontWeight: fontWeight,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+      );
 
   // Gaya teks untuk tubuh utama dengan ukuran font 14.
-  static TextStyle body1({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 14, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle body1({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 14,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks untuk tubuh dengan ukuran font 13.
-  static TextStyle body2({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 13, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle body2({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 13,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks untuk tubuh dengan ukuran font 11.
-  static TextStyle body3({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 11, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle body3({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 11,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks kecil dengan ukuran font 9.
-  static TextStyle small({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 9, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+  static TextStyle small({Color? color, FontWeight? fontWeight}) => TextStyle(
+    fontSize: 9,
+    color: color,
+    fontWeight: fontWeight,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
 
   // Gaya teks sangat kecil dengan ukuran font 8.
   static TextStyle verySmall({Color? color, FontWeight? fontWeight}) =>
-      TextStyle(fontSize: 8, color: color, fontWeight: fontWeight, fontFamily: GoogleFonts.poppins().fontFamily);
+      TextStyle(
+        fontSize: 8,
+        color: color,
+        fontWeight: fontWeight,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+      );
 
   // Gaya teks untuk tautan dengan ukuran font 18.
   static TextStyle link({Color? color, FontWeight? fontWeight}) => TextStyle(
     fontSize: 18,
-    color: color ?? Colors.blue, // Menggunakan biru sebagai default jika tidak ada warna.
+    color:
+        color ??
+        Colors.blue, // Menggunakan biru sebagai default jika tidak ada warna.
   );
 
   // Bobot font yang digunakan dalam aplikasi

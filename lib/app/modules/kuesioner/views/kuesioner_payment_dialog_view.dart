@@ -12,7 +12,9 @@ class KuesionerPaymentDialogView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CreateKuesionerController controller = Get.put(CreateKuesionerController());
+    final CreateKuesionerController controller = Get.put(
+      CreateKuesionerController(),
+    );
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -23,7 +25,9 @@ class KuesionerPaymentDialogView extends StatelessWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 480 ? 16 : 24),
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 480 ? 16 : 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,10 +38,17 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                 children: [
                   Text(
                     'Pembayaran Kuesioner',
-                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppColors.textSecondary,
+                    ),
                     onPressed: () => Get.back(),
                   ),
                 ],
@@ -73,7 +84,11 @@ class KuesionerPaymentDialogView extends StatelessWidget {
               // QR Code Section
               Text(
                 'Payment QR Code',
-                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 12),
               Container(
@@ -97,15 +112,24 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         constraints: const BoxConstraints(maxWidth: 280),
                         child: AspectRatio(
                           aspectRatio: 1,
-                          child: Image.asset('assets/images/qrqris.jpeg', fit: BoxFit.contain),
+                          child: Image.asset(
+                            'assets/images/qrqris.jpeg',
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     // Price display
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -143,7 +167,11 @@ class KuesionerPaymentDialogView extends StatelessWidget {
               // Payment Proof Section
               Text(
                 'Payment Proof',
-                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 12),
               Obx(() {
@@ -159,7 +187,10 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.memory(controller.paymentProofImage.value!.bytes, fit: BoxFit.cover),
+                          child: Image.memory(
+                            controller.paymentProofImage.value!.bytes,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -170,23 +201,26 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         overflowAlignment: OverflowBarAlignment.center,
                         children: [
                           OutlinedButton.icon(
-                              onPressed: () => controller.pickPaymentProofImage(ImageSource.gallery),
-                              icon: const Icon(Icons.edit, size: 18),
-                              label: Text('Change', style: GoogleFonts.poppins()),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.primary),
-                              ),
+                            onPressed: () => controller.pickPaymentProofImage(
+                              ImageSource.gallery,
                             ),
+                            icon: const Icon(Icons.edit, size: 18),
+                            label: Text('Change', style: GoogleFonts.poppins()),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(color: AppColors.primary),
+                            ),
+                          ),
                           OutlinedButton.icon(
-                              onPressed: () => controller.removePaymentProofImage(),
-                              icon: const Icon(Icons.delete_outline, size: 18),
-                              label: Text('Remove', style: GoogleFonts.poppins()),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.redColor,
-                                side: const BorderSide(color: AppColors.redColor),
-                              ),
+                            onPressed: () =>
+                                controller.removePaymentProofImage(),
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            label: Text('Remove', style: GoogleFonts.poppins()),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.redColor,
+                              side: const BorderSide(color: AppColors.redColor),
                             ),
+                          ),
                         ],
                       ),
                     ],
@@ -200,16 +234,26 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+                          border: Border.all(
+                            color: AppColors.border,
+                            style: BorderStyle.solid,
+                          ),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.image_outlined, size: 48, color: AppColors.textSecondary),
+                            Icon(
+                              Icons.image_outlined,
+                              size: 48,
+                              color: AppColors.textSecondary,
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               'No payment proof uploaded',
-                              style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -223,24 +267,36 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                         children: [
                           if (!kIsWeb) ...[
                             OutlinedButton.icon(
-                                onPressed: () => controller.pickPaymentProofImage(ImageSource.camera),
-                                icon: const Icon(Icons.camera_alt, size: 18),
-                                label: Text('Camera', style: GoogleFonts.poppins()),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.primary,
-                                  side: const BorderSide(color: AppColors.primary),
-                                ),
+                              onPressed: () => controller.pickPaymentProofImage(
+                                ImageSource.camera,
                               ),
-                          ],
-                          OutlinedButton.icon(
-                              onPressed: () => controller.pickPaymentProofImage(ImageSource.gallery),
-                              icon: const Icon(Icons.photo_library, size: 18),
-                              label: Text('Gallery', style: GoogleFonts.poppins()),
+                              icon: const Icon(Icons.camera_alt, size: 18),
+                              label: Text(
+                                'Camera',
+                                style: GoogleFonts.poppins(),
+                              ),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.primary),
+                                side: const BorderSide(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
+                          ],
+                          OutlinedButton.icon(
+                            onPressed: () => controller.pickPaymentProofImage(
+                              ImageSource.gallery,
+                            ),
+                            icon: const Icon(Icons.photo_library, size: 18),
+                            label: Text(
+                              'Gallery',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(color: AppColors.primary),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -257,40 +313,54 @@ class KuesionerPaymentDialogView extends StatelessWidget {
                   overflowAlignment: OverflowBarAlignment.end,
                   children: [
                     OutlinedButton(
-                        onPressed: controller.isLoading.value ? null : () => Get.back(),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary,
-                          side: const BorderSide(color: AppColors.border),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text('Cancel', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : () => Get.back(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: const BorderSide(color: AppColors.border),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      ),
+                    ),
                     ElevatedButton(
-                        onPressed: controller.isLoading.value || controller.paymentProofImage.value == null
-                            ? null
-                            : () async {
-                                final orderId = await controller.createOrder();
-                                if (orderId != null && orderId.isNotEmpty) {
-                                  // Return orderId to parent, don't create kuesioner yet
-                                  Get.back(result: orderId);
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.surface,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: controller.isLoading.value
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
-                                ),
-                              )
-                            : Text('Continue', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      onPressed:
+                          controller.isLoading.value ||
+                              controller.paymentProofImage.value == null
+                          ? null
+                          : () async {
+                              final orderId = await controller.createOrder();
+                              if (orderId != null && orderId.isNotEmpty) {
+                                // Return orderId to parent, don't create kuesioner yet
+                                Get.back(result: orderId);
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.surface,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
+                      child: controller.isLoading.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.surface,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              'Continue',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
                   ],
                 ),
               ),
@@ -309,13 +379,21 @@ class KuesionerPaymentDialogView extends StatelessWidget {
           width: 80,
           child: Text(
             label,
-            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],

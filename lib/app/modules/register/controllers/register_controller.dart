@@ -25,7 +25,8 @@ class RegisterController extends GetxController {
   var selectedKampus = ''.obs; // Store kampus ID
 
   // Jurusan dropdown - fetched from Firebase, filtered by kampus
-  final listJurusan = <Map<String, String>>[].obs; // [{id: '...', name: '...', kampusId: '...'}]
+  final listJurusan = <Map<String, String>>[]
+      .obs; // [{id: '...', name: '...', kampusId: '...'}]
   var selectedJurusan = ''.obs; // Store jurusan ID
 
   // Semester dropdown (available for all users)
@@ -37,13 +38,16 @@ class RegisterController extends GetxController {
   var selectedMentorRole = ''.obs;
 
   // Layanan (services) for mentors only - fetched from Firebase
-  final listLayanan = <Map<String, String>>[].obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
+  final listLayanan = <Map<String, String>>[]
+      .obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
   var selectedLayanan = <String>[].obs; // Store layanan IDs
 
   // Get available layanan filtered by mentor role
   List<Map<String, String>> get availableLayanan {
     if (selectedMentorRole.value.isEmpty) return [];
-    return listLayanan.where((layanan) => layanan['type'] == selectedMentorRole.value).toList();
+    return listLayanan
+        .where((layanan) => layanan['type'] == selectedMentorRole.value)
+        .toList();
   }
 
   var agreeToTerms = false.obs;
@@ -119,7 +123,11 @@ class RegisterController extends GetxController {
       listLayanan.value = layananSnapshot.docs
           .map((doc) {
             final data = doc.data();
-            return {'id': doc.id, 'name': data['name']?.toString() ?? '', 'type': data['type']?.toString() ?? ''};
+            return {
+              'id': doc.id,
+              'name': data['name']?.toString() ?? '',
+              'type': data['type']?.toString() ?? '',
+            };
           })
           .toList()
           .cast<Map<String, String>>();
@@ -138,7 +146,9 @@ class RegisterController extends GetxController {
   // Get filtered jurusan list based on selected kampus
   List<Map<String, String>> get filteredJurusan {
     if (selectedKampus.value.isEmpty) return [];
-    return listJurusan.where((jurusan) => jurusan['kampusId'] == selectedKampus.value).toList();
+    return listJurusan
+        .where((jurusan) => jurusan['kampusId'] == selectedKampus.value)
+        .toList();
   }
 
   @override
@@ -175,7 +185,10 @@ class RegisterController extends GetxController {
     final confirmPassword = confirmPasswordController.text.trim();
 
     // Check if all required fields are filled
-    if (nama.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (nama.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       isFormValid.value = false;
       return;
     }
@@ -231,7 +244,10 @@ class RegisterController extends GetxController {
         return;
       }
       // Check if it's a valid URL format
-      final urlPattern = RegExp(r'^https?://[^\s/$.?#].[^\s]*$', caseSensitive: false);
+      final urlPattern = RegExp(
+        r'^https?://[^\s/$.?#].[^\s]*$',
+        caseSensitive: false,
+      );
       if (!urlPattern.hasMatch(linkedin)) {
         isFormValid.value = false;
         return;
@@ -408,11 +424,15 @@ class RegisterController extends GetxController {
         );
         return;
       }
-      final urlPattern = RegExp(r'^https?://[^\s/$.?#].[^\s]*$', caseSensitive: false);
+      final urlPattern = RegExp(
+        r'^https?://[^\s/$.?#].[^\s]*$',
+        caseSensitive: false,
+      );
       if (!urlPattern.hasMatch(linkedin)) {
         CustomSnackbar.show(
           title: 'Validasi Error',
-          message: 'Masukkan link LinkedIn yang valid\nContoh: https://linkedin.com/in/username',
+          message:
+              'Masukkan link LinkedIn yang valid\nContoh: https://linkedin.com/in/username',
           backgroundColor: AppColors.redColor,
         );
         return;
@@ -433,10 +453,11 @@ class RegisterController extends GetxController {
       isLoading.value = true;
 
       // Registrasi pengguna menggunakan Firebase Authentication
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      final UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       // Update display name pengguna
       await userCredential.user?.updateDisplayName(namaController.text.trim());
@@ -446,13 +467,22 @@ class RegisterController extends GetxController {
 
       // Get kampus and jurusan names from IDs
       final kampusName =
-          listKampus.firstWhereOrNull((k) => k['id'] == selectedKampus.value)?['name'] ?? selectedKampus.value;
+          listKampus.firstWhereOrNull(
+            (k) => k['id'] == selectedKampus.value,
+          )?['name'] ??
+          selectedKampus.value;
       final jurusanName =
-          filteredJurusan.firstWhereOrNull((j) => j['id'] == selectedJurusan.value)?['name'] ?? selectedJurusan.value;
+          filteredJurusan.firstWhereOrNull(
+            (j) => j['id'] == selectedJurusan.value,
+          )?['name'] ??
+          selectedJurusan.value;
 
       // Get layanan names from IDs
       final layananNames = selectedLayanan.map((id) {
-        return availableLayanan.firstWhereOrNull((l) => l['id'] == id)?['name'] ?? id;
+        return availableLayanan.firstWhereOrNull(
+              (l) => l['id'] == id,
+            )?['name'] ??
+            id;
       }).toList();
 
       // Menyimpan data pengguna di Firestore
@@ -466,7 +496,8 @@ class RegisterController extends GetxController {
         'jurusan': jurusanName,
         'jurusanId': selectedJurusan.value,
         'semester': selectedSemester.value,
-        'image': 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500',
+        'image':
+            'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png?20210521171500',
         'role': userRole.value,
         'status': 'active',
         'createdAt': FieldValue.serverTimestamp(),
@@ -499,7 +530,11 @@ class RegisterController extends GetxController {
         backgroundColor: AppColors.greenColor,
       );
     } on FirebaseAuthException catch (e) {
-      CustomSnackbar.show(title: 'Error', message: "${e.message}", backgroundColor: AppColors.redColor);
+      CustomSnackbar.show(
+        title: 'Error',
+        message: "${e.message}",
+        backgroundColor: AppColors.redColor,
+      );
     } finally {
       isLoading.value = false;
     }

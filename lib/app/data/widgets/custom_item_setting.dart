@@ -18,7 +18,11 @@ Widget customItemSetting(IconData icon, String title, VoidCallback onTap) {
             Icon(icon, color: AppColors.primaryColor).rightPadded16(),
             Text(title, style: AppStyles.body1(fontWeight: FontWeight.w300)),
             const Spacer(),
-            const Icon(Icons.arrow_forward_ios, size: 15, color: AppColors.primaryColor),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 15,
+              color: AppColors.primaryColor,
+            ),
           ],
         ),
       ),

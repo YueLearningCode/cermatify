@@ -101,13 +101,18 @@ class CreateKuesionerController extends GetxController {
 
       final secureUrl = await _mediaUploadService.uploadImage(
         bytes: image.bytes,
-        filename: 'kuesioner_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
+        filename:
+            'kuesioner_payment_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
 
       // Find admin user for mentorId
       String? adminMentorId;
       try {
-        final adminSnapshot = await _firestore.collection('users').where('role', isEqualTo: 'admin').limit(1).get();
+        final adminSnapshot = await _firestore
+            .collection('users')
+            .where('role', isEqualTo: 'admin')
+            .limit(1)
+            .get();
         if (adminSnapshot.docs.isNotEmpty) {
           adminMentorId = adminSnapshot.docs.first.id;
         }
@@ -128,7 +133,9 @@ class CreateKuesionerController extends GetxController {
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      final DocumentReference orderRef = await _firestore.collection('orders').add(orderData);
+      final DocumentReference orderRef = await _firestore
+          .collection('orders')
+          .add(orderData);
       final String orderId = orderRef.id;
 
       // Return orderId - don't create kuesioner yet, user needs to fill criteria first
@@ -190,10 +197,18 @@ class CreateKuesionerController extends GetxController {
         'orderId': orderId, // Use the orderId passed as parameter
         'link': link, // Link is required and validated above
         'status': 'waiting verification',
-        'rentangUsia': selectedRentangUsia.value.isEmpty ? null : selectedRentangUsia.value,
-        'jenisKelamin': selectedJenisKelamin.value.isEmpty ? null : selectedJenisKelamin.value,
-        'tingkatPenghasilan': selectedTingkatPenghasilan.value.isEmpty ? null : selectedTingkatPenghasilan.value,
-        'pendidikanTerakhir': selectedPendidikanTerakhir.value.isEmpty ? null : selectedPendidikanTerakhir.value,
+        'rentangUsia': selectedRentangUsia.value.isEmpty
+            ? null
+            : selectedRentangUsia.value,
+        'jenisKelamin': selectedJenisKelamin.value.isEmpty
+            ? null
+            : selectedJenisKelamin.value,
+        'tingkatPenghasilan': selectedTingkatPenghasilan.value.isEmpty
+            ? null
+            : selectedTingkatPenghasilan.value,
+        'pendidikanTerakhir': selectedPendidikanTerakhir.value.isEmpty
+            ? null
+            : selectedPendidikanTerakhir.value,
         'answers': [],
         'signedBy': [],
         'createdAt': FieldValue.serverTimestamp(),
@@ -201,7 +216,9 @@ class CreateKuesionerController extends GetxController {
       };
 
       // Save to Firestore - link is guaranteed to be non-empty due to validation above
-      final docRef = await _firestore.collection('kuesioners').add(kuesionerData);
+      final docRef = await _firestore
+          .collection('kuesioners')
+          .add(kuesionerData);
 
       // Verify link was saved (for debugging)
       AppLogger.info('Kuesioner created with ID: ${docRef.id}');

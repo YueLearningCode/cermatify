@@ -1,10 +1,11 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/responsive_layout.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const double _mobileMaxWidth = 430;
+const double _landingMaxWidth = 1180;
 const double _compactBreakpoint = 360;
 
 bool _isCompact(BuildContext context) {
@@ -21,7 +22,7 @@ class LandingView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _mobileMaxWidth),
+            constraints: const BoxConstraints(maxWidth: _landingMaxWidth),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 const horizontalPadding = 16.0;
@@ -43,11 +44,7 @@ class LandingView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const _HeroSection(),
-                            const SizedBox(height: 24),
-                            const _TrustBar(),
-                            const SizedBox(height: 28),
-                            const _VisualShowcase(),
+                            const _LandingIntro(),
                             const SizedBox(height: 30),
                             _SectionHeader(
                               title: 'Solusi Cermat untuk Kebutuhan Akademik',
@@ -304,6 +301,39 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
+class _LandingIntro extends StatelessWidget {
+  const _LandingIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    return ResponsiveLayout(
+      mobile: (context, constraints) => const Column(
+        children: [
+          _HeroSection(),
+          SizedBox(height: 24),
+          _TrustBar(),
+          SizedBox(height: 28),
+          _VisualShowcase(),
+        ],
+      ),
+      desktop: (context, constraints) => const Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 6, child: _HeroSection()),
+              SizedBox(width: 24),
+              Expanded(flex: 5, child: _VisualShowcase()),
+            ],
+          ),
+          SizedBox(height: 24),
+          _TrustBar(),
+        ],
+      ),
+    );
+  }
+}
+
 class _TrustBar extends StatelessWidget {
   const _TrustBar();
 
@@ -398,31 +428,43 @@ class _FeatureGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        _FeatureTile(
-          icon: Icons.school_outlined,
-          title: 'Paperlink',
-          description: 'Cari mentor dan dukungan untuk kebutuhan akademik.',
-          color: AppColors.primaryLight,
-        ),
-        SizedBox(height: 12),
-        _FeatureTile(
-          icon: Icons.assignment_outlined,
-          title: 'Kuesioner',
-          description:
-              'Buat dan kelola kebutuhan data responden dengan lebih rapi.',
-          color: AppColors.primary,
-        ),
-        SizedBox(height: 12),
-        _FeatureTile(
-          icon: Icons.groups_2_outlined,
-          title: 'Sourcelink',
-          description:
-              'Temukan sumber dan komunitas pendukung dalam satu tempat.',
-          color: AppColors.primaryDark,
-        ),
-      ],
+    const items = [
+      _FeatureTile(
+        icon: Icons.school_outlined,
+        title: 'Paperlink',
+        description: 'Cari mentor dan dukungan untuk kebutuhan akademik.',
+        color: AppColors.primaryLight,
+      ),
+      _FeatureTile(
+        icon: Icons.assignment_outlined,
+        title: 'Kuesioner',
+        description:
+            'Buat dan kelola kebutuhan data responden dengan lebih rapi.',
+        color: AppColors.primary,
+      ),
+      _FeatureTile(
+        icon: Icons.groups_2_outlined,
+        title: 'Sourcelink',
+        description:
+            'Temukan sumber dan komunitas pendukung dalam satu tempat.',
+        color: AppColors.primaryDark,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900 ? 3 : 1;
+        const spacing = 12.0;
+        final width =
+            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final item in items) SizedBox(width: width, child: item),
+          ],
+        );
+      },
     );
   }
 }
@@ -432,24 +474,37 @@ class _HowItWorks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        _StepTile(
-          number: '1',
-          title: 'Daftar Akun',
-          description: 'Pilih peran pengguna dan lengkapi data dasar.',
-        ),
-        _StepTile(
-          number: '2',
-          title: 'Pilih Layanan',
-          description: 'Masuk ke fitur yang sesuai dengan kebutuhanmu.',
-        ),
-        _StepTile(
-          number: '3',
-          title: 'Mulai Proses',
-          description: 'Ikuti alur aplikasi sampai kebutuhan akademik selesai.',
-        ),
-      ],
+    const items = [
+      _StepTile(
+        number: '1',
+        title: 'Daftar Akun',
+        description: 'Pilih peran pengguna dan lengkapi data dasar.',
+      ),
+      _StepTile(
+        number: '2',
+        title: 'Pilih Layanan',
+        description: 'Masuk ke fitur yang sesuai dengan kebutuhanmu.',
+      ),
+      _StepTile(
+        number: '3',
+        title: 'Mulai Proses',
+        description: 'Ikuti alur aplikasi sampai kebutuhan akademik selesai.',
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900 ? 3 : 1;
+        const spacing = 12.0;
+        final width =
+            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final item in items) SizedBox(width: width, child: item),
+          ],
+        );
+      },
     );
   }
 }
@@ -459,22 +514,34 @@ class _Testimonials extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        _QuoteCard(
-          quote:
-              'Cermatify membantu saya menemukan arahan riset tanpa harus bolak-balik tanya secara manual.',
-          name: 'Mahasiswa',
-          role: 'Pengguna Cermatify',
-        ),
-        SizedBox(height: 12),
-        _QuoteCard(
-          quote:
-              'Alur layanan terasa praktis dan cocok dibuka dari ponsel saat sedang mengerjakan tugas.',
-          name: 'Mentor',
-          role: 'Pendamping Akademik',
-        ),
-      ],
+    const items = [
+      _QuoteCard(
+        quote:
+            'Cermatify membantu saya menemukan arahan riset tanpa harus bolak-balik tanya secara manual.',
+        name: 'Mahasiswa',
+        role: 'Pengguna Cermatify',
+      ),
+      _QuoteCard(
+        quote:
+            'Alur layanan terasa praktis dan cocok dibuka dari ponsel saat sedang mengerjakan tugas.',
+        name: 'Mentor',
+        role: 'Pendamping Akademik',
+      ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 700 ? 2 : 1;
+        const spacing = 12.0;
+        final width =
+            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final item in items) SizedBox(width: width, child: item),
+          ],
+        );
+      },
     );
   }
 }
@@ -655,7 +722,7 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(
       context,
-    ).width.clamp(320.0, _mobileMaxWidth).toDouble();
+    ).width.clamp(320.0, _landingMaxWidth).toDouble();
     final availableWidth = screenWidth - (compact ? 32 : 40);
     final cardWidth = compact
         ? (availableWidth - 10) / 2

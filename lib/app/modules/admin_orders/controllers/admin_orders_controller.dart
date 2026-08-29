@@ -11,7 +11,8 @@ class AdminOrdersController extends GetxController {
   final orders = <Map<String, dynamic>>[].obs;
   final isLoading = false.obs;
   final isUpdating = false.obs;
-  final selectedStatusFilter = 'all'.obs; // 'all', 'waiting verification', 'progress', 'rejected', 'completed'
+  final selectedStatusFilter = 'all'
+      .obs; // 'all', 'waiting verification', 'progress', 'rejected', 'completed'
 
   @override
   void onInit() {
@@ -32,7 +33,9 @@ class AdminOrdersController extends GetxController {
 
       try {
         // Try with orderBy first
-        final querySnapshot = await query.orderBy('createdAt', descending: true).get();
+        final querySnapshot = await query
+            .orderBy('createdAt', descending: true)
+            .get();
         orders.value = querySnapshot.docs.map((doc) {
           final data = doc.data();
           return {'id': doc.id, ...data};
@@ -73,10 +76,14 @@ class AdminOrdersController extends GetxController {
         // Fetch user name
         if (userId != null && userId.isNotEmpty) {
           try {
-            final userDoc = await _firestore.collection('users').doc(userId).get();
+            final userDoc = await _firestore
+                .collection('users')
+                .doc(userId)
+                .get();
             if (userDoc.exists) {
               final userData = userDoc.data();
-              orderMap['userName'] = userData?['nama'] ?? userData?['name'] ?? 'Unknown User';
+              orderMap['userName'] =
+                  userData?['nama'] ?? userData?['name'] ?? 'Unknown User';
             } else {
               orderMap['userName'] = 'Unknown User';
             }
@@ -91,10 +98,16 @@ class AdminOrdersController extends GetxController {
         // Fetch mentor name
         if (mentorId != null && mentorId.isNotEmpty) {
           try {
-            final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+            final mentorDoc = await _firestore
+                .collection('users')
+                .doc(mentorId)
+                .get();
             if (mentorDoc.exists) {
               final mentorData = mentorDoc.data();
-              orderMap['mentorName'] = mentorData?['nama'] ?? mentorData?['name'] ?? 'Unknown Mentor';
+              orderMap['mentorName'] =
+                  mentorData?['nama'] ??
+                  mentorData?['name'] ??
+                  'Unknown Mentor';
             } else {
               orderMap['mentorName'] = 'Unknown Mentor';
             }
@@ -109,10 +122,14 @@ class AdminOrdersController extends GetxController {
         // Fetch layanan name
         if (layananId != null && layananId.isNotEmpty) {
           try {
-            final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+            final layananDoc = await _firestore
+                .collection('layanan')
+                .doc(layananId)
+                .get();
             if (layananDoc.exists) {
               final layananData = layananDoc.data();
-              orderMap['layananName'] = layananData?['name'] ?? 'Unknown Layanan';
+              orderMap['layananName'] =
+                  layananData?['name'] ?? 'Unknown Layanan';
             } else {
               orderMap['layananName'] = 'Unknown Layanan';
             }
@@ -159,23 +176,31 @@ class AdminOrdersController extends GetxController {
       });
 
       // If status changed to 'progress' (approved) and it wasn't already approved, add price to mentor saldo
-      if ((newStatus.toLowerCase() == 'progress' || newStatus.toLowerCase() == 'approved') &&
+      if ((newStatus.toLowerCase() == 'progress' ||
+              newStatus.toLowerCase() == 'approved') &&
           mentorId != null &&
           mentorId.isNotEmpty &&
           price > 0 &&
           currentStatus.toLowerCase() != 'progress' &&
           currentStatus.toLowerCase() != 'approved') {
         // Get current mentor saldo
-        final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+        final mentorDoc = await _firestore
+            .collection('users')
+            .doc(mentorId)
+            .get();
         if (mentorDoc.exists) {
           final mentorData = mentorDoc.data() as Map<String, dynamic>;
           final currentSaldo = (mentorData['saldo'] as int?) ?? 0;
           final newSaldo = currentSaldo + price;
 
           // Update mentor saldo
-          await _firestore.collection('users').doc(mentorId).update({'saldo': newSaldo});
+          await _firestore.collection('users').doc(mentorId).update({
+            'saldo': newSaldo,
+          });
 
-          AppLogger.info('Added $price to mentor $mentorId saldo. New saldo: $newSaldo');
+          AppLogger.info(
+            'Added $price to mentor $mentorId saldo. New saldo: $newSaldo',
+          );
         }
       }
 
@@ -250,7 +275,11 @@ class AdminOrdersController extends GetxController {
       return orders;
     }
     return orders
-        .where((order) => order['status']?.toString().toLowerCase() == selectedStatusFilter.value.toLowerCase())
+        .where(
+          (order) =>
+              order['status']?.toString().toLowerCase() ==
+              selectedStatusFilter.value.toLowerCase(),
+        )
         .toList();
   }
 }

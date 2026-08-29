@@ -14,26 +14,46 @@ class GroupView extends GetView<GroupController> {
       appBar: AppBar(
         title: Text(
           "Group",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.group_outlined, size: 80, color: AppColors.primary.withValues(alpha: 0.5)),
+            Icon(
+              Icons.group_outlined,
+              size: 80,
+              color: AppColors.primary.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               "Group Management",
-              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 8),
-            Text("Manage user groups here", style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary)),
+            Text(
+              "Manage user groups here",
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ],
         ),
       ),

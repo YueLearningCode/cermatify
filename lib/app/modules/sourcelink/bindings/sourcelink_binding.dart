@@ -5,8 +5,6 @@ import '../controllers/sourcelink_controller.dart';
 class SourcelinkBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<SourcelinkController>(
-      () => SourcelinkController(),
-    );
+    Get.lazyPut<SourcelinkController>(() => SourcelinkController());
   }
 }

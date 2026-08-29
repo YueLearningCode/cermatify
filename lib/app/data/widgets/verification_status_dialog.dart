@@ -26,7 +26,9 @@ class VerificationStatusDialog extends StatelessWidget {
           maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 480 ? 16 : 24),
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 480 ? 16 : 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,59 +42,71 @@ class VerificationStatusDialog extends StatelessWidget {
                 ),
               ),
               Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Progress Indicator
-                SizedBox(
-                  width: 80,
-                  height: 80,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Background circle
-                      SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: CircularProgressIndicator(
-                          value: progressPercentage / 100,
-                          strokeWidth: 8,
-                          backgroundColor: AppColors.redColor.withValues(alpha: 0.2),
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.redColor),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Progress Indicator
+                  SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Background circle
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: CircularProgressIndicator(
+                            value: progressPercentage / 100,
+                            strokeWidth: 8,
+                            backgroundColor: AppColors.redColor.withValues(
+                              alpha: 0.2,
+                            ),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.redColor,
+                            ),
+                          ),
                         ),
-                      ),
-                      // Percentage text
-                      Text(
-                        '$progressPercentage%',
-                        style: AppStyles.headline4(color: AppColors.black414).copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                        // Percentage text
+                        Text(
+                          '$progressPercentage%',
+                          style: AppStyles.headline4(
+                            color: AppColors.black414,
+                          ).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20),
-                // Title and Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Verifikasi Dokumen',
-                        style: AppStyles.headline3(color: AppColors.black414).copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Estimasi : $estimateTime',
-                        style: AppStyles.body1(color: AppColors.primaryColor).copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Data Anda sedang dalam proses verifikasi dokumen, mohon ditunggu',
-                        style: AppStyles.body1(color: AppColors.greyTextSecondaryColor),
-                      ),
-                    ],
+                  const SizedBox(width: 20),
+                  // Title and Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Verifikasi Dokumen',
+                          style: AppStyles.headline3(
+                            color: AppColors.black414,
+                          ).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Estimasi : $estimateTime',
+                          style: AppStyles.body1(
+                            color: AppColors.primaryColor,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Data Anda sedang dalam proses verifikasi dokumen, mohon ditunggu',
+                          style: AppStyles.body1(
+                            color: AppColors.greyTextSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             ],
           ),
         ),

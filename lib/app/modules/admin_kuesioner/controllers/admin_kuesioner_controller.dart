@@ -14,7 +14,8 @@ class AdminKuesionerController extends GetxController {
   final kuesioners = <Kuesioner>[].obs;
   final isLoading = false.obs;
   final isUpdating = false.obs;
-  final selectedStatusFilter = 'all'.obs; // 'all', 'waiting verification', 'approved', 'rejected'
+  final selectedStatusFilter =
+      'all'.obs; // 'all', 'waiting verification', 'approved', 'rejected'
 
   String get currentUserId => _auth.currentUser?.uid ?? '';
 
@@ -37,7 +38,9 @@ class AdminKuesionerController extends GetxController {
 
       try {
         // Try with orderBy first
-        final querySnapshot = await query.orderBy('createdAt', descending: true).get();
+        final querySnapshot = await query
+            .orderBy('createdAt', descending: true)
+            .get();
         final kuesionersList = querySnapshot.docs.map((doc) {
           return Kuesioner.fromJson(doc.data(), doc.id);
         }).toList();
@@ -68,12 +71,18 @@ class AdminKuesionerController extends GetxController {
     }
   }
 
-  Future<void> updateKuesionerStatus(String kuesionerId, String newStatus) async {
+  Future<void> updateKuesionerStatus(
+    String kuesionerId,
+    String newStatus,
+  ) async {
     try {
       isUpdating.value = true;
 
       // Get current kuesioner data
-      final kuesionerDoc = await _firestore.collection('kuesioners').doc(kuesionerId).get();
+      final kuesionerDoc = await _firestore
+          .collection('kuesioners')
+          .doc(kuesionerId)
+          .get();
       if (!kuesionerDoc.exists) {
         CustomSnackbar.show(
           title: 'Error',

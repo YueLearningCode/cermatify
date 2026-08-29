@@ -15,13 +15,20 @@ class MentorDetailView extends GetView<UsersController> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Get.snackbar('Error', 'Could not launch $url', backgroundColor: AppColors.redColor, colorText: AppColors.surface);
+      Get.snackbar(
+        'Error',
+        'Could not launch $url',
+        backgroundColor: AppColors.redColor,
+        colorText: AppColors.surface,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final mentor = controller.mentorsList.firstWhereOrNull((m) => m.id == mentorId);
+    final mentor = controller.mentorsList.firstWhereOrNull(
+      (m) => m.id == mentorId,
+    );
 
     if (mentor == null) {
       return Scaffold(
@@ -44,24 +51,39 @@ class MentorDetailView extends GetView<UsersController> {
         final semester = mentorData?['semester']?.toString() ?? '';
         final mentorRole = mentorData?['mentorRole']?.toString() ?? '';
         final layanan = mentorData?['layanan'];
-        final layananList = layanan is List ? List<String>.from(layanan) : <String>[];
-        final noTelp = mentorData?['noTelp']?.toString() ?? mentorData?['noTelepon']?.toString() ?? '';
+        final layananList = layanan is List
+            ? List<String>.from(layanan)
+            : <String>[];
+        final noTelp =
+            mentorData?['noTelp']?.toString() ??
+            mentorData?['noTelepon']?.toString() ??
+            '';
 
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
             title: Text(
               'Mentor Detail',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: AppColors.surface,
+              ),
             ),
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.surface,
             elevation: 0,
             centerTitle: true,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(20))),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+            ),
           ),
           body: Obx(() {
-            final currentMentor = controller.mentorsList.firstWhereOrNull((m) => m.id == mentorId) ?? mentor;
+            final currentMentor =
+                controller.mentorsList.firstWhereOrNull(
+                  (m) => m.id == mentorId,
+                ) ??
+                mentor;
             final verificationStatus = currentMentor.verificationStatus;
             final isVerified = verificationStatus == 'verified';
 
@@ -78,14 +100,24 @@ class MentorDetailView extends GetView<UsersController> {
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primary,
+                                AppColors.primaryLight,
+                              ],
+                            ),
                           ),
                           child: CircleAvatar(
                             radius: 60,
                             backgroundColor: AppColors.surface,
-                            backgroundImage: currentMentor.image != null && currentMentor.image!.isNotEmpty
-                                ? NetworkImage(currentMentor.image!) as ImageProvider
-                                : const AssetImage('assets/images/profile_dummy.jpg'),
+                            backgroundImage:
+                                currentMentor.image != null &&
+                                    currentMentor.image!.isNotEmpty
+                                ? NetworkImage(currentMentor.image!)
+                                      as ImageProvider
+                                : const AssetImage(
+                                    'assets/images/profile_dummy.jpg',
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -108,14 +140,19 @@ class MentorDetailView extends GetView<UsersController> {
                         ),
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: isVerified
                                 ? AppColors.greenColor.withValues(alpha: 0.1)
                                 : AppColors.redColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isVerified ? AppColors.greenColor : AppColors.redColor,
+                              color: isVerified
+                                  ? AppColors.greenColor
+                                  : AppColors.redColor,
                               width: 1.5,
                             ),
                           ),
@@ -125,15 +162,23 @@ class MentorDetailView extends GetView<UsersController> {
                               Icon(
                                 isVerified ? Icons.check_circle : Icons.pending,
                                 size: 16,
-                                color: isVerified ? AppColors.greenColor : AppColors.redColor,
+                                color: isVerified
+                                    ? AppColors.greenColor
+                                    : AppColors.redColor,
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                isVerified ? 'Verified' : (verificationStatus == 'pending' ? 'Pending' : 'Pending'),
+                                isVerified
+                                    ? 'Verified'
+                                    : (verificationStatus == 'pending'
+                                          ? 'Pending'
+                                          : 'Pending'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: isVerified ? AppColors.greenColor : AppColors.redColor,
+                                  color: isVerified
+                                      ? AppColors.greenColor
+                                      : AppColors.redColor,
                                 ),
                               ),
                             ],
@@ -146,7 +191,11 @@ class MentorDetailView extends GetView<UsersController> {
                   // Information Section
                   Text(
                     'Information',
-                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _buildInfoCard(
@@ -205,7 +254,9 @@ class MentorDetailView extends GetView<UsersController> {
                       label: 'Mentor Role',
                       value: mentorRole == 'complink'
                           ? 'CompLink'
-                          : (mentorRole == 'paperlink' ? 'PaperLink' : mentorRole),
+                          : (mentorRole == 'paperlink'
+                                ? 'PaperLink'
+                                : mentorRole),
                       iconColor: AppColors.primary,
                     ),
                   ],
@@ -218,15 +269,22 @@ class MentorDetailView extends GetView<UsersController> {
                       iconColor: AppColors.primaryLight,
                     ),
                   ],
-                  if (linkedin.isNotEmpty) ...[const SizedBox(height: 12), _buildLinkedInCard(linkedin)],
+                  if (linkedin.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildLinkedInCard(linkedin),
+                  ],
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     icon: Icons.badge_outlined,
                     label: 'Verification Status',
                     value: isVerified
                         ? 'Verified Mentor'
-                        : (verificationStatus == 'pending' ? 'Pending Verification' : 'Pending Verification'),
-                    iconColor: isVerified ? AppColors.greenColor : AppColors.redColor,
+                        : (verificationStatus == 'pending'
+                              ? 'Pending Verification'
+                              : 'Pending Verification'),
+                    iconColor: isVerified
+                        ? AppColors.greenColor
+                        : AppColors.redColor,
                   ),
                   const SizedBox(height: 32),
                   // Activation Section
@@ -236,7 +294,11 @@ class MentorDetailView extends GetView<UsersController> {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                        BoxShadow(
+                          color: AppColors.border.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
                     child: Column(
@@ -255,7 +317,10 @@ class MentorDetailView extends GetView<UsersController> {
                           isVerified
                               ? 'This mentor is verified and can login to the system.'
                               : 'This mentor is pending verification and cannot login yet.',
-                          style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Obx(
@@ -265,13 +330,22 @@ class MentorDetailView extends GetView<UsersController> {
                               onPressed: controller.isUpdating.value
                                   ? null
                                   : () {
-                                      controller.toggleMentorStatus(mentorId, verificationStatus);
+                                      controller.toggleMentorStatus(
+                                        mentorId,
+                                        verificationStatus,
+                                      );
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isVerified ? AppColors.redColor : AppColors.greenColor,
+                                backgroundColor: isVerified
+                                    ? AppColors.redColor
+                                    : AppColors.greenColor,
                                 foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 elevation: 0,
                               ),
                               child: controller.isUpdating.value
@@ -280,17 +354,31 @@ class MentorDetailView extends GetView<UsersController> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppColors.surface,
+                                            ),
                                       ),
                                     )
                                   : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Icon(isVerified ? Icons.close : Icons.check_circle, size: 20),
+                                        Icon(
+                                          isVerified
+                                              ? Icons.close
+                                              : Icons.check_circle,
+                                          size: 20,
+                                        ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          isVerified ? 'Set to Pending' : 'Verify Mentor',
-                                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                                          isVerified
+                                              ? 'Set to Pending'
+                                              : 'Verify Mentor',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -320,13 +408,22 @@ class MentorDetailView extends GetView<UsersController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.border.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: 12),
@@ -336,12 +433,20 @@ class MentorDetailView extends GetView<UsersController> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ],
             ),
@@ -363,7 +468,13 @@ class MentorDetailView extends GetView<UsersController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.border.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: () => _launchURL(url),

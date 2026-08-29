@@ -363,7 +363,9 @@ class OrderDialogView extends StatelessWidget {
                                     orderId: orderId,
                                   );
                                 } catch (e) {
-                                  AppLogger.info('Error creating chat room: $e');
+                                  AppLogger.info(
+                                    'Error creating chat room: $e',
+                                  );
                                 }
 
                                 // Close dialog first

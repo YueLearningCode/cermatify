@@ -17,12 +17,16 @@ class CustomButtonSimple extends StatelessWidget {
       onTap: onPressed ?? () {},
       height: 50,
       width: double.infinity,
-      color: onPressed != null ? AppColors.primaryColor : AppColors.disabledColor,
+      color: onPressed != null
+          ? AppColors.primaryColor
+          : AppColors.disabledColor,
       widget: Center(
         child: Text(
           text,
           style: AppStyles.body1(
-            color: onPressed != null ? AppColors.whiteColor : AppColors.grey2Color,
+            color: onPressed != null
+                ? AppColors.whiteColor
+                : AppColors.grey2Color,
             fontWeight: FontWeight.w600,
           ),
         ),

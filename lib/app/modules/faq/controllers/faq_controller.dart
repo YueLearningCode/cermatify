@@ -28,7 +28,4 @@ class FaqController extends GetxController {
           'Ya, semua data pengguna dan hasil kuesioner disimpan secara aman menggunakan sistem autentikasi dan enkripsi berbasis Firebase.',
     },
   ];
-
-
-
 }

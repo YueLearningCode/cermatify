@@ -9,16 +9,22 @@ class ComplinkController extends GetxController {
   var selectedCabang = ''.obs; // Store layanan ID
 
   // Lists from Firebase
-  final listLayanan = <Map<String, String>>[].obs; // [{id: '...', name: '...', type: 'complink'}]
+  final listLayanan = <Map<String, String>>[]
+      .obs; // [{id: '...', name: '...', type: 'complink'}]
 
   // Get filtered layanan for complink only
   List<Map<String, String>> get filteredLayanan {
-    return listLayanan.where((layanan) => layanan['type'] == 'complink').toList();
+    return listLayanan
+        .where((layanan) => layanan['type'] == 'complink')
+        .toList();
   }
 
   // Get name for display (for passing to ListMentorView)
   String get selectedCabangName {
-    return filteredLayanan.firstWhereOrNull((l) => l['id'] == selectedCabang.value)?['name'] ?? selectedCabang.value;
+    return filteredLayanan.firstWhereOrNull(
+          (l) => l['id'] == selectedCabang.value,
+        )?['name'] ??
+        selectedCabang.value;
   }
 
   // Check if all filters are selected
@@ -30,17 +36,22 @@ class ComplinkController extends GetxController {
     fetchMasterData();
   }
 
-
-
   // Fetch master data from Firebase
   Future<void> fetchMasterData() async {
     try {
       // Fetch layanan filtered by complink type
-      final layananSnapshot = await _firestore.collection('layanan').where('type', isEqualTo: 'complink').get();
+      final layananSnapshot = await _firestore
+          .collection('layanan')
+          .where('type', isEqualTo: 'complink')
+          .get();
       listLayanan.value = layananSnapshot.docs
           .map((doc) {
             final data = doc.data();
-            return {'id': doc.id, 'name': data['name']?.toString() ?? '', 'type': data['type']?.toString() ?? ''};
+            return {
+              'id': doc.id,
+              'name': data['name']?.toString() ?? '',
+              'type': data['type']?.toString() ?? '',
+            };
           })
           .toList()
           .cast<Map<String, String>>();

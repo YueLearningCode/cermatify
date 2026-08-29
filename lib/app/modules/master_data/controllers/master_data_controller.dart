@@ -12,7 +12,13 @@ class MasterDataItem {
   final String? kampusId; // For jurusan: links to kampus
   final int? harga; // For layanan: price in Rupiah
 
-  MasterDataItem({required this.id, required this.name, this.type, this.kampusId, this.harga});
+  MasterDataItem({
+    required this.id,
+    required this.name,
+    this.type,
+    this.kampusId,
+    this.harga,
+  });
 
   factory MasterDataItem.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -22,7 +28,9 @@ class MasterDataItem {
       type: data['type'],
       kampusId: data['kampusId'],
       harga: data['harga'] != null
-          ? (data['harga'] is int ? data['harga'] as int : int.tryParse(data['harga'].toString()))
+          ? (data['harga'] is int
+                ? data['harga'] as int
+                : int.tryParse(data['harga'].toString()))
           : null,
     );
   }
@@ -58,7 +66,8 @@ class MasterDataController extends GetxController {
 
   // Form controllers
   final nameController = TextEditingController();
-  final hargaController = TextEditingController(); // For layanan: price in Rupiah
+  final hargaController =
+      TextEditingController(); // For layanan: price in Rupiah
   final typeController = 'complink'.obs; // For layanan
   final selectedKampusForJurusan = ''.obs; // For creating/editing jurusan
 
@@ -67,7 +76,6 @@ class MasterDataController extends GetxController {
     super.onInit();
     fetchAllData();
   }
-
 
   @override
   void onClose() {
@@ -86,7 +94,10 @@ class MasterDataController extends GetxController {
       QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         // Try with orderBy createdAt first
-        snapshot = await _firestore.collection('kampus').orderBy('createdAt', descending: true).get();
+        snapshot = await _firestore
+            .collection('kampus')
+            .orderBy('createdAt', descending: true)
+            .get();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
         AppLogger.info('Error with orderBy createdAt, trying without: $e');
@@ -125,7 +136,10 @@ class MasterDataController extends GetxController {
       QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         // Try with orderBy createdAt first
-        snapshot = await _firestore.collection('jurusan').orderBy('createdAt', descending: true).get();
+        snapshot = await _firestore
+            .collection('jurusan')
+            .orderBy('createdAt', descending: true)
+            .get();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
         AppLogger.info('Error with orderBy createdAt, trying without: $e');
@@ -149,7 +163,9 @@ class MasterDataController extends GetxController {
         return bTime.compareTo(aTime); // Descending (newest first)
       });
 
-      jurusanList.value = items.map((e) => e['item'] as MasterDataItem).toList();
+      jurusanList.value = items
+          .map((e) => e['item'] as MasterDataItem)
+          .toList();
     } catch (e) {
       AppLogger.info('Error fetching jurusan: $e');
       jurusanList.value = [];
@@ -164,7 +180,10 @@ class MasterDataController extends GetxController {
       QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         // Try with orderBy createdAt first
-        snapshot = await _firestore.collection('layanan').orderBy('createdAt', descending: true).get();
+        snapshot = await _firestore
+            .collection('layanan')
+            .orderBy('createdAt', descending: true)
+            .get();
       } catch (e) {
         // If orderBy fails, fetch without orderBy
         AppLogger.info('Error with orderBy createdAt, trying without: $e');
@@ -188,7 +207,9 @@ class MasterDataController extends GetxController {
         return bTime.compareTo(aTime); // Descending (newest first)
       });
 
-      layananList.value = items.map((e) => e['item'] as MasterDataItem).toList();
+      layananList.value = items
+          .map((e) => e['item'] as MasterDataItem)
+          .toList();
     } catch (e) {
       AppLogger.info('Error fetching layanan: $e');
       layananList.value = [];
@@ -229,7 +250,9 @@ class MasterDataController extends GetxController {
       return [];
     }
     // Filter by kampus and maintain sort order (already sorted by newest)
-    return jurusanList.where((item) => item.kampusId == selectedKampus.value).toList();
+    return jurusanList
+        .where((item) => item.kampusId == selectedKampus.value)
+        .toList();
   }
 
   List<MasterDataItem> _getFilteredLayanan() {
@@ -240,11 +263,18 @@ class MasterDataController extends GetxController {
       return List<MasterDataItem>.from(layananList);
     } else {
       // Filter by type but maintain sort order (already sorted by newest)
-      return layananList.where((item) => item.type == selectedLayananFilter.value).toList();
+      return layananList
+          .where((item) => item.type == selectedLayananFilter.value)
+          .toList();
     }
   }
 
-  Future<void> createItem(String name, {String? type, String? kampusId, int? harga}) async {
+  Future<void> createItem(
+    String name, {
+    String? type,
+    String? kampusId,
+    int? harga,
+  }) async {
     try {
       if (name.trim().isEmpty) {
         CustomSnackbar.show(
@@ -280,7 +310,10 @@ class MasterDataController extends GetxController {
 
       isSaving.value = true;
       final collection = getCollectionName();
-      final data = <String, dynamic>{'name': name.trim(), 'createdAt': FieldValue.serverTimestamp()};
+      final data = <String, dynamic>{
+        'name': name.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+      };
       if (type != null) {
         data['type'] = type;
       }
@@ -317,7 +350,13 @@ class MasterDataController extends GetxController {
     }
   }
 
-  Future<void> updateItem(String id, String name, {String? type, String? kampusId, int? harga}) async {
+  Future<void> updateItem(
+    String id,
+    String name, {
+    String? type,
+    String? kampusId,
+    int? harga,
+  }) async {
     try {
       if (name.trim().isEmpty) {
         CustomSnackbar.show(
@@ -447,7 +486,8 @@ class MasterDataController extends GetxController {
       if (selectedLayananFilter.value != 'all') {
         typeController.value = selectedLayananFilter.value;
       } else {
-        typeController.value = 'complink'; // Default to complink if filter is 'all'
+        typeController.value =
+            'complink'; // Default to complink if filter is 'all'
       }
     } else {
       typeController.value = 'complink';

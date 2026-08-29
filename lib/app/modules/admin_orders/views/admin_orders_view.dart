@@ -16,7 +16,11 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
       appBar: AppBar(
         title: Text(
           'Pengelolaan Order',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.surface),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: AppColors.surface,
+          ),
         ),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.surface,
@@ -33,7 +37,11 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
               children: [
                 Text(
                   'Filter by Status',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Obx(
@@ -41,12 +49,17 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildFilterChip('All', 'all', controller.selectedStatusFilter.value == 'all'),
+                        _buildFilterChip(
+                          'All',
+                          'all',
+                          controller.selectedStatusFilter.value == 'all',
+                        ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
                           'Waiting Verification',
                           'waiting verification',
-                          controller.selectedStatusFilter.value == 'waiting verification',
+                          controller.selectedStatusFilter.value ==
+                              'waiting verification',
                         ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
@@ -55,7 +68,11 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                           controller.selectedStatusFilter.value == 'progress',
                         ),
                         const SizedBox(width: 8),
-                        _buildFilterChip('Rejected', 'rejected', controller.selectedStatusFilter.value == 'rejected'),
+                        _buildFilterChip(
+                          'Rejected',
+                          'rejected',
+                          controller.selectedStatusFilter.value == 'rejected',
+                        ),
                         const SizedBox(width: 8),
                         _buildFilterChip(
                           'Completed',
@@ -83,7 +100,11 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shopping_bag_outlined, size: 80, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.shopping_bag_outlined,
+                        size: 80,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'No orders found',
@@ -96,7 +117,10 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                       const SizedBox(height: 8),
                       Text(
                         'Orders will appear here',
-                        style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textSecondary),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -129,7 +153,10 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.background,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? AppColors.primary : AppColors.border, width: 1.5),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+            width: 1.5,
+          ),
         ),
         child: Text(
           label,
@@ -147,8 +174,14 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
     final status = order['status']?.toString() ?? 'waiting verification';
     final price = order['price'] as int? ?? 0;
     final createdAt = order['createdAt'] as Timestamp?;
-    final mentorName = order['mentorName']?.toString() ?? order['mentorId']?.toString() ?? 'Unknown Mentor';
-    final layananName = order['layananName']?.toString() ?? order['layananId']?.toString() ?? 'Unknown Layanan';
+    final mentorName =
+        order['mentorName']?.toString() ??
+        order['mentorId']?.toString() ??
+        'Unknown Mentor';
+    final layananName =
+        order['layananName']?.toString() ??
+        order['layananId']?.toString() ??
+        'Unknown Layanan';
     final userName = order['userName']?.toString() ?? 'Unknown User';
 
     return Container(
@@ -156,7 +189,13 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.border.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.border.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,24 +205,38 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: controller.getStatusColor(status).withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Order #${order['id'].toString().substring(0, 8)}',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: controller.getStatusColor(status),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     controller.getStatusText(status),
-                    style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.surface),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.surface,
+                    ),
                   ),
                 ),
               ],
@@ -216,17 +269,33 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                       // Show payment proof image in full screen
                       Get.dialog(
                         Dialog(
-                          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                          insetPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 720, maxHeight: 600),
+                            constraints: const BoxConstraints(
+                              maxWidth: 720,
+                              maxHeight: 600,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 AppBar(
                                   title: const Text('Bukti Pembayaran'),
-                                  actions: [IconButton(icon: const Icon(Icons.close), onPressed: () => Get.back())],
+                                  actions: [
+                                    IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () => Get.back(),
+                                    ),
+                                  ],
                                 ),
-                                Expanded(child: Image.network(order['paymentProofUrl'], fit: BoxFit.contain)),
+                                Expanded(
+                                  child: Image.network(
+                                    order['paymentProofUrl'],
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -258,7 +327,8 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                   ),
                 ],
                 // Action buttons for waiting verification status
-                if (status.toLowerCase() == 'waiting verification' || status.toLowerCase() == 'pending') ...[
+                if (status.toLowerCase() == 'waiting verification' ||
+                    status.toLowerCase() == 'pending') ...[
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -267,10 +337,18 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                           onPressed: controller.isUpdating.value
                               ? null
                               : () async {
-                                  await controller.updateOrderStatus(order['id'], 'rejected');
+                                  await controller.updateOrderStatus(
+                                    order['id'],
+                                    'rejected',
+                                  );
                                 },
                           icon: const Icon(Icons.close, size: 18),
-                          label: Text('Reject', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                          label: Text(
+                            'Reject',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.redColor,
                             side: const BorderSide(color: AppColors.redColor),
@@ -284,10 +362,18 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                           onPressed: controller.isUpdating.value
                               ? null
                               : () async {
-                                  await controller.updateOrderStatus(order['id'], 'progress');
+                                  await controller.updateOrderStatus(
+                                    order['id'],
+                                    'progress',
+                                  );
                                 },
                           icon: const Icon(Icons.check, size: 18),
-                          label: Text('Approve', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                          label: Text(
+                            'Approve',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.greenColor,
                             foregroundColor: AppColors.surface,
@@ -299,7 +385,8 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                   ),
                 ],
                 // Action button for progress status (mark as completed)
-                if (status.toLowerCase() == 'progress' || status.toLowerCase() == 'approved') ...[
+                if (status.toLowerCase() == 'progress' ||
+                    status.toLowerCase() == 'approved') ...[
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
@@ -307,10 +394,16 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                       onPressed: controller.isUpdating.value
                           ? null
                           : () async {
-                              await controller.updateOrderStatus(order['id'], 'completed');
+                              await controller.updateOrderStatus(
+                                order['id'],
+                                'completed',
+                              );
                             },
                       icon: const Icon(Icons.check_circle, size: 18),
-                      label: Text('Mark as Completed', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      label: Text(
+                        'Mark as Completed',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.surface,
@@ -335,13 +428,21 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
           width: 100,
           child: Text(
             label,
-            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],

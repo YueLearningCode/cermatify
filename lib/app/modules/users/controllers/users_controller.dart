@@ -29,7 +29,9 @@ class UserData {
       email: data['email'] ?? '',
       image: data['image'] ?? data['foto'],
       role: data['role'] ?? 'customer',
-      verificationStatus: data['verificationStatus'] as String?, // null or 'pending' or 'verified'
+      verificationStatus:
+          data['verificationStatus']
+              as String?, // null or 'pending' or 'verified'
     );
   }
 }
@@ -48,8 +50,6 @@ class UsersController extends GetxController {
     super.onInit();
     fetchUsers();
   }
-
-
 
   Future<void> fetchUsers() async {
     try {
@@ -88,7 +88,10 @@ class UsersController extends GetxController {
     }
   }
 
-  Future<void> toggleMentorStatus(String mentorId, String? currentStatus) async {
+  Future<void> toggleMentorStatus(
+    String mentorId,
+    String? currentStatus,
+  ) async {
     try {
       isUpdating.value = true;
 
@@ -97,7 +100,9 @@ class UsersController extends GetxController {
       // If currentStatus is 'pending' or null, change to 'verified'
       final newStatus = (currentStatus == 'verified') ? 'pending' : 'verified';
 
-      await _firestore.collection('users').doc(mentorId).update({'verificationStatus': newStatus});
+      await _firestore.collection('users').doc(mentorId).update({
+        'verificationStatus': newStatus,
+      });
 
       // Update local list
       final index = mentorsList.indexWhere((mentor) => mentor.id == mentorId);
@@ -115,7 +120,9 @@ class UsersController extends GetxController {
 
       CustomSnackbar.show(
         title: 'Success',
-        message: newStatus == 'verified' ? 'Mentor verified successfully' : 'Mentor verification set to pending',
+        message: newStatus == 'verified'
+            ? 'Mentor verified successfully'
+            : 'Mentor verification set to pending',
         backgroundColor: AppColors.greenColor,
         isNav: false,
       );
@@ -139,7 +146,10 @@ class UsersController extends GetxController {
   // Fetch full mentor data from Firestore
   Future<Map<String, dynamic>?> fetchMentorFullData(String mentorId) async {
     try {
-      final mentorDoc = await _firestore.collection('users').doc(mentorId).get();
+      final mentorDoc = await _firestore
+          .collection('users')
+          .doc(mentorId)
+          .get();
       if (mentorDoc.exists) {
         return mentorDoc.data();
       }

@@ -33,7 +33,8 @@ class ProfileController extends GetxController {
 
   // Dropdown lists for edit profile - fetched from Firebase
   final listKampus = <Map<String, String>>[].obs; // [{id: '...', name: '...'}]
-  final listJurusan = <Map<String, String>>[].obs; // [{id: '...', name: '...', kampusId: '...'}]
+  final listJurusan = <Map<String, String>>[]
+      .obs; // [{id: '...', name: '...', kampusId: '...'}]
 
   final List<String> listSemester = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
@@ -41,12 +42,15 @@ class ProfileController extends GetxController {
   final List<String> listMentorRole = ['complink', 'paperlink'];
 
   // Layanan (services) for mentors only - fetched from Firebase
-  final listLayanan = <Map<String, String>>[].obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
+  final listLayanan = <Map<String, String>>[]
+      .obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
 
   // Get available layanan filtered by mentor role
   List<Map<String, String>> get availableLayanan {
     if (selectedMentorRole.value.isEmpty) return [];
-    return listLayanan.where((layanan) => layanan['type'] == selectedMentorRole.value).toList();
+    return listLayanan
+        .where((layanan) => layanan['type'] == selectedMentorRole.value)
+        .toList();
   }
 
   // Selected values for dropdowns in edit profile
@@ -59,7 +63,9 @@ class ProfileController extends GetxController {
   // Get filtered jurusan list based on selected kampus
   List<Map<String, String>> get filteredJurusan {
     if (selectedKampus.value.isEmpty) return [];
-    return listJurusan.where((jurusan) => jurusan['kampusId'] == selectedKampus.value).toList();
+    return listJurusan
+        .where((jurusan) => jurusan['kampusId'] == selectedKampus.value)
+        .toList();
   }
 
   // Initialize dropdown values from user data
@@ -68,11 +74,15 @@ class ProfileController extends GetxController {
     await fetchMasterData();
 
     // Find kampus ID from name
-    final kampusMap = listKampus.firstWhereOrNull((k) => k['name'] == userKampus.value);
+    final kampusMap = listKampus.firstWhereOrNull(
+      (k) => k['name'] == userKampus.value,
+    );
     selectedKampus.value = kampusMap?['id'] ?? '';
 
     // Find jurusan ID from name
-    final jurusanMap = listJurusan.firstWhereOrNull((j) => j['name'] == userJurusan.value);
+    final jurusanMap = listJurusan.firstWhereOrNull(
+      (j) => j['name'] == userJurusan.value,
+    );
     selectedJurusan.value = jurusanMap?['id'] ?? '';
 
     selectedSemester.value = userSemester.value;
@@ -81,7 +91,10 @@ class ProfileController extends GetxController {
     // Find layanan IDs from names
     selectedLayanan.value = userLayanan
         .map((name) {
-          return listLayanan.firstWhereOrNull((l) => l['name'] == name)?['id'] ?? '';
+          return listLayanan.firstWhereOrNull(
+                (l) => l['name'] == name,
+              )?['id'] ??
+              '';
         })
         .where((id) => id.isNotEmpty)
         .toList();
@@ -118,7 +131,11 @@ class ProfileController extends GetxController {
       listLayanan.value = layananSnapshot.docs
           .map((doc) {
             final data = doc.data();
-            return {'id': doc.id, 'name': data['name']?.toString() ?? '', 'type': data['type']?.toString() ?? ''};
+            return {
+              'id': doc.id,
+              'name': data['name']?.toString() ?? '',
+              'type': data['type']?.toString() ?? '',
+            };
           })
           .toList()
           .cast<Map<String, String>>();
@@ -142,21 +159,24 @@ class ProfileController extends GetxController {
     fetchUserData();
   }
 
-
   @override
   void onClose() {
     _saldoSubscription?.cancel();
     super.onClose();
   }
 
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _saldoSubscription;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+  _saldoSubscription;
 
   Future<void> fetchUserData() async {
     try {
       isLoading.value = true;
       final User? user = _auth.currentUser;
       if (user != null) {
-        final DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        final DocumentSnapshot userDoc = await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
         if (userDoc.exists) {
           final data = userDoc.data() as Map<String, dynamic>;
@@ -224,10 +244,16 @@ class ProfileController extends GetxController {
         // Fetch customer name
         if (customerId != null && customerId.isNotEmpty) {
           try {
-            final customerDoc = await _firestore.collection('users').doc(customerId).get();
+            final customerDoc = await _firestore
+                .collection('users')
+                .doc(customerId)
+                .get();
             if (customerDoc.exists) {
               final customerData = customerDoc.data();
-              order['customerName'] = customerData?['nama'] ?? customerData?['name'] ?? 'Unknown Customer';
+              order['customerName'] =
+                  customerData?['nama'] ??
+                  customerData?['name'] ??
+                  'Unknown Customer';
             } else {
               order['customerName'] = 'Unknown Customer';
             }
@@ -242,7 +268,10 @@ class ProfileController extends GetxController {
         // Fetch layanan name
         if (layananId != null && layananId.isNotEmpty) {
           try {
-            final layananDoc = await _firestore.collection('layanan').doc(layananId).get();
+            final layananDoc = await _firestore
+                .collection('layanan')
+                .doc(layananId)
+                .get();
             if (layananDoc.exists) {
               final layananData = layananDoc.data();
               order['layananName'] = layananData?['name'] ?? 'Unknown Layanan';
@@ -288,14 +317,18 @@ class ProfileController extends GetxController {
     _saldoSubscription?.cancel();
 
     // Set up real-time listener for user document to update saldo
-    _saldoSubscription = _firestore.collection('users').doc(user.uid).snapshots().listen((snapshot) {
-      if (snapshot.exists) {
-        final data = snapshot.data();
-        if (data != null) {
-          saldo.value = (data['saldo'] as int?) ?? 0;
-        }
-      }
-    });
+    _saldoSubscription = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .snapshots()
+        .listen((snapshot) {
+          if (snapshot.exists) {
+            final data = snapshot.data();
+            if (data != null) {
+              saldo.value = (data['saldo'] as int?) ?? 0;
+            }
+          }
+        });
   }
 
   Future<bool> updateProfile({
@@ -311,13 +344,22 @@ class ProfileController extends GetxController {
       final User? user = _auth.currentUser;
       if (user != null) {
         // Get kampus and jurusan names from IDs
-        final kampusName = listKampus.firstWhereOrNull((k) => k['id'] == kampusId)?['name'] ?? kampusId;
-        final jurusanName = filteredJurusan.firstWhereOrNull((j) => j['id'] == jurusanId)?['name'] ?? jurusanId;
+        final kampusName =
+            listKampus.firstWhereOrNull((k) => k['id'] == kampusId)?['name'] ??
+            kampusId;
+        final jurusanName =
+            filteredJurusan.firstWhereOrNull(
+              (j) => j['id'] == jurusanId,
+            )?['name'] ??
+            jurusanId;
 
         // Get layanan names from IDs
         final layananNames =
             layananIds?.map((id) {
-              return availableLayanan.firstWhereOrNull((l) => l['id'] == id)?['name'] ?? id;
+              return availableLayanan.firstWhereOrNull(
+                    (l) => l['id'] == id,
+                  )?['name'] ??
+                  id;
             }).toList() ??
             [];
 
@@ -348,7 +390,11 @@ class ProfileController extends GetxController {
       }
       return false;
     } catch (e) {
-      CustomSnackbar.show(title: 'Error', message: 'Gagal memperbarui profil: $e', backgroundColor: AppColors.redColor);
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Gagal memperbarui profil: $e',
+        backgroundColor: AppColors.redColor,
+      );
       return false;
     } finally {
       isLoading.value = false;
@@ -371,7 +417,11 @@ class ProfileController extends GetxController {
 
       final User? user = _auth.currentUser;
       if (user == null) {
-        CustomSnackbar.show(title: 'Error', message: 'User tidak ditemukan', backgroundColor: AppColors.redColor);
+        CustomSnackbar.show(
+          title: 'Error',
+          message: 'User tidak ditemukan',
+          backgroundColor: AppColors.redColor,
+        );
         return;
       }
 
@@ -379,12 +429,15 @@ class ProfileController extends GetxController {
 
       final secureUrl = await _mediaUploadService.uploadImage(
         bytes: image.bytes,
-        filename: 'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
+        filename:
+            'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.${image.extension}',
       );
       final String downloadUrl = secureUrl;
 
       // Update user document in Firestore
-      await _firestore.collection('users').doc(user.uid).update({'image': downloadUrl});
+      await _firestore.collection('users').doc(user.uid).update({
+        'image': downloadUrl,
+      });
 
       // Update local state
       userImage.value = downloadUrl;
@@ -426,19 +479,33 @@ class ProfileController extends GetxController {
         backgroundColor: AppColors.greenColor,
       );
     } catch (e) {
-      CustomSnackbar.show(title: 'Error', message: 'Gagal logout: $e', backgroundColor: AppColors.redColor);
+      CustomSnackbar.show(
+        title: 'Error',
+        message: 'Gagal logout: $e',
+        backgroundColor: AppColors.redColor,
+      );
     }
   }
 
-  Future<bool> changePassword(String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     try {
       isLoading.value = true;
       final User? user = _auth.currentUser;
       if (user == null || user.email == null) {
-        CustomSnackbar.show(title: 'Error', message: 'User tidak ditemukan', backgroundColor: AppColors.redColor);
+        CustomSnackbar.show(
+          title: 'Error',
+          message: 'User tidak ditemukan',
+          backgroundColor: AppColors.redColor,
+        );
         return false;
       }
-      final credential = EmailAuthProvider.credential(email: user.email!, password: currentPassword);
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
       await user.reauthenticateWithCredential(credential);
       await user.updatePassword(newPassword);
       CustomSnackbar.show(
@@ -462,7 +529,11 @@ class ProfileController extends GetxController {
         default:
           message = 'Gagal mengubah kata sandi: ${e.message ?? e.code}';
       }
-      CustomSnackbar.show(title: 'Error', message: message, backgroundColor: AppColors.redColor);
+      CustomSnackbar.show(
+        title: 'Error',
+        message: message,
+        backgroundColor: AppColors.redColor,
+      );
       return false;
     } catch (e) {
       CustomSnackbar.show(

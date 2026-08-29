@@ -30,9 +30,14 @@ class WithdrawDialogView extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.9, maxWidth: 560),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+            maxWidth: 560,
+          ),
           child: Container(
-            padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 480 ? 16 : 24),
+            padding: EdgeInsets.all(
+              MediaQuery.sizeOf(context).width < 480 ? 16 : 24,
+            ),
             child: SingleChildScrollView(
               child: Form(
                 key: controller.formKey,
@@ -53,7 +58,10 @@ class WithdrawDialogView extends StatelessWidget {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                          icon: const Icon(
+                            Icons.close,
+                            color: AppColors.textSecondary,
+                          ),
                           onPressed: () {
                             // Unfocus any focused fields before closing
                             FocusScope.of(context).unfocus();
@@ -69,11 +77,17 @@ class WithdrawDialogView extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColors.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.primaryLight.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.account_balance_wallet_rounded, color: AppColors.primary, size: 24),
+                          Icon(
+                            Icons.account_balance_wallet_rounded,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -115,14 +129,19 @@ class WithdrawDialogView extends StatelessWidget {
                     const SizedBox(height: 8),
                     CustomTextField(
                       controller: controller.nominalController,
-                      hintText: 'Minimal ${_formatPrice(WithdrawController.minWithdraw)}',
+                      hintText:
+                          'Minimal ${_formatPrice(WithdrawController.minWithdraw)}',
                       icon: Icons.attach_money_rounded,
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Nominal tidak boleh kosong';
                         }
-                        final nominal = int.tryParse(value.trim().replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+                        final nominal =
+                            int.tryParse(
+                              value.trim().replaceAll(RegExp(r'[^\d]'), ''),
+                            ) ??
+                            0;
                         if (nominal < WithdrawController.minWithdraw) {
                           return 'Minimal withdraw adalah ${_formatPrice(WithdrawController.minWithdraw)}';
                         }
@@ -188,7 +207,11 @@ class WithdrawDialogView extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline_rounded, color: AppColors.textSecondary, size: 16),
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: AppColors.textSecondary,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -213,38 +236,52 @@ class WithdrawDialogView extends StatelessWidget {
                         overflowAlignment: OverflowBarAlignment.end,
                         children: [
                           OutlinedButton(
-                              onPressed: controller.isLoading.value
-                                  ? null
-                                  : () {
-                                      // Unfocus any focused fields before closing
-                                      FocusScope.of(context).unfocus();
-                                      Get.back();
-                                    },
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.textSecondary,
-                                side: const BorderSide(color: AppColors.border),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              child: Text('Batal', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : () {
+                                    // Unfocus any focused fields before closing
+                                    FocusScope.of(context).unfocus();
+                                    Get.back();
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.textSecondary,
+                              side: const BorderSide(color: AppColors.border),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
+                            child: Text(
+                              'Batal',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                           ElevatedButton(
-                              onPressed: controller.isLoading.value ? null : () => controller.submitWithdraw(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.surface,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              child: controller.isLoading.value
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.surface),
-                                      ),
-                                    )
-                                  : Text('Ajukan Withdraw', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : () => controller.submitWithdraw(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.surface,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
+                            child: controller.isLoading.value
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.surface,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    'Ajukan Withdraw',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
                         ],
                       ),
                     ),

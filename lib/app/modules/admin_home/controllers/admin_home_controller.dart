@@ -20,13 +20,14 @@ class AdminHomeController extends GetxController {
     _fetchStatistics();
   }
 
-
-
   Future<void> _fetchUserData() async {
     try {
       final User? user = _auth.currentUser;
       if (user != null) {
-        final DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        final DocumentSnapshot userDoc = await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
         if (userDoc.exists) {
           final data = userDoc.data() as Map<String, dynamic>;
@@ -55,7 +56,10 @@ class AdminHomeController extends GetxController {
         final kampusSnapshot = await _firestore.collection('kampus').get();
         final jurusanSnapshot = await _firestore.collection('jurusan').get();
         final layananSnapshot = await _firestore.collection('layanan').get();
-        totalMasterData.value = kampusSnapshot.docs.length + jurusanSnapshot.docs.length + layananSnapshot.docs.length;
+        totalMasterData.value =
+            kampusSnapshot.docs.length +
+            jurusanSnapshot.docs.length +
+            layananSnapshot.docs.length;
       } catch (e) {
         AppLogger.info('Error fetching master data count: $e');
         totalMasterData.value = 0;
