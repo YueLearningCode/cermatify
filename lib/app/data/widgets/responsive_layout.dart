@@ -1,4 +1,5 @@
 import 'package:cermatify/app/data/layout/app_breakpoints.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 typedef ResponsiveLayoutBuilder =
@@ -138,72 +139,235 @@ class ResponsiveAuthShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveLayout(
-      mobile: (context, constraints) => Center(
+    final viewportWidth = MediaQuery.sizeOf(context).width;
+    final viewportHeight = MediaQuery.sizeOf(context).height;
+
+    if (!AppBreakpoints.isDesktop(viewportWidth)) {
+      return Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
           child: form,
         ),
+      );
+    }
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: viewportHeight.clamp(620, double.infinity),
       ),
-      desktop: (context, constraints) => Center(
+      child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1180),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 560),
-                  padding: const EdgeInsets.all(48),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.72),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.school_rounded,
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        description,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.88),
-                              height: 1.55,
-                            ),
-                      ),
-                    ],
-                  ),
+                child: _AuthVisualPanel(
+                  key: const ValueKey('auth_visual_panel'),
+                  title: title,
+                  description: description,
                 ),
               ),
               const SizedBox(width: 56),
-              SizedBox(width: 480, child: form),
+              SizedBox(
+                key: const ValueKey('auth_form_panel'),
+                width: 480,
+                child: form,
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AuthVisualPanel extends StatelessWidget {
+  const _AuthVisualPanel({
+    super.key,
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 620,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.14)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.surface,
+            AppColors.primaryColor.withValues(alpha: 0.10),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -70,
+            top: -80,
+            child: Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryColor.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -50,
+            bottom: -90,
+            child: Container(
+              width: 210,
+              height: 210,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryLight.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(36),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Image.asset('assets/images/logo.jpeg'),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Cermatify',
+                      style: TextStyle(
+                        color: AppColors.black414,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Image.asset(
+                      'assets/images/banner2.jpg',
+                      fit: BoxFit.contain,
+                      semanticLabel: 'Ilustrasi kolaborasi akademik',
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.checkoutButtonColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Satu akun untuk semua perangkat',
+                    style: TextStyle(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppColors.black414,
+                    fontWeight: FontWeight.w900,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.greyTextSecondaryColor,
+                    height: 1.55,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _AuthBadge(icon: Icons.verified_outlined, label: 'Mentor'),
+                    _AuthBadge(
+                      icon: Icons.devices_rounded,
+                      label: 'Multi-device',
+                    ),
+                    _AuthBadge(icon: Icons.lock_outline, label: 'Aman'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthBadge extends StatelessWidget {
+  const _AuthBadge({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AppColors.primaryColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.primaryColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }
