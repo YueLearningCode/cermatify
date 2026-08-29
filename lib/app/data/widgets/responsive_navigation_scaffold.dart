@@ -11,6 +11,8 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
     required this.onDestinationSelected,
     required this.mobileNavigation,
     this.appBar,
+    this.brandTitle = 'Cermatify',
+    this.brandSubtitle,
   });
 
   final Widget body;
@@ -19,6 +21,8 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
   final Widget mobileNavigation;
   final PreferredSizeWidget? appBar;
+  final String brandTitle;
+  final String? brandSubtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +51,11 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
                   selectedIndex: selectedIndex,
                   onDestinationSelected: onDestinationSelected,
                   extended: isExpanded,
+                  groupAlignment: -0.72,
                   labelType: isExpanded
                       ? NavigationRailLabelType.none
                       : NavigationRailLabelType.selected,
-                  minExtendedWidth: 220,
+                  minExtendedWidth: 240,
                   backgroundColor: Colors.white,
                   indicatorColor: AppColors.primaryColor.withValues(
                     alpha: 0.12,
@@ -62,21 +67,81 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
                     color: AppColors.primaryColor,
                     fontWeight: FontWeight.w700,
                   ),
+                  unselectedIconTheme: IconThemeData(
+                    color: AppColors.textSecondary.withValues(alpha: 0.75),
+                  ),
+                  unselectedLabelTextStyle: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                   leading: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 28),
                     child: isExpanded
-                        ? const Text(
-                            'Cermatify',
-                            style: TextStyle(
-                              color: AppColors.primaryColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
+                        ? SizedBox(
+                            width: 216,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.checkoutButtonColor,
+                                    borderRadius: BorderRadius.circular(13),
+                                  ),
+                                  child: const Icon(
+                                    Icons.school_rounded,
+                                    color: AppColors.primaryColor,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 11),
+                                Flexible(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        brandTitle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (brandSubtitle != null) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          brandSubtitle!,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           )
-                        : const Icon(
-                            Icons.school_rounded,
-                            color: AppColors.primaryColor,
-                            size: 30,
+                        : Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: AppColors.checkoutButtonColor,
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.school_rounded,
+                              color: AppColors.primaryColor,
+                              size: 25,
+                            ),
                           ),
                   ),
                   destinations: destinations,

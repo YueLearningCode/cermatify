@@ -1,15 +1,29 @@
+import 'package:cermatify/app/data/layout/app_breakpoints.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/modules/admin_dashboard/controllers/admin_dashboard_controller.dart';
+import 'package:cermatify/app/modules/admin_kuesioner/bindings/admin_kuesioner_binding.dart';
+import 'package:cermatify/app/modules/admin_kuesioner/views/admin_kuesioner_view.dart';
+import 'package:cermatify/app/modules/admin_orders/bindings/admin_orders_binding.dart';
+import 'package:cermatify/app/modules/admin_orders/views/admin_orders_view.dart';
+import 'package:cermatify/app/modules/admin_withdraw/bindings/admin_withdraw_binding.dart';
+import 'package:cermatify/app/modules/admin_withdraw/views/admin_withdraw_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
+
 import '../controllers/admin_home_controller.dart';
-import '../../admin_dashboard/controllers/admin_dashboard_controller.dart';
-import '../../admin_orders/views/admin_orders_view.dart';
-import '../../admin_orders/bindings/admin_orders_binding.dart';
-import '../../admin_withdraw/views/admin_withdraw_view.dart';
-import '../../admin_withdraw/bindings/admin_withdraw_binding.dart';
-import '../../admin_kuesioner/views/admin_kuesioner_view.dart';
-import '../../admin_kuesioner/bindings/admin_kuesioner_binding.dart';
+
+int adminStatisticColumnCount(double width) {
+  if (width >= 1040) return 4;
+  if (width >= 560) return 2;
+  return 1;
+}
+
+int adminActionColumnCount(double width) {
+  if (width >= 1040) return 3;
+  if (width >= 620) return 2;
+  return 1;
+}
 
 class AdminHomeView extends GetView<AdminHomeController> {
   const AdminHomeView({super.key});
@@ -21,365 +35,497 @@ class AdminHomeView extends GetView<AdminHomeController> {
       body: Obx(
         () => controller.isLoading.value
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 52, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header dengan avatar
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Obx(
-                                () => Text(
-                                  "Hai, ${controller.userName.value} 👋",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "Admin Dashboard",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Obx(
-                          () => Container(
-                            padding: const EdgeInsets.all(1.5),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.primaryLight,
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundColor: AppColors.surface,
-                              backgroundImage:
-                                  controller.userImage.value.isNotEmpty
-                                  ? NetworkImage(controller.userImage.value)
-                                        as ImageProvider
-                                  : const AssetImage(
-                                      'assets/images/profile_dummy.jpg',
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ],
+            : LayoutBuilder(
+                builder: (context, viewport) {
+                  final horizontalPadding = viewport.maxWidth >= 1024
+                      ? 32.0
+                      : viewport.maxWidth >= 600
+                      ? 24.0
+                      : 16.0;
+
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      28,
+                      horizontalPadding,
+                      48,
                     ),
-                    const SizedBox(height: 24),
-                    // Statistics Cards
-                    Text(
-                      "Statistics",
-                      style: GoogleFonts.poppins(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1280),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildWelcomeHeader(viewport.maxWidth),
+                            const SizedBox(height: 32),
+                            const _SectionHeading(
+                              title: 'Ringkasan aktivitas',
+                              subtitle:
+                                  'Pantau kondisi akun dan data utama Cermatify.',
+                            ),
+                            const SizedBox(height: 16),
+                            _buildStatistics(),
+                            const SizedBox(height: 36),
+                            const _SectionHeading(
+                              title: 'Akses cepat',
+                              subtitle:
+                                  'Kelola area administrasi yang paling sering digunakan.',
+                            ),
+                            const SizedBox(height: 16),
+                            _buildQuickActions(),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            title: "Jumlah Users",
-                            value: controller.totalUsers.value.toString(),
-                            icon: Icons.people_outlined,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            title: "Master Data",
-                            value: controller.totalMasterData.value.toString(),
-                            icon: Icons.storage_outlined,
-                            color: AppColors.greenColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            title: "Aktif",
-                            value: "100%",
-                            icon: Icons.check_circle_outline,
-                            color: AppColors.greenColor,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            title: "System",
-                            value: "Online",
-                            icon: Icons.cloud_done_outlined,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    // Quick Actions
-                    Text(
-                      "Quick Actions",
-                      style: GoogleFonts.poppins(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.1,
-                      padding: EdgeInsets.zero,
-                      children: [
-                        _buildActionCard(
-                          title: "Manage Users",
-                          subtitle: "Lihat & Edit",
-                          icon: Icons.people_rounded,
-                          color: AppColors.primary,
-                          onTap: () {
-                            // Navigate to Users tab in admin dashboard
-                            if (Get.isRegistered<AdminDashboardController>()) {
-                              Get.find<AdminDashboardController>().changeTab(1);
-                            }
-                          },
-                        ),
-                        _buildActionCard(
-                          title: "Master Data",
-                          subtitle: "Lihat & Edit",
-                          icon: Icons.storage_rounded,
-                          color: AppColors.greenColor,
-                          onTap: () {
-                            // Navigate to Master Data tab in admin dashboard
-                            if (Get.isRegistered<AdminDashboardController>()) {
-                              Get.find<AdminDashboardController>().changeTab(2);
-                            }
-                          },
-                        ),
-                        _buildActionCard(
-                          title: "Orders",
-                          subtitle: "Mengelola Order",
-                          icon: Icons.shopping_bag_rounded,
-                          color: AppColors.orangeColor,
-                          onTap: () {
-                            // Navigate to Orders view with binding
-                            Get.to(
-                              () => const AdminOrdersView(),
-                              binding: AdminOrdersBinding(),
-                            );
-                          },
-                        ),
-                        _buildActionCard(
-                          title: "Withdraw",
-                          subtitle: "Kelola Withdraw",
-                          icon: Icons.account_balance_wallet_rounded,
-                          color: AppColors.primaryDark,
-                          onTap: () {
-                            Get.to(
-                              () => const AdminWithdrawView(),
-                              binding: AdminWithdrawBinding(),
-                            );
-                          },
-                        ),
-                        _buildActionCard(
-                          title: "Kuesioner",
-                          subtitle: "Kelola Kuesioner",
-                          icon: Icons.assignment_rounded,
-                          color: AppColors.yellowColor,
-                          onTap: () {
-                            Get.to(
-                              () => const AdminKuesionerView(),
-                              binding: AdminKuesionerBinding(),
-                            );
-                          },
-                        ),
-                        // _buildActionCard(
-                        //   title: "Settings",
-                        //   subtitle: "App Config",
-                        //   icon: Icons.settings_rounded,
-                        //   color: AppColors.orangeColor,
-                        //   onTap: () {
-                        //     Get.snackbar(
-                        //       "Coming Soon",
-                        //       "Settings feature will be available soon",
-                        //       backgroundColor: AppColors.primary,
-                        //       colorText: AppColors.surface,
-                        //       snackPosition: SnackPosition.BOTTOM,
-                        //     );
-                        //   },
-                        // ),
-                        // _buildActionCard(
-                        //   title: "Reports",
-                        //   subtitle: "View Reports",
-                        //   icon: Icons.assessment_rounded,
-                        //   color: AppColors.primaryDark,
-                        //   onTap: () {
-                        //     Get.snackbar(
-                        //       "Coming Soon",
-                        //       "Reports feature will be available soon",
-                        //       backgroundColor: AppColors.primary,
-                        //       colorText: AppColors.surface,
-                        //       snackPosition: SnackPosition.BOTTOM,
-                        //     );
-                        //   },
-                        // ),
-                      ],
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
       ),
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
+  Widget _buildWelcomeHeader(double viewportWidth) {
+    final compact = viewportWidth < AppBreakpoints.mobile;
+    final identity = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.primaryColor.withValues(alpha: 0.18),
+            ),
+          ),
+          child: CircleAvatar(
+            radius: compact ? 22 : 25,
+            backgroundColor: AppColors.surface,
+            backgroundImage: controller.userImage.value.isNotEmpty
+                ? NetworkImage(controller.userImage.value) as ImageProvider
+                : const AssetImage('assets/images/profile_dummy.jpg'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.cloud_done_rounded,
+                size: 16,
+                color: AppColors.greenColor,
+              ),
+              SizedBox(width: 7),
+              Text(
+                'Sistem online',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 22 : 30),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: AppColors.primaryColor.withValues(alpha: 0.12),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.surface,
+            AppColors.primaryColor.withValues(alpha: 0.07),
+          ],
+        ),
+      ),
+      child: compact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildWelcomeCopy(compact: true),
+                const SizedBox(height: 20),
+                identity,
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: _buildWelcomeCopy(compact: false)),
+                const SizedBox(width: 24),
+                identity,
+              ],
+            ),
+    );
+  }
+
+  Widget _buildWelcomeCopy({required bool compact}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.checkoutButtonColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Text(
+            'ADMIN WORKSPACE',
+            style: TextStyle(
+              color: AppColors.primaryColor,
+              fontSize: 11,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          'Selamat datang, ${controller.userName.value}',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(
+            fontSize: compact ? 23 : 30,
+            height: 1.2,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Kelola pengguna, transaksi, dan layanan Cermatify dari satu dashboard.',
+          style: GoogleFonts.poppins(
+            fontSize: compact ? 13 : 14,
+            height: 1.6,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatistics() {
+    final items = [
+      _DashboardStat(
+        title: 'Jumlah pengguna',
+        value: controller.totalUsers.value.toString(),
+        icon: Icons.people_alt_outlined,
+        color: AppColors.primaryColor,
+      ),
+      _DashboardStat(
+        title: 'Master data',
+        value: controller.totalMasterData.value.toString(),
+        icon: Icons.dataset_outlined,
+        color: AppColors.greenColor,
+      ),
+      const _DashboardStat(
+        title: 'Status layanan',
+        value: '100%',
+        icon: Icons.verified_outlined,
+        color: AppColors.greenColor,
+      ),
+      const _DashboardStat(
+        title: 'Kondisi sistem',
+        value: 'Online',
+        icon: Icons.cloud_done_outlined,
+        color: AppColors.primaryColor,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = adminStatisticColumnCount(constraints.maxWidth);
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 14,
+            mainAxisSpacing: 14,
+            mainAxisExtent: 148,
+          ),
+          itemBuilder: (context, index) => items[index],
+        );
+      },
+    );
+  }
+
+  Widget _buildQuickActions() {
+    final actions = [
+      _AdminAction(
+        title: 'Kelola pengguna',
+        subtitle: 'Lihat, verifikasi, dan perbarui akun.',
+        icon: Icons.manage_accounts_outlined,
+        color: AppColors.primaryColor,
+        onTap: () {
+          if (Get.isRegistered<AdminDashboardController>()) {
+            Get.find<AdminDashboardController>().changeTab(1);
+          }
+        },
+      ),
+      _AdminAction(
+        title: 'Master data',
+        subtitle: 'Kelola kategori dan data referensi.',
+        icon: Icons.storage_outlined,
+        color: AppColors.greenColor,
+        onTap: () {
+          if (Get.isRegistered<AdminDashboardController>()) {
+            Get.find<AdminDashboardController>().changeTab(2);
+          }
+        },
+      ),
+      _AdminAction(
+        title: 'Orders',
+        subtitle: 'Periksa dan kelola seluruh pesanan.',
+        icon: Icons.shopping_bag_outlined,
+        color: AppColors.orangeColor,
+        onTap: () => Get.to(
+          () => const AdminOrdersView(),
+          binding: AdminOrdersBinding(),
+        ),
+      ),
+      _AdminAction(
+        title: 'Withdraw',
+        subtitle: 'Tinjau permintaan pencairan dana.',
+        icon: Icons.account_balance_wallet_outlined,
+        color: AppColors.primaryDark,
+        onTap: () => Get.to(
+          () => const AdminWithdrawView(),
+          binding: AdminWithdrawBinding(),
+        ),
+      ),
+      _AdminAction(
+        title: 'Kuesioner',
+        subtitle: 'Pantau dan kelola layanan kuesioner.',
+        icon: Icons.assignment_outlined,
+        color: AppColors.yellow2Color,
+        onTap: () => Get.to(
+          () => const AdminKuesionerView(),
+          binding: AdminKuesionerBinding(),
+        ),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = adminActionColumnCount(constraints.maxWidth);
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: actions.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 14,
+            mainAxisSpacing: 14,
+            mainAxisExtent: 154,
+          ),
+          itemBuilder: (context, index) => actions[index],
+        );
+      },
+    );
+  }
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.title, required this.subtitle});
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 19,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            height: 1.5,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DashboardStat extends StatelessWidget {
+  const _DashboardStat({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.75)),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 21),
+          ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+              Expanded(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 2,
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildActionCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+class _AdminAction extends StatelessWidget {
+  const _AdminAction({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return Semantics(
-      container: true,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withValues(alpha: 0.9), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+      button: true,
+      label: title,
+      child: Material(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, color: AppColors.surface, size: 26),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          hoverColor: color.withValues(alpha: 0.06),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.11),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.surface,
-                    ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          height: 1.45,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: AppColors.surface.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 10),
+                Icon(Icons.arrow_forward_rounded, size: 20, color: color),
+              ],
             ),
           ),
         ),

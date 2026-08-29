@@ -45,6 +45,8 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
           currentIndex: controller.currentIndex.value,
           onTap: controller.changeTab,
         ),
+        brandTitle: 'Cermatify',
+        brandSubtitle: 'Admin Workspace',
       ),
     );
   }
