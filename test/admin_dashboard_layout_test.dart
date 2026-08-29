@@ -61,4 +61,33 @@ void main() {
     expect(find.text('Jumlah pengguna'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('wide statistic card keeps its label below the value', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 300,
+              height: 148,
+              child: AdminDashboardStatCard(
+                title: 'Jumlah pengguna',
+                value: '33',
+                icon: Icons.people_outline,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final valueRect = tester.getRect(find.text('33'));
+    final labelRect = tester.getRect(find.text('Jumlah pengguna'));
+    expect(labelRect.top, greaterThan(valueRect.bottom));
+    expect(labelRect.left, closeTo(valueRect.left, 1));
+    expect(tester.takeException(), isNull);
+  });
 }
