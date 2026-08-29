@@ -20,66 +20,55 @@ class LandingView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _landingMaxWidth),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                const horizontalPadding = 16.0;
-
-                return CustomScrollView(
-                  slivers: [
-                    SliverPersistentHeader(
-                      pinned: true,
-                      delegate: _LandingHeaderDelegate(),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          18,
-                          horizontalPadding,
-                          32,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _LandingIntro(),
-                            const SizedBox(height: 30),
-                            _SectionHeader(
-                              title: 'Solusi Cermat untuk Kebutuhan Akademik',
-                              subtitle:
-                                  'Mulai dari konsultasi mentor, kuesioner, sampai bantuan riset dalam satu aplikasi.',
-                            ),
-                            const SizedBox(height: 16),
-                            const _FeatureGrid(),
-                            const SizedBox(height: 30),
-                            _SectionHeader(
-                              title: 'Cara Kerja Cermatify',
-                              subtitle:
-                                  'Alurnya dibuat sederhana agar pengguna bisa langsung mulai tanpa kebingungan.',
-                            ),
-                            const SizedBox(height: 16),
-                            const _HowItWorks(),
-                            const SizedBox(height: 30),
-                            _SectionHeader(
-                              title: 'Cerita Pengguna',
-                              subtitle:
-                                  'Beberapa alasan Cermatify jadi teman belajar yang praktis.',
-                            ),
-                            const SizedBox(height: 16),
-                            const _Testimonials(),
-                            const SizedBox(height: 30),
-                            const _FinalCta(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+        child: CustomScrollView(
+          slivers: [
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _LandingHeaderDelegate(),
             ),
-          ),
+            SliverToBoxAdapter(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: _landingMaxWidth),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 56),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _LandingIntro(),
+                        const SizedBox(height: 72),
+                        _SectionHeader(
+                          title: 'Solusi Cermat untuk Kebutuhan Akademik',
+                          subtitle:
+                              'Mulai dari konsultasi mentor, kuesioner, sampai bantuan riset dalam satu aplikasi.',
+                        ),
+                        const SizedBox(height: 16),
+                        const _FeatureGrid(),
+                        const SizedBox(height: 72),
+                        _SectionHeader(
+                          title: 'Cara Kerja Cermatify',
+                          subtitle:
+                              'Alurnya dibuat sederhana agar pengguna bisa langsung mulai tanpa kebingungan.',
+                        ),
+                        const SizedBox(height: 16),
+                        const _HowItWorks(),
+                        const SizedBox(height: 72),
+                        _SectionHeader(
+                          title: 'Cerita Pengguna',
+                          subtitle:
+                              'Beberapa alasan Cermatify jadi teman belajar yang praktis.',
+                        ),
+                        const SizedBox(height: 16),
+                        const _Testimonials(),
+                        const SizedBox(height: 72),
+                        const _FinalCta(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -105,54 +94,59 @@ class _LandingHeaderDelegate extends SliverPersistentHeaderDelegate {
     return SizedBox.expand(
       child: ColoredBox(
         color: AppColors.background.withValues(alpha: 0.96),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Container(
-                width: logoSize,
-                height: logoSize,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Image.asset(
-                  'assets/images/logo.jpeg',
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Cermatify',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: compact ? 16 : 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.black414,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _landingMaxWidth),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Container(
+                    width: logoSize,
+                    height: logoSize,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.jpeg',
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Get.toNamed(Routes.LOGIN),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primaryColor,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 8 : 12,
-                    vertical: 8,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Cermatify',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: compact ? 16 : 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.black414,
+                      ),
+                    ),
                   ),
-                  minimumSize: const Size(0, 36),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  'Masuk',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-                ),
+                  TextButton(
+                    onPressed: () => Get.toNamed(Routes.LOGIN),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primaryColor,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: compact ? 8 : 12,
+                        vertical: 8,
+                      ),
+                      minimumSize: const Size(0, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Masuk',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -317,17 +311,164 @@ class _LandingIntro extends StatelessWidget {
         ],
       ),
       desktop: (context, constraints) => const Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 6, child: _HeroSection()),
-              SizedBox(width: 24),
-              Expanded(flex: 5, child: _VisualShowcase()),
-            ],
+        children: [_DesktopHeroSection(), SizedBox(height: 28), _TrustBar()],
+      ),
+    );
+  }
+}
+
+class _DesktopHeroSection extends StatelessWidget {
+  const _DesktopHeroSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.14)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.surface,
+            AppColors.primaryColor.withValues(alpha: 0.08),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            blurRadius: 32,
+            offset: const Offset(0, 14),
           ),
-          SizedBox(height: 24),
-          _TrustBar(),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 11,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(56, 56, 24, 56),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _Pill(label: 'Platform pendamping akademik'),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Belajar lebih terarah,\nbertumbuh lebih percaya diri.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 44,
+                      height: 1.12,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.black414,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Temukan mentor, kelola kebutuhan kuesioner, dan akses layanan pendukung akademik dalam satu pengalaman yang sederhana.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      height: 1.7,
+                      color: AppColors.greyTextSecondaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Wrap(
+                    spacing: 14,
+                    runSpacing: 12,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () => Get.toNamed(Routes.REGISTER),
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                        label: const Text('Mulai Sekarang'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          foregroundColor: AppColors.whiteColor,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 26,
+                            vertical: 18,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: () => Get.toNamed(Routes.LOGIN),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primaryColor,
+                          side: const BorderSide(color: AppColors.primaryColor),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 26,
+                            vertical: 18,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text('Saya Sudah Punya Akun'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 10,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.whiteColor.withValues(alpha: 0.52),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 34, 28, 20),
+                  child: Image.asset(
+                    'assets/images/banner1.jpg',
+                    fit: BoxFit.contain,
+                    semanticLabel: 'Ilustrasi pendampingan akademik',
+                  ),
+                ),
+                Positioned(
+                  right: 28,
+                  bottom: 28,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 18,
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          color: AppColors.primaryColor,
+                        ),
+                        SizedBox(width: 8),
+                        Text('Pendamping terverifikasi'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -341,14 +482,43 @@ class _TrustBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final compact = _isCompact(context);
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        _StatCard(value: '3+', label: 'Layanan inti', compact: compact),
-        _StatCard(value: '24/7', label: 'Akses web', compact: compact),
-        _StatCard(value: '1', label: 'Aplikasi', compact: compact),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth < 520 ? 2 : 3;
+        const spacing = 12.0;
+        final itemWidth =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            SizedBox(
+              width: itemWidth,
+              child: _StatCard(
+                value: '3+',
+                label: 'Layanan inti',
+                compact: compact,
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: _StatCard(
+                value: '24/7',
+                label: 'Akses web',
+                compact: compact,
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: _StatCard(
+                value: '1',
+                label: 'Aplikasi terpadu',
+                compact: compact,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -552,62 +722,70 @@ class _FinalCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = _isCompact(context);
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(compact ? 18 : 20),
-      decoration: BoxDecoration(
-        color: AppColors.primaryColor,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.24),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    final copy = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Siap mulai lebih cermat?',
+          style: GoogleFonts.poppins(
+            fontSize: compact ? 20 : 28,
+            fontWeight: FontWeight.w900,
+            color: AppColors.whiteColor,
           ),
-        ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Masuk atau daftar untuk menggunakan seluruh layanan Cermatify.',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            height: 1.55,
+            color: AppColors.whiteColor.withValues(alpha: 0.88),
+          ),
+        ),
+      ],
+    );
+    final action = ElevatedButton(
+      onPressed: () => Get.toNamed(Routes.REGISTER),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.whiteColor,
+        foregroundColor: AppColors.primaryColor,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Siap mulai lebih cermat?',
-            style: GoogleFonts.poppins(
-              fontSize: compact ? 20 : 22,
-              fontWeight: FontWeight.w900,
-              color: AppColors.whiteColor,
+      child: Text(
+        'Daftar Gratis',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.w800),
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) => Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(constraints.maxWidth >= 700 ? 40 : 20),
+        decoration: BoxDecoration(
+          color: AppColors.primaryColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.24),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Masuk atau daftar untuk menggunakan seluruh layanan Cermatify.',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              height: 1.55,
-              color: AppColors.whiteColor.withValues(alpha: 0.88),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Get.toNamed(Routes.REGISTER),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.whiteColor,
-                foregroundColor: AppColors.primaryColor,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+          ],
+        ),
+        child: constraints.maxWidth >= 700
+            ? Row(
+                children: [
+                  Expanded(child: copy),
+                  const SizedBox(width: 32),
+                  action,
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [copy, const SizedBox(height: 20), action],
               ),
-              child: Text(
-                'Daftar Gratis',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w800),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -720,16 +898,8 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(
-      context,
-    ).width.clamp(320.0, _landingMaxWidth).toDouble();
-    final availableWidth = screenWidth - (compact ? 32 : 40);
-    final cardWidth = compact
-        ? (availableWidth - 10) / 2
-        : (availableWidth - 20) / 3;
-
     return SizedBox(
-      width: cardWidth,
+      width: double.infinity,
       height: 86,
       child: Container(
         padding: const EdgeInsets.all(12),
