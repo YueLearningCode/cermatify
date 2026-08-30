@@ -164,20 +164,20 @@ class UsersController extends GetxController {
         .toList(growable: false);
   }
 
-  // Fetch full mentor data from Firestore
-  Future<Map<String, dynamic>?> fetchMentorFullData(String mentorId) async {
+  Future<Map<String, dynamic>?> fetchUserFullData(String userId) async {
     try {
-      final mentorDoc = await _firestore
-          .collection('users')
-          .doc(mentorId)
-          .get();
-      if (mentorDoc.exists) {
-        return mentorDoc.data();
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        return userDoc.data();
       }
       return null;
     } catch (e) {
-      AppLogger.info('Error fetching mentor full data: $e');
+      AppLogger.info('Error fetching user detail: $e');
       return null;
     }
+  }
+
+  Future<Map<String, dynamic>?> fetchMentorFullData(String mentorId) {
+    return fetchUserFullData(mentorId);
   }
 }

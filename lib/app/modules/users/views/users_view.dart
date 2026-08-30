@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/users_controller.dart';
 import 'mentor_detail_view.dart';
+import 'user_detail_view.dart';
 
 int adminUsersColumnCount(double width) {
   if (width >= 1080) return 3;
@@ -122,13 +123,15 @@ class UsersView extends GetView<UsersController> {
                                 user: visibleUsers[index],
                                 isMentor: isMentor,
                                 isUpdating: controller.isUpdating.value,
-                                onOpen: isMentor
-                                    ? () => Get.to(
-                                        () => MentorDetailView(
+                                onOpen: () => Get.to(
+                                  () => isMentor
+                                      ? MentorDetailView(
                                           mentorId: visibleUsers[index].id,
+                                        )
+                                      : UserDetailView(
+                                          userId: visibleUsers[index].id,
                                         ),
-                                      )
-                                    : null,
+                                ),
                                 onToggleMentor: () =>
                                     controller.toggleMentorStatus(
                                       visibleUsers[index].id,
@@ -426,7 +429,12 @@ class AdminUserCard extends StatelessWidget {
                   onChanged: isUpdating ? null : (_) => onToggleMentor(),
                   activeTrackColor: AppColors.greenColor,
                 ),
-              ],
+              ] else
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: AppColors.textSecondary,
+                ),
             ],
           ),
         ),
