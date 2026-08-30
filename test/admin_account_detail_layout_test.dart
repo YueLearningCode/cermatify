@@ -51,7 +51,7 @@ void main() {
     );
   }
 
-  for (final width in <double>[360, 1100]) {
+  for (final width in <double>[360, 760, 1100]) {
     testWidgets('mentor detail has no overflow at ${width.toInt()} px', (
       tester,
     ) async {
@@ -66,6 +66,14 @@ void main() {
 
       expect(find.text('Informasi mentor'), findsOneWidget);
       expect(find.text('Mentor terverifikasi'), findsOneWidget);
+      if (width < 900) {
+        final nameRect = tester.getRect(find.text('Mentor Cermatify'));
+        final statusRect = tester.getRect(
+          find.byKey(const ValueKey('account-status-badge')),
+        );
+        expect(nameRect.center.dx, closeTo(width / 2, 2));
+        expect(statusRect.center.dx, closeTo(width / 2, 2));
+      }
       expect(tester.takeException(), isNull);
     });
   }

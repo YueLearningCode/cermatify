@@ -323,15 +323,18 @@ class _AccountHero extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compact = constraints.maxWidth < 620;
+          final compact = constraints.maxWidth < 900;
           final avatar = _AccountAvatar(account: account, compact: compact);
           final identity = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: compact
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             children: [
               Text(
                 account.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                textAlign: compact ? TextAlign.center : TextAlign.start,
                 style: GoogleFonts.poppins(
                   fontSize: compact ? 22 : 27,
                   height: 1.18,
@@ -344,6 +347,7 @@ class _AccountHero extends StatelessWidget {
                 account.email,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                textAlign: compact ? TextAlign.center : TextAlign.start,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -355,6 +359,7 @@ class _AccountHero extends StatelessWidget {
                   campus,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  textAlign: compact ? TextAlign.center : TextAlign.start,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -384,7 +389,7 @@ class _AccountHero extends StatelessWidget {
 
           if (compact) {
             return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 avatar,
                 const SizedBox(height: 16),
@@ -673,6 +678,7 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: const ValueKey('account-status-badge'),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.88),
