@@ -224,26 +224,11 @@ class ProfileView extends GetView<ProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          "Profil Saya",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: AppColors.surface,
-          ),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        elevation: 0,
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-      ),
       body: Obx(
         () => controller.isLoading.value
             ? const Center(child: CircularProgressIndicator())
+            : controller.userRole.value == 'admin'
+            ? _buildAdminProfile(context)
             : SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -953,6 +938,99 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
+  Widget _buildAdminProfile(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        final basePadding = viewport.maxWidth < 600 ? 16.0 : 28.0;
+        final gutter = viewport.maxWidth > 1156
+            ? (viewport.maxWidth - 1156) / 2
+            : 0.0;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            basePadding + gutter,
+            24,
+            basePadding + gutter,
+            viewport.maxWidth < 600 ? 112 : 44,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AdminProfileHero(
+                name: controller.userName.value,
+                email: controller.userEmail.value,
+                imageUrl: controller.userImage.value,
+                campus: controller.userKampus.value,
+                onChangePhoto: () => _showImageSourceDialog(context),
+              ),
+              const SizedBox(height: 28),
+              const _ProfileSectionHeading(
+                title: 'Informasi profil',
+                subtitle: 'Data akademik dan status akun administrator.',
+              ),
+              const SizedBox(height: 14),
+              AdminProfileInfoGrid(
+                items: [
+                  AdminProfileInfo(
+                    icon: Icons.admin_panel_settings_outlined,
+                    label: 'Peran akun',
+                    value: 'Administrator',
+                    color: AppColors.primaryColor,
+                  ),
+                  AdminProfileInfo(
+                    icon: Icons.email_outlined,
+                    label: 'Email',
+                    value: controller.userEmail.value,
+                    color: AppColors.primaryColor,
+                  ),
+                  if (controller.userKampus.value.isNotEmpty)
+                    AdminProfileInfo(
+                      icon: Icons.account_balance_outlined,
+                      label: 'Kampus',
+                      value: controller.userKampus.value,
+                      color: AppColors.primaryColor,
+                    ),
+                  if (controller.userJurusan.value.isNotEmpty)
+                    AdminProfileInfo(
+                      icon: Icons.menu_book_outlined,
+                      label: 'Program studi',
+                      value: controller.userJurusan.value,
+                      color: AppColors.primaryColor,
+                    ),
+                  if (controller.userSemester.value.isNotEmpty)
+                    AdminProfileInfo(
+                      icon: Icons.calendar_month_outlined,
+                      label: 'Semester',
+                      value: controller.userSemester.value,
+                      color: AppColors.primaryLight,
+                    ),
+                  const AdminProfileInfo(
+                    icon: Icons.verified_user_outlined,
+                    label: 'Status akun',
+                    value: 'Aktif',
+                    color: AppColors.greenColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              const _ProfileSectionHeading(
+                title: 'Pengaturan akun',
+                subtitle: 'Kelola identitas, keamanan, dan sesi akun Anda.',
+              ),
+              const SizedBox(height: 14),
+              AdminProfileActions(
+                onEdit: () => Get.to(() => const EditProfileView()),
+                onChangePassword: () =>
+                    Get.to(() => const ChangePasswordView()),
+                onLogout: _showLogoutDialog,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildOrderCard(Map<String, dynamic> order) {
     final customerName =
         order['customerName']?.toString() ?? 'Unknown Customer';
@@ -1058,5 +1136,423 @@ class ProfileView extends GetView<ProfileController> {
       return 'Rp ${(price / 1000).toStringAsFixed(0)}k';
     }
     return 'Rp $price';
+  }
+}
+
+class AdminProfileHero extends StatelessWidget {
+  const AdminProfileHero({
+    super.key,
+    required this.name,
+    required this.email,
+    required this.imageUrl,
+    required this.campus,
+    required this.onChangePhoto,
+  });
+
+  final String name;
+  final String email;
+  final String imageUrl;
+  final String campus;
+  final VoidCallback onChangePhoto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(26),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.checkoutButtonColor,
+            AppColors.lightPrimaryColor.withValues(alpha: 0.2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.primaryColor.withValues(alpha: 0.14),
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 720;
+          final avatar = Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: compact ? 82 : 94,
+                height: compact ? 82 : 94,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.surface,
+                  border: Border.all(
+                    color: AppColors.primaryColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: CircleAvatar(
+                  backgroundColor: AppColors.checkoutButtonColor,
+                  backgroundImage: imageUrl.isNotEmpty
+                      ? NetworkImage(imageUrl)
+                      : const AssetImage('assets/images/profile_dummy.jpg')
+                            as ImageProvider,
+                ),
+              ),
+              Positioned(
+                right: -2,
+                bottom: -2,
+                child: Material(
+                  color: AppColors.primaryColor,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: onChangePhoto,
+                    customBorder: const CircleBorder(),
+                    child: const SizedBox(
+                      width: 34,
+                      height: 34,
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        size: 16,
+                        color: AppColors.surface,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+          final identity = Column(
+            crossAxisAlignment: compact
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'ADMIN PROFILE',
+                  style: GoogleFonts.poppins(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primaryColor,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                name,
+                textAlign: compact ? TextAlign.center : TextAlign.start,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: compact ? 23 : 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                email,
+                textAlign: compact ? TextAlign.center : TextAlign.start,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              if (campus.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.account_balance_outlined,
+                      size: 15,
+                      color: AppColors.primaryColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        campus,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          );
+          const status = _ProfileStatusBadge();
+
+          if (compact) {
+            return Column(
+              children: [
+                avatar,
+                const SizedBox(height: 18),
+                identity,
+                const SizedBox(height: 16),
+                status,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              avatar,
+              const SizedBox(width: 20),
+              Expanded(child: identity),
+              const SizedBox(width: 20),
+              status,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AdminProfileInfo {
+  const AdminProfileInfo({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+}
+
+class AdminProfileInfoGrid extends StatelessWidget {
+  const AdminProfileInfoGrid({super.key, required this.items});
+
+  final List<AdminProfileInfo> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900
+            ? 3
+            : constraints.maxWidth >= 560
+            ? 2
+            : 1;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 14,
+            mainAxisSpacing: 14,
+            mainAxisExtent: 92,
+          ),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(17),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 43,
+                    height: 43,
+                    decoration: BoxDecoration(
+                      color: item.color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(item.icon, color: item.color, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.label,
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          item.value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: item.label == 'Status akun'
+                                ? AppColors.greenColor
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class AdminProfileActions extends StatelessWidget {
+  const AdminProfileActions({
+    super.key,
+    required this.onEdit,
+    required this.onChangePassword,
+    required this.onLogout,
+  });
+
+  final VoidCallback onEdit;
+  final VoidCallback onChangePassword;
+  final VoidCallback onLogout;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 700;
+        final buttons = [
+          FilledButton.icon(
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Edit profil'),
+          ),
+          OutlinedButton.icon(
+            onPressed: onChangePassword,
+            icon: const Icon(Icons.lock_reset_rounded, size: 18),
+            label: const Text('Ubah kata sandi'),
+          ),
+          OutlinedButton.icon(
+            onPressed: onLogout,
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: const Text('Logout'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.redColor,
+              side: const BorderSide(color: AppColors.redColor),
+            ),
+          ),
+        ];
+
+        Widget styled(Widget button) => SizedBox(
+          height: 48,
+          width: compact ? double.infinity : null,
+          child: button,
+        );
+
+        if (compact) {
+          return Column(
+            children: [
+              for (var index = 0; index < buttons.length; index++) ...[
+                styled(buttons[index]),
+                if (index < buttons.length - 1) const SizedBox(height: 10),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            for (var index = 0; index < buttons.length; index++) ...[
+              Expanded(child: styled(buttons[index])),
+              if (index < buttons.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ProfileSectionHeading extends StatelessWidget {
+  const _ProfileSectionHeading({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileStatusBadge extends StatelessWidget {
+  const _ProfileStatusBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.greenColor.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.verified_rounded,
+            size: 16,
+            color: AppColors.greenColor,
+          ),
+          const SizedBox(width: 7),
+          Text(
+            'Administrator aktif',
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: AppColors.greenColor,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
