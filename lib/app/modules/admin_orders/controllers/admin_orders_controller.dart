@@ -9,7 +9,7 @@ class AdminOrdersController extends GetxController {
   AdminOrdersController({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  static const int pageSize = 20;
+  static const int pageSize = 8;
 
   final FirebaseFirestore _firestore;
   final orders = <Map<String, dynamic>>[].obs;

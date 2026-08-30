@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('order pagination is limited to eight cards', () {
+    expect(AdminOrdersController.pageSize, 8);
+  });
+
   for (final width in <double>[320, 620, 1100]) {
     testWidgets('admin orders header fits at ${width.toInt()} px', (
       tester,
@@ -136,6 +140,24 @@ void main() {
     );
 
     await tester.tap(find.text('Tampilkan lebih banyak'));
+    expect(calls, 1);
+  });
+
+  testWidgets('orders header invokes back callback', (tester) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AdminOrdersHeader(
+            loadedCount: 8,
+            onBack: () => calls++,
+            onRefresh: () {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Kembali'));
     expect(calls, 1);
   });
 }

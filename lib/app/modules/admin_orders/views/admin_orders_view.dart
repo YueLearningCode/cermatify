@@ -1,6 +1,7 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
 import 'package:cermatify/app/modules/admin_orders/controllers/admin_orders_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -49,7 +50,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                     sliver: SliverToBoxAdapter(
                       child: AdminOrdersHeader(
                         loadedCount: visibleOrders.length,
-                        onBack: Get.back,
+                        onBack: () => _handleBack(context),
                         onRefresh: controller.fetchOrders,
                       ),
                     ),
@@ -144,6 +145,15 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
         }).toList(),
       ),
     );
+  }
+
+  void _handleBack(BuildContext context) {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+    Get.offAllNamed(Routes.ADMIN_DASHBOARD);
   }
 
   Widget _buildPagination() {
