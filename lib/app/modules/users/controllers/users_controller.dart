@@ -44,6 +44,10 @@ class UsersController extends GetxController {
   final mentorsList = <UserData>[].obs;
   final isLoading = false.obs;
   final isUpdating = false.obs;
+  final searchQuery = ''.obs;
+
+  List<UserData> get filteredUsers => _filterUsers(usersList);
+  List<UserData> get filteredMentors => _filterUsers(mentorsList);
 
   @override
   void onInit() {
@@ -141,6 +145,23 @@ class UsersController extends GetxController {
 
   void changeTab(int index) {
     selectedTab.value = index;
+  }
+
+  void updateSearchQuery(String value) {
+    searchQuery.value = value.trim().toLowerCase();
+  }
+
+  List<UserData> _filterUsers(List<UserData> source) {
+    final query = searchQuery.value;
+    if (query.isEmpty) return source.toList(growable: false);
+
+    return source
+        .where(
+          (user) =>
+              user.name.toLowerCase().contains(query) ||
+              user.email.toLowerCase().contains(query),
+        )
+        .toList(growable: false);
   }
 
   // Fetch full mentor data from Firestore
