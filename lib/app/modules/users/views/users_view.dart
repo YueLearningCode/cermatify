@@ -20,148 +20,131 @@ class UsersView extends GetView<UsersController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1336),
-            child: SizedBox(
-              width: double.infinity,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final horizontalPadding = constraints.maxWidth < 600
-                      ? 16.0
-                      : 28.0;
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final basePadding = constraints.maxWidth < 600 ? 16.0 : 28.0;
+            final centeredGutter = constraints.maxWidth > 1336
+                ? (constraints.maxWidth - 1336) / 2
+                : 0.0;
+            final horizontalPadding = basePadding + centeredGutter;
 
-                  return Obx(() {
-                    final isMentor = controller.selectedTab.value == 1;
-                    final source = isMentor
-                        ? controller.mentorsList
-                        : controller.usersList;
-                    final visibleUsers = isMentor
-                        ? controller.filteredMentors
-                        : controller.filteredUsers;
+            return Obx(() {
+              final isMentor = controller.selectedTab.value == 1;
+              final source = isMentor
+                  ? controller.mentorsList
+                  : controller.usersList;
+              final visibleUsers = isMentor
+                  ? controller.filteredMentors
+                  : controller.filteredUsers;
 
-                    return CustomScrollView(
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      slivers: [
-                        SliverPadding(
-                          padding: EdgeInsets.fromLTRB(
-                            horizontalPadding,
-                            24,
-                            horizontalPadding,
-                            8,
-                          ),
-                          sliver: SliverToBoxAdapter(
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 1280,
-                                ),
-                                child: _UsersHeader(
-                                  usersCount: controller.usersList.length,
-                                  mentorsCount: controller.mentorsList.length,
-                                ),
-                              ),
-                            ),
+              return CustomScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      24,
+                      horizontalPadding,
+                      8,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1280),
+                          child: _UsersHeader(
+                            usersCount: controller.usersList.length,
+                            mentorsCount: controller.mentorsList.length,
                           ),
                         ),
-                        SliverPadding(
-                          padding: EdgeInsets.fromLTRB(
-                            horizontalPadding,
-                            16,
-                            horizontalPadding,
-                            16,
-                          ),
-                          sliver: SliverToBoxAdapter(
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 1280,
-                                ),
-                                child: _UsersToolbar(
-                                  selectedTab: controller.selectedTab.value,
-                                  visibleCount: visibleUsers.length,
-                                  totalCount: source.length,
-                                  onTabChanged: controller.changeTab,
-                                  onSearchChanged: controller.updateSearchQuery,
-                                ),
-                              ),
-                            ),
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      16,
+                      horizontalPadding,
+                      16,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1280),
+                          child: _UsersToolbar(
+                            selectedTab: controller.selectedTab.value,
+                            visibleCount: visibleUsers.length,
+                            totalCount: source.length,
+                            onTabChanged: controller.changeTab,
+                            onSearchChanged: controller.updateSearchQuery,
                           ),
                         ),
-                        if (controller.isLoading.value)
-                          const SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Center(child: CircularProgressIndicator()),
-                          )
-                        else if (visibleUsers.isEmpty)
-                          SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: _EmptyUsersState(
-                              isMentor: isMentor,
-                              hasSearch:
-                                  controller.searchQuery.value.isNotEmpty,
-                            ),
-                          )
-                        else
-                          SliverPadding(
-                            padding: EdgeInsets.fromLTRB(
-                              horizontalPadding,
-                              0,
-                              horizontalPadding,
-                              constraints.maxWidth < 600 ? 108 : 32,
-                            ),
-                            sliver: SliverLayoutBuilder(
-                              builder: (context, sliverConstraints) {
-                                final contentWidth = sliverConstraints
-                                    .crossAxisExtent
-                                    .clamp(0.0, 1280.0);
-                                final columns = adminUsersColumnCount(
-                                  contentWidth,
-                                );
+                      ),
+                    ),
+                  ),
+                  if (controller.isLoading.value)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (visibleUsers.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _EmptyUsersState(
+                        isMentor: isMentor,
+                        hasSearch: controller.searchQuery.value.isNotEmpty,
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        0,
+                        horizontalPadding,
+                        constraints.maxWidth < 600 ? 108 : 32,
+                      ),
+                      sliver: SliverLayoutBuilder(
+                        builder: (context, sliverConstraints) {
+                          final contentWidth = sliverConstraints.crossAxisExtent
+                              .clamp(0.0, 1280.0);
+                          final columns = adminUsersColumnCount(contentWidth);
 
-                                return SliverGrid(
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: columns,
-                                        crossAxisSpacing: 14,
-                                        mainAxisSpacing: 14,
-                                        mainAxisExtent: isMentor ? 126 : 112,
-                                      ),
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) => AdminUserCard(
-                                      user: visibleUsers[index],
-                                      isMentor: isMentor,
-                                      isUpdating: controller.isUpdating.value,
-                                      onOpen: isMentor
-                                          ? () => Get.to(
-                                              () => MentorDetailView(
-                                                mentorId:
-                                                    visibleUsers[index].id,
-                                              ),
-                                            )
-                                          : null,
-                                      onToggleMentor: () =>
-                                          controller.toggleMentorStatus(
-                                            visibleUsers[index].id,
-                                            visibleUsers[index]
-                                                .verificationStatus,
-                                          ),
+                          return SliverGrid(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: columns,
+                                  crossAxisSpacing: 14,
+                                  mainAxisSpacing: 14,
+                                  mainAxisExtent: isMentor ? 126 : 112,
+                                ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) => AdminUserCard(
+                                user: visibleUsers[index],
+                                isMentor: isMentor,
+                                isUpdating: controller.isUpdating.value,
+                                onOpen: isMentor
+                                    ? () => Get.to(
+                                        () => MentorDetailView(
+                                          mentorId: visibleUsers[index].id,
+                                        ),
+                                      )
+                                    : null,
+                                onToggleMentor: () =>
+                                    controller.toggleMentorStatus(
+                                      visibleUsers[index].id,
+                                      visibleUsers[index].verificationStatus,
                                     ),
-                                    childCount: visibleUsers.length,
-                                  ),
-                                );
-                              },
+                              ),
+                              childCount: visibleUsers.length,
                             ),
-                          ),
-                      ],
-                    );
-                  });
-                },
-              ),
-            ),
-          ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              );
+            });
+          },
         ),
       ),
     );
@@ -547,9 +530,20 @@ class _TabButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
+        height: 40,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -176,14 +176,7 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
               Expanded(
                 child: ColoredBox(
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxWidth: AppBreakpoints.maxContentWidth,
-                      ),
-                      child: SizedBox.expand(child: body),
-                    ),
-                  ),
+                  child: body,
                 ),
               ),
             ],

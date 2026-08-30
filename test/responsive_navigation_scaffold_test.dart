@@ -56,6 +56,44 @@ void main() {
     expect(find.byType(BottomNavigationBar), findsNothing);
   });
 
+  testWidgets('desktop scrollable reaches the viewport right edge', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1920, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ResponsiveNavigationScaffold(
+          body: const SingleChildScrollView(
+            child: SizedBox(height: 1600, child: Text('Scrollable content')),
+          ),
+          selectedIndex: 0,
+          destinations: const [
+            NavigationRailDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
+              label: Text('Home'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: Text('Profile'),
+            ),
+          ],
+          onDestinationSelected: (_) {},
+          mobileNavigation: const SizedBox.shrink(),
+        ),
+      ),
+    );
+
+    final scrollableRect = tester.getRect(find.byType(SingleChildScrollView));
+    expect(scrollableRect.right, closeTo(1920, 0.1));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in <double>[320, 375, 768, 1024, 1366, 1920]) {
     testWidgets('lays out without exceptions at ${width.toInt()} px', (
       tester,
