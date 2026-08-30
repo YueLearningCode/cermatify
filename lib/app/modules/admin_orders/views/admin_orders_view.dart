@@ -29,6 +29,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
           final columns = width >= 1050 ? 2 : 1;
 
           return Obx(() {
+            final visibleOrders = controller.filteredOrders;
             if (controller.isLoading.value && controller.orders.isEmpty) {
               return const _OrdersLoadingState();
             }
@@ -47,7 +48,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                     ),
                     sliver: SliverToBoxAdapter(
                       child: AdminOrdersHeader(
-                        loadedCount: controller.orders.length,
+                        loadedCount: visibleOrders.length,
                         onBack: Get.back,
                         onRefresh: controller.fetchOrders,
                       ),
@@ -57,7 +58,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                     padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 0),
                     sliver: SliverToBoxAdapter(child: _buildFilters()),
                   ),
-                  if (controller.orders.isEmpty)
+                  if (visibleOrders.isEmpty)
                     const SliverFillRemaining(
                       hasScrollBody: false,
                       child: _OrdersEmptyState(),
@@ -73,7 +74,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                           mainAxisExtent: width < 600 ? 420 : 338,
                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {
-                          final order = controller.orders[index];
+                          final order = visibleOrders[index];
                           return AdminOrderCard(
                             order: order,
                             statusColor: controller.getStatusColor(
@@ -94,7 +95,7 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                                   status,
                                 ),
                           );
-                        }, childCount: controller.orders.length),
+                        }, childCount: visibleOrders.length),
                       ),
                     ),
                   SliverPadding(
@@ -146,46 +147,11 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
   }
 
   Widget _buildPagination() {
-    if (!controller.hasMore.value) {
-      return Center(
-        child: Text(
-          controller.orders.isEmpty ? '' : 'Semua order telah ditampilkan',
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      );
-    }
-
-    return Center(
-      child: OutlinedButton.icon(
-        onPressed: controller.isLoadingMore.value ? null : controller.loadMore,
-        icon: controller.isLoadingMore.value
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.expand_more_rounded),
-        label: Text(
-          controller.isLoadingMore.value
-              ? 'Memuat order...'
-              : 'Tampilkan lebih banyak',
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryColor,
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          side: const BorderSide(color: AppColors.border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
-          ),
-          textStyle: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+    return AdminOrdersLoadMoreButton(
+      hasMore: controller.hasMore.value,
+      hasOrders: controller.orders.isNotEmpty,
+      isLoading: controller.isLoadingMore.value,
+      onLoadMore: controller.loadMore,
     );
   }
 
@@ -237,6 +203,62 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AdminOrdersLoadMoreButton extends StatelessWidget {
+  const AdminOrdersLoadMoreButton({
+    required this.hasMore,
+    required this.hasOrders,
+    required this.isLoading,
+    required this.onLoadMore,
+    super.key,
+  });
+
+  final bool hasMore;
+  final bool hasOrders;
+  final bool isLoading;
+  final VoidCallback onLoadMore;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasMore) {
+      return Center(
+        child: Text(
+          hasOrders ? 'Semua order telah ditampilkan' : '',
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : onLoadMore,
+        icon: isLoading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.expand_more_rounded),
+        label: Text(isLoading ? 'Memuat order...' : 'Tampilkan lebih banyak'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          side: const BorderSide(color: AppColors.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+          textStyle: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

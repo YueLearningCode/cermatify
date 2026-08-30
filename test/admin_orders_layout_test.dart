@@ -1,4 +1,5 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/modules/admin_orders/controllers/admin_orders_controller.dart';
 import 'package:cermatify/app/modules/admin_orders/views/admin_orders_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -92,5 +93,49 @@ void main() {
     await tester.tap(find.text('Tandai selesai'));
     expect(selectedStatus, 'completed');
     expect(tester.takeException(), isNull);
+  });
+
+  test('status filter includes legacy order statuses', () {
+    final orders = <Map<String, dynamic>>[
+      {'id': '1', 'status': 'pending'},
+      {'id': '2', 'status': 'waiting verification'},
+      {'id': '3', 'status': 'approved'},
+      {'id': '4', 'status': 'progress'},
+      {'id': '5', 'status': 'completed'},
+    ];
+
+    expect(
+      AdminOrdersController.filterOrders(
+        orders,
+        'waiting verification',
+      ).map((order) => order['id']),
+      ['1', '2'],
+    );
+    expect(
+      AdminOrdersController.filterOrders(
+        orders,
+        'progress',
+      ).map((order) => order['id']),
+      ['3', '4'],
+    );
+  });
+
+  testWidgets('load more button invokes pagination callback', (tester) async {
+    var calls = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AdminOrdersLoadMoreButton(
+            hasMore: true,
+            hasOrders: true,
+            isLoading: false,
+            onLoadMore: () => calls++,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Tampilkan lebih banyak'));
+    expect(calls, 1);
   });
 }

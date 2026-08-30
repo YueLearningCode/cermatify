@@ -35,6 +35,7 @@ class AdminOrdersController extends GetxController {
     isLoading.value = true;
     hasMore.value = true;
     _lastDocument = null;
+    orders.clear();
 
     try {
       final result = await _fetchPage();
@@ -61,6 +62,12 @@ class AdminOrdersController extends GetxController {
       orders.addAll(result);
     } catch (error) {
       AppLogger.info('Error loading more orders: $error');
+      CustomSnackbar.show(
+        title: 'Gagal memuat data',
+        message: 'Order berikutnya tidak dapat dimuat. Silakan coba lagi.',
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
     } finally {
       if (generation == _requestGeneration) isLoadingMore.value = false;
     }
@@ -71,28 +78,17 @@ class AdminOrdersController extends GetxController {
     if (selectedStatusFilter.value != 'all') {
       baseQuery = baseQuery.where(
         'status',
-        isEqualTo: selectedStatusFilter.value,
+        whereIn: statusesForFilter(selectedStatusFilter.value),
       );
     }
 
-    QuerySnapshot<Map<String, dynamic>> snapshot;
-    try {
-      var orderedQuery = baseQuery
-          .orderBy('createdAt', descending: true)
-          .limit(pageSize);
-      if (_lastDocument != null) {
-        orderedQuery = orderedQuery.startAfterDocument(_lastDocument!);
-      }
-      snapshot = await orderedQuery.get();
-    } on FirebaseException catch (error) {
-      if (error.code != 'failed-precondition') rethrow;
-      AppLogger.info('Order index is not ready; using limited fallback query.');
-      var fallbackQuery = baseQuery.limit(pageSize);
-      if (_lastDocument != null) {
-        fallbackQuery = fallbackQuery.startAfterDocument(_lastDocument!);
-      }
-      snapshot = await fallbackQuery.get();
+    var pageQuery = selectedStatusFilter.value == 'all'
+        ? baseQuery.orderBy('createdAt', descending: true).limit(pageSize)
+        : baseQuery.limit(pageSize);
+    if (_lastDocument != null) {
+      pageQuery = pageQuery.startAfterDocument(_lastDocument!);
     }
+    final snapshot = await pageQuery.get();
     if (snapshot.docs.isNotEmpty) _lastDocument = snapshot.docs.last;
     hasMore.value = snapshot.docs.length == pageSize;
 
@@ -120,6 +116,17 @@ class AdminOrdersController extends GetxController {
     if (firstDate is! Timestamp) return 1;
     if (secondDate is! Timestamp) return -1;
     return secondDate.compareTo(firstDate);
+  }
+
+  static List<String> statusesForFilter(String filter) {
+    switch (filter) {
+      case 'waiting verification':
+        return const ['waiting verification', 'pending'];
+      case 'progress':
+        return const ['progress', 'approved'];
+      default:
+        return [filter];
+    }
   }
 
   Future<void> _enrichOrders(List<Map<String, dynamic>> page) async {
@@ -310,5 +317,23 @@ class AdminOrdersController extends GetxController {
     }
   }
 
-  List<Map<String, dynamic>> get filteredOrders => orders;
+  List<Map<String, dynamic>> get filteredOrders {
+    final filter = selectedStatusFilter.value;
+    if (filter == 'all') return orders;
+    return filterOrders(orders, filter);
+  }
+
+  static List<Map<String, dynamic>> filterOrders(
+    Iterable<Map<String, dynamic>> source,
+    String filter,
+  ) {
+    if (filter == 'all') return source.toList(growable: false);
+    final statuses = statusesForFilter(filter);
+    return source
+        .where(
+          (order) =>
+              statuses.contains(order['status']?.toString().toLowerCase()),
+        )
+        .toList(growable: false);
+  }
 }
