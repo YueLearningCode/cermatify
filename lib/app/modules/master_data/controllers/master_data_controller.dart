@@ -63,6 +63,7 @@ class MasterDataController extends GetxController {
 
   final isLoading = false.obs;
   final isSaving = false.obs;
+  final searchQuery = ''.obs;
 
   // Form controllers
   final nameController = TextEditingController();
@@ -243,6 +244,16 @@ class MasterDataController extends GetxController {
       default:
         return kampusList;
     }
+  }
+
+  List<MasterDataItem> getVisibleList() {
+    final items = getCurrentList();
+    final query = searchQuery.value.trim().toLowerCase();
+    if (query.isEmpty) return items;
+
+    return items
+        .where((item) => item.name.toLowerCase().contains(query))
+        .toList(growable: false);
   }
 
   List<MasterDataItem> _getFilteredJurusan() {
@@ -459,6 +470,7 @@ class MasterDataController extends GetxController {
   void changeTab(int index) {
     selectedTab.value = index;
     selectedLayananFilter.value = 'all';
+    searchQuery.value = '';
     if (index != 1) {
       selectedKampus.value = '';
     }
@@ -470,6 +482,10 @@ class MasterDataController extends GetxController {
 
   void changeKampusFilter(String kampusId) {
     selectedKampus.value = kampusId;
+  }
+
+  void updateSearchQuery(String value) {
+    searchQuery.value = value.trim().toLowerCase();
   }
 
   void openCreateDialog() {
