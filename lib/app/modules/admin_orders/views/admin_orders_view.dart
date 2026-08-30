@@ -67,37 +67,30 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
                   else
                     SliverPadding(
                       padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 0),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: columns,
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                          mainAxisExtent: width < 600 ? 420 : 338,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final order = visibleOrders[index];
-                          return AdminOrderCard(
-                            order: order,
-                            statusColor: controller.getStatusColor(
-                              order['status']?.toString() ?? '',
-                            ),
-                            statusText: controller.getStatusText(
-                              order['status']?.toString() ?? '',
-                            ),
-                            isUpdating: controller.isUpdating.value,
-                            onViewPayment: order['paymentProofUrl'] == null
-                                ? null
-                                : () => _showPaymentProof(
-                                    order['paymentProofUrl'].toString(),
-                                  ),
-                            onStatusChanged: (status) =>
-                                controller.updateOrderStatus(
-                                  order['id'].toString(),
-                                  status,
+                      sliver: width < 600
+                          ? SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 14),
+                                  child: _buildOrderCard(visibleOrders[index]),
                                 ),
-                          );
-                        }, childCount: visibleOrders.length),
-                      ),
+                                childCount: visibleOrders.length,
+                              ),
+                            )
+                          : SliverGrid(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: columns,
+                                    crossAxisSpacing: 14,
+                                    mainAxisSpacing: 14,
+                                    mainAxisExtent: 338,
+                                  ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) =>
+                                    _buildOrderCard(visibleOrders[index]),
+                                childCount: visibleOrders.length,
+                              ),
+                            ),
                     ),
                   SliverPadding(
                     padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 36),
@@ -109,6 +102,20 @@ class AdminOrdersView extends GetView<AdminOrdersController> {
           });
         },
       ),
+    );
+  }
+
+  Widget _buildOrderCard(Map<String, dynamic> order) {
+    return AdminOrderCard(
+      order: order,
+      statusColor: controller.getStatusColor(order['status']?.toString() ?? ''),
+      statusText: controller.getStatusText(order['status']?.toString() ?? ''),
+      isUpdating: controller.isUpdating.value,
+      onViewPayment: order['paymentProofUrl'] == null
+          ? null
+          : () => _showPaymentProof(order['paymentProofUrl'].toString()),
+      onStatusChanged: (status) =>
+          controller.updateOrderStatus(order['id'].toString(), status),
     );
   }
 
@@ -400,133 +407,138 @@ class AdminOrderCard extends StatelessWidget {
     final id = order['id']?.toString() ?? '-';
     final shortId = id.length > 8 ? id.substring(0, 8) : id;
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: statusColor.withValues(alpha: 0.06),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.11),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Icon(
-                  Icons.shopping_bag_outlined,
-                  color: statusColor,
-                  size: 21,
-                ),
-              ),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Order #$shortId',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      _formatDate(createdAt),
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.11),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  statusText,
-                  style: GoogleFonts.poppins(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
+    return LayoutBuilder(
+      builder: (context, constraints) => Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: statusColor.withValues(alpha: 0.06),
+              blurRadius: 22,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.11),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(
+                    Icons.shopping_bag_outlined,
                     color: statusColor,
+                    size: 21,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _OrderDetail(
-            icon: Icons.person_outline_rounded,
-            label: 'Pengguna',
-            value: order['userName']?.toString() ?? '-',
-          ),
-          const SizedBox(height: 8),
-          _OrderDetail(
-            icon: Icons.school_outlined,
-            label: 'Mentor',
-            value: order['mentorName']?.toString() ?? '-',
-          ),
-          const SizedBox(height: 8),
-          _OrderDetail(
-            icon: Icons.design_services_outlined,
-            label: 'Layanan',
-            value: order['layananName']?.toString() ?? '-',
-          ),
-          const Spacer(),
-          Row(
-            children: [
-              Text(
-                'Total',
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Order #$shortId',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        _formatDate(createdAt),
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                AppFormats.hargaPendek(price),
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.11),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    statusText,
+                    style: GoogleFonts.poppins(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (onViewPayment != null)
-            OutlinedButton.icon(
-              onPressed: onViewPayment,
-              icon: const Icon(Icons.receipt_long_outlined, size: 17),
-              label: const Text('Lihat bukti pembayaran'),
-              style: _secondaryButtonStyle(),
+              ],
             ),
-          if (onViewPayment != null) const SizedBox(height: 8),
-          _buildActions(status),
-        ],
+            const SizedBox(height: 16),
+            _OrderDetail(
+              icon: Icons.person_outline_rounded,
+              label: 'Pengguna',
+              value: order['userName']?.toString() ?? '-',
+            ),
+            const SizedBox(height: 8),
+            _OrderDetail(
+              icon: Icons.school_outlined,
+              label: 'Mentor',
+              value: order['mentorName']?.toString() ?? '-',
+            ),
+            const SizedBox(height: 8),
+            _OrderDetail(
+              icon: Icons.design_services_outlined,
+              label: 'Layanan',
+              value: order['layananName']?.toString() ?? '-',
+            ),
+            if (constraints.hasBoundedHeight)
+              const Spacer()
+            else
+              const SizedBox(height: 18),
+            Row(
+              children: [
+                Text(
+                  'Total',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  AppFormats.hargaPendek(price),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (onViewPayment != null)
+              OutlinedButton.icon(
+                onPressed: onViewPayment,
+                icon: const Icon(Icons.receipt_long_outlined, size: 17),
+                label: const Text('Lihat bukti pembayaran'),
+                style: _secondaryButtonStyle(),
+              ),
+            if (onViewPayment != null) const SizedBox(height: 8),
+            _buildActions(status),
+          ],
+        ),
       ),
     );
   }

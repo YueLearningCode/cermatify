@@ -38,24 +38,25 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: SizedBox(
-            width: 320,
-            height: 420,
-            child: AdminOrderCard(
-              order: const {
-                'id': '1234567890',
-                'status': 'waiting verification',
-                'price': 25000,
-                'userName': 'Pengguna dengan nama yang sangat panjang',
-                'mentorName': 'Mentor Cermatify',
-                'layananName': 'Pendampingan akademik',
-                'paymentProofUrl': 'https://example.com/proof.jpg',
-              },
-              statusColor: AppColors.yellow2Color,
-              statusText: 'Menunggu verifikasi',
-              isUpdating: false,
-              onViewPayment: () {},
-              onStatusChanged: (value) => selectedStatus = value,
+          body: SingleChildScrollView(
+            child: SizedBox(
+              width: 320,
+              child: AdminOrderCard(
+                order: const {
+                  'id': '1234567890',
+                  'status': 'waiting verification',
+                  'price': 25000,
+                  'userName': 'Pengguna dengan nama yang sangat panjang',
+                  'mentorName': 'Mentor Cermatify',
+                  'layananName': 'Pendampingan akademik',
+                  'paymentProofUrl': 'https://example.com/proof.jpg',
+                },
+                statusColor: AppColors.yellow2Color,
+                statusText: 'Menunggu verifikasi',
+                isUpdating: false,
+                onViewPayment: () {},
+                onStatusChanged: (value) => selectedStatus = value,
+              ),
             ),
           ),
         ),
@@ -64,6 +65,45 @@ void main() {
 
     await tester.tap(find.text('Verifikasi'));
     expect(selectedStatus, 'progress');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('completed mobile order card follows its content height', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: SizedBox(
+              width: 320,
+              child: AdminOrderCard(
+                key: const Key('completed-card'),
+                order: const {
+                  'id': 'completed-order',
+                  'status': 'completed',
+                  'price': 25000,
+                  'userName': 'Pengguna',
+                  'mentorName': 'Mentor',
+                  'layananName': 'Kuesioner',
+                  'paymentProofUrl': 'https://example.com/proof.jpg',
+                },
+                statusColor: AppColors.primaryColor,
+                statusText: 'Selesai',
+                isUpdating: false,
+                onViewPayment: () {},
+                onStatusChanged: (_) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final cardHeight = tester
+        .getRect(find.byKey(const Key('completed-card')))
+        .height;
+    expect(cardHeight, lessThan(350));
     expect(tester.takeException(), isNull);
   });
 

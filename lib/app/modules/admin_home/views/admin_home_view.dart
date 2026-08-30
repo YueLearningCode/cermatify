@@ -7,6 +7,7 @@ import 'package:cermatify/app/modules/admin_orders/bindings/admin_orders_binding
 import 'package:cermatify/app/modules/admin_orders/views/admin_orders_view.dart';
 import 'package:cermatify/app/modules/admin_withdraw/bindings/admin_withdraw_binding.dart';
 import 'package:cermatify/app/modules/admin_withdraw/views/admin_withdraw_view.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -323,6 +324,13 @@ class AdminHomeView extends GetView<AdminHomeController> {
           () => const AdminKuesionerView(),
           binding: AdminKuesionerBinding(),
         ),
+      ),
+      _AdminAction(
+        title: 'Chat',
+        subtitle: 'Buka percakapan dan bantu pengguna.',
+        icon: Icons.chat_bubble_outline_rounded,
+        color: AppColors.primaryColor,
+        onTap: () => Get.toNamed(Routes.CHAT),
       ),
     ];
 

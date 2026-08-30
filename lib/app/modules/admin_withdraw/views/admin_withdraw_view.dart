@@ -1,579 +1,687 @@
+import 'package:cermatify/app/data/models/withdraw_model.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/theme/app_formats.dart';
+import 'package:cermatify/app/modules/admin_withdraw/controllers/admin_withdraw_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:cermatify/app/data/models/mentor_model.dart';
-import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
-import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
-import 'package:cermatify/app/modules/chat/views/chat_room_view.dart';
-import '../controllers/admin_withdraw_controller.dart';
 
 class AdminWithdrawView extends GetView<AdminWithdrawController> {
   const AdminWithdrawView({super.key});
 
-  String _formatPrice(int price) {
-    return 'Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
-  }
-
-  String _formatTime(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inDays == 0) {
-      return DateFormat('HH:mm').format(timestamp);
-    } else if (difference.inDays == 1) {
-      return 'Kemarin';
-    } else if (difference.inDays < 7) {
-      return DateFormat('EEEE', 'id_ID').format(timestamp);
-    } else {
-      return DateFormat('dd/MM/yyyy').format(timestamp);
-    }
-  }
-
-  String _formatDate(DateTime timestamp) {
-    return DateFormat('dd/MM/yyyy HH:mm').format(timestamp);
-  }
+  static const _filters = <(String, String)>[
+    ('Semua', 'all'),
+    ('Menunggu', 'pending'),
+    ('Disetujui', 'approved'),
+    ('Ditolak', 'rejected'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          'Withdraw Management',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            color: AppColors.surface,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.surface),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final pagePadding = width < 600 ? 16.0 : 28.0;
+          final gutter = width > 1256 ? (width - 1200) / 2 : pagePadding;
+          final columns = width >= 1050 ? 2 : 1;
+
+          return Obx(() {
+            final visibleWithdraws = controller.filteredWithdraws;
+            if (controller.isLoading.value && controller.withdraws.isEmpty) {
+              return const _WithdrawLoadingState();
+            }
+
+            return RefreshIndicator(
+              onRefresh: controller.fetchWithdraws,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      gutter,
+                      width < 600 ? 16 : 28,
+                      gutter,
+                      0,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: AdminWithdrawHeader(
+                        loadedCount: visibleWithdraws.length,
+                        onBack: () => _handleBack(context),
+                        onRefresh: controller.fetchWithdraws,
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 0),
+                    sliver: SliverToBoxAdapter(child: _buildFilters()),
+                  ),
+                  if (visibleWithdraws.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _WithdrawEmptyState(),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 0),
+                      sliver: width < 600
+                          ? SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 14),
+                                  child: _buildWithdrawCard(
+                                    visibleWithdraws[index],
+                                  ),
+                                ),
+                                childCount: visibleWithdraws.length,
+                              ),
+                            )
+                          : SliverGrid(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: columns,
+                                    crossAxisSpacing: 14,
+                                    mainAxisSpacing: 14,
+                                    mainAxisExtent: 330,
+                                  ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) =>
+                                    _buildWithdrawCard(visibleWithdraws[index]),
+                                childCount: visibleWithdraws.length,
+                              ),
+                            ),
+                    ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 36),
+                    sliver: SliverToBoxAdapter(
+                      child: AdminWithdrawLoadMoreButton(
+                        hasMore: controller.hasMore.value,
+                        hasWithdraws: controller.withdraws.isNotEmpty,
+                        isLoading: controller.isLoadingMore.value,
+                        onLoadMore: controller.loadMore,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          });
+        },
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Filter
-            Row(
-              children: [
-                Expanded(child: _buildFilterButton('all', 'All')),
-                const SizedBox(width: 8),
-                Expanded(child: _buildFilterButton('pending', 'Pending')),
-                const SizedBox(width: 8),
-                Expanded(child: _buildFilterButton('approved', 'Approved')),
-                const SizedBox(width: 8),
-                Expanded(child: _buildFilterButton('rejected', 'Rejected')),
+    );
+  }
+
+  Widget _buildFilters() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: _filters.map((filter) {
+          final selected = controller.selectedStatusFilter.value == filter.$2;
+          return FilterChip(
+            selected: selected,
+            showCheckmark: false,
+            label: Text(filter.$1),
+            onSelected: (_) => controller.changeStatusFilter(filter.$2),
+            backgroundColor: Colors.transparent,
+            selectedColor: AppColors.primaryColor,
+            side: BorderSide.none,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(11),
+            ),
+            labelStyle: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              color: selected ? AppColors.surface : AppColors.textSecondary,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildWithdrawCard(WithdrawModel withdraw) {
+    return AdminWithdrawCard(
+      withdraw: withdraw,
+      statusColor: controller.getStatusColor(withdraw.status),
+      statusText: controller.getStatusText(withdraw.status),
+      isUpdating: controller.isUpdating.value,
+      onStatusChanged: (status) =>
+          controller.updateWithdrawStatus(withdraw.id, status),
+    );
+  }
+
+  void _handleBack(BuildContext context) {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+    Get.offAllNamed(Routes.ADMIN_DASHBOARD);
+  }
+}
+
+class AdminWithdrawHeader extends StatelessWidget {
+  const AdminWithdrawHeader({
+    required this.loadedCount,
+    required this.onBack,
+    required this.onRefresh,
+    super.key,
+  });
+
+  final int loadedCount;
+  final VoidCallback onBack;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 620;
+        return Container(
+          padding: EdgeInsets.all(compact ? 18 : 24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryColor.withValues(alpha: 0.08),
+                AppColors.lightPrimaryColor.withValues(alpha: 0.28),
               ],
             ),
-            const SizedBox(height: 24),
-            // Withdraw List
-            Text(
-              'Daftar Withdraw',
-              style: GoogleFonts.poppins(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.primaryColor.withValues(alpha: 0.16),
+            ),
+          ),
+          child: Row(
+            children: [
+              _WithdrawHeaderButton(
+                icon: Icons.arrow_back_rounded,
+                tooltip: 'Kembali',
+                onTap: onBack,
               ),
-            ),
-            const SizedBox(height: 14),
-            Obx(
-              () => controller.isLoading.value
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pengelolaan withdraw',
+                      style: GoogleFonts.poppins(
+                        fontSize: compact ? 20 : 24,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
-                    )
-                  : controller.filteredWithdraws.isEmpty
-                  ? _buildEmptyWithdrawState()
-                  : _buildWithdrawList(),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Tinjau dan verifikasi permintaan pencairan mentor.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!compact) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '$loadedCount dimuat',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _WithdrawHeaderButton(
+                  icon: Icons.refresh_rounded,
+                  tooltip: 'Muat ulang',
+                  onTap: onRefresh,
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AdminWithdrawCard extends StatelessWidget {
+  const AdminWithdrawCard({
+    required this.withdraw,
+    required this.statusColor,
+    required this.statusText,
+    required this.isUpdating,
+    required this.onStatusChanged,
+    super.key,
+  });
+
+  final WithdrawModel withdraw;
+  final Color statusColor;
+  final String statusText;
+  final bool isUpdating;
+  final ValueChanged<String> onStatusChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: statusColor.withValues(alpha: 0.06),
+              blurRadius: 22,
+              offset: const Offset(0, 8),
             ),
-            const SizedBox(height: 32),
-            // Chat from Users Section
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.11),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: statusColor,
+                    size: 21,
+                  ),
+                ),
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        withdraw.mentorName.isEmpty
+                            ? 'Mentor Cermatify'
+                            : withdraw.mentorName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        AppFormats.formatDateHours(withdraw.createdAt),
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 104),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.11),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      statusText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _WithdrawDetail(
+              icon: Icons.account_circle_outlined,
+              label: 'Pemilik',
+              value: withdraw.namaRekening,
+            ),
+            const SizedBox(height: 9),
+            _WithdrawDetail(
+              icon: Icons.credit_card_outlined,
+              label: 'Rekening',
+              value: withdraw.nomorRekening,
+            ),
+            if (withdraw.notes?.isNotEmpty == true) ...[
+              const SizedBox(height: 9),
+              _WithdrawDetail(
+                icon: Icons.notes_rounded,
+                label: 'Catatan',
+                value: withdraw.notes!,
+              ),
+            ],
+            if (constraints.hasBoundedHeight)
+              const Spacer()
+            else
+              const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Nominal pencairan',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Text(
-                  'Chat dari User',
+                  AppFormats.hargaPendek(withdraw.nominal),
                   style: GoogleFonts.poppins(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                Obx(
-                  () => IconButton(
-                    icon: controller.isLoadingChats.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh_rounded, size: 20),
-                    onPressed: controller.isLoadingChats.value
-                        ? null
-                        : () => controller.refreshChats(),
-                    tooltip: 'Refresh',
-                  ),
-                ),
               ],
             ),
-            const SizedBox(height: 14),
-            Obx(
-              () => controller.isLoadingChats.value
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : controller.mentorChats.isEmpty
-                  ? _buildEmptyChatState()
-                  : _buildChatList(),
-            ),
+            const SizedBox(height: 13),
+            _buildActions(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterButton(String status, String label) {
-    return Obx(
-      () => InkWell(
-        onTap: () => controller.changeStatusFilter(status),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-          decoration: BoxDecoration(
-            color: controller.selectedStatusFilter.value == status
-                ? AppColors.primary
-                : AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: controller.selectedStatusFilter.value == status
-                  ? AppColors.primary
-                  : AppColors.border,
+  Widget _buildActions() {
+    if (withdraw.status == 'pending') {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: isUpdating ? null : () => onStatusChanged('rejected'),
+              style: _withdrawSecondaryButtonStyle(),
+              child: const Text('Tolak'),
             ),
           ),
-          child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: controller.selectedStatusFilter.value == status
-                    ? AppColors.surface
-                    : AppColors.textPrimary,
-              ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: isUpdating ? null : () => onStatusChanged('approved'),
+              style: _withdrawPrimaryButtonStyle(),
+              child: const Text('Setujui'),
             ),
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      height: 42,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        withdraw.status == 'approved'
+            ? 'Pencairan telah disetujui'
+            : 'Permintaan telah ditolak',
+        style: GoogleFonts.poppins(
+          fontSize: 10,
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+class AdminWithdrawLoadMoreButton extends StatelessWidget {
+  const AdminWithdrawLoadMoreButton({
+    required this.hasMore,
+    required this.hasWithdraws,
+    required this.isLoading,
+    required this.onLoadMore,
+    super.key,
+  });
+
+  final bool hasMore;
+  final bool hasWithdraws;
+  final bool isLoading;
+  final VoidCallback onLoadMore;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasMore) {
+      return Center(
+        child: Text(
+          hasWithdraws ? 'Semua permintaan telah ditampilkan' : '',
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      );
+    }
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : onLoadMore,
+        icon: isLoading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.expand_more_rounded),
+        label: Text(
+          isLoading ? 'Memuat permintaan...' : 'Tampilkan lebih banyak',
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          side: const BorderSide(color: AppColors.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+          textStyle: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildEmptyWithdrawState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.account_balance_wallet_outlined,
-            size: 48,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Belum ada permintaan withdraw',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+class _WithdrawDetail extends StatelessWidget {
+  const _WithdrawDetail({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
-  Widget _buildWithdrawList() {
-    return Obx(
-      () => Column(
-        children: controller.filteredWithdraws.map((withdraw) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.border.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            withdraw.mentorName,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatPrice(withdraw.nominal),
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: controller
-                            .getStatusColor(withdraw.status)
-                            .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        controller.getStatusText(withdraw.status),
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: controller.getStatusColor(withdraw.status),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _buildInfoRow(
-                  Icons.account_circle_outlined,
-                  'Nama Rekening/E-Wallet',
-                  withdraw.namaRekening,
-                ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  Icons.credit_card_outlined,
-                  'Nomor Rekening/E-Wallet',
-                  withdraw.nomorRekening,
-                ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  Icons.calendar_today_outlined,
-                  'Tanggal',
-                  _formatDate(withdraw.createdAt),
-                ),
-                if (withdraw.notes != null && withdraw.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  _buildInfoRow(
-                    Icons.note_outlined,
-                    'Catatan',
-                    withdraw.notes!,
-                  ),
-                ],
-                if (withdraw.status == 'pending') ...[
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : () => controller.updateWithdrawStatus(
-                                  withdraw.id,
-                                  'rejected',
-                                ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.redColor,
-                            side: const BorderSide(color: AppColors.redColor),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: Text(
-                            'Reject',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : () => controller.updateWithdrawStatus(
-                                  withdraw.id,
-                                  'approved',
-                                ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.greenColor,
-                            foregroundColor: AppColors.surface,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: Text(
-                            'Approve',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+  final IconData icon;
+  final String label;
+  final String value;
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.textSecondary),
+        Icon(icon, size: 16, color: AppColors.primaryColor),
         const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w500,
+        SizedBox(
+          width: 62,
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
         Expanded(
           child: Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 2,
+            value.isEmpty ? '-' : value,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildEmptyChatState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+class _WithdrawHeaderButton extends StatelessWidget {
+  const _WithdrawHeaderButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface.withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(14),
+      child: IconButton(
+        onPressed: onTap,
+        tooltip: tooltip,
+        icon: Icon(icon, color: AppColors.textPrimary),
       ),
+    );
+  }
+}
+
+class _WithdrawLoadingState extends StatelessWidget {
+  const _WithdrawLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.chat_bubble_outline_rounded,
-            size: 48,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: 12),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 14),
           Text(
-            'Belum ada chat dari user',
+            'Memuat permintaan withdraw...',
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: 12,
               color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildChatList() {
-    return Obx(
-      () => Column(
-        children: controller.mentorChats.take(5).map((chat) {
-          final userId = chat.senderId == controller.currentUserId
-              ? chat.receiverId
-              : chat.senderId;
-          final userName = controller.getMentorName(userId);
+class _WithdrawEmptyState extends StatelessWidget {
+  const _WithdrawEmptyState();
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.border.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: AppColors.primaryColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () async {
-                  // Get user data (mentor or regular user)
-                  try {
-                    final userDoc = await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(userId)
-                        .get();
-                    final userData = userDoc.data();
-                    final userName =
-                        userData?['nama'] ?? userData?['name'] ?? 'User';
-                    final userImage = userData?['image'] ?? '';
-                    final userEmail = userData?['email'] ?? '';
-
-                    // Create or get chat room
-                    final ChatController chatController =
-                        Get.isRegistered<ChatController>()
-                        ? Get.find<ChatController>()
-                        : Get.put(ChatController());
-
-                    await chatController.createOrGetChatRoom(
-                      mentorId: userId,
-                      orderId: chat.orderId,
-                    );
-
-                    // Navigate to chat room
-                    Get.to(
-                      () => ChatRoomView(
-                        mentorId: userId,
-                        mentor: Mentor(
-                          id: userId,
-                          name: userName,
-                          image: userImage,
-                          kampus: '',
-                          jurusan: '',
-                          email: userEmail,
-                          layanan: '',
-                          bio: '',
-                          rating: 0.0,
-                          totalSessions: 0,
-                        ),
-                        orderId: chat.orderId,
-                      ),
-                    );
-                  } catch (e) {
-                    CustomSnackbar.show(
-                      title: 'Error',
-                      message: 'Gagal membuka chat: ${e.toString()}',
-                      backgroundColor: AppColors.redColor,
-                      isNav: false,
-                    );
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.primary, AppColors.primaryLight],
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: CircleAvatar(
-                          radius: 24,
-                          backgroundColor: AppColors.primaryLight,
-                          child: Text(
-                            userName.isNotEmpty
-                                ? userName[0].toUpperCase()
-                                : 'U',
-                            style: const TextStyle(
-                              color: AppColors.surface,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    userName,
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Text(
-                                  _formatTime(chat.timestamp),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: AppColors.textLight,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              chat.message,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.normal,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            child: const Icon(
+              Icons.account_balance_wallet_outlined,
+              color: AppColors.primaryColor,
+              size: 30,
             ),
-          );
-        }).toList(),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Belum ada permintaan',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Permintaan dengan status ini akan muncul di sini.',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+ButtonStyle _withdrawPrimaryButtonStyle() {
+  return ElevatedButton.styleFrom(
+    backgroundColor: AppColors.greenColor,
+    foregroundColor: AppColors.surface,
+    elevation: 0,
+    minimumSize: const Size(0, 42),
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    textStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600),
+  );
+}
+
+ButtonStyle _withdrawSecondaryButtonStyle() {
+  return OutlinedButton.styleFrom(
+    foregroundColor: AppColors.redColor,
+    minimumSize: const Size(0, 42),
+    padding: const EdgeInsets.symmetric(horizontal: 10),
+    side: BorderSide(color: AppColors.redColor.withValues(alpha: 0.35)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    textStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600),
+  );
 }

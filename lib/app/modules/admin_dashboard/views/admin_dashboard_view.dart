@@ -13,6 +13,7 @@ import '../../admin_orders/bindings/admin_orders_binding.dart';
 import '../../admin_orders/views/admin_orders_view.dart';
 import '../../admin_withdraw/bindings/admin_withdraw_binding.dart';
 import '../../admin_withdraw/views/admin_withdraw_view.dart';
+import '../../../routes/app_pages.dart';
 
 class AdminDashboardView extends GetView<AdminDashboardController> {
   const AdminDashboardView({super.key});
@@ -61,6 +62,11 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
             icon: Icon(Icons.assignment_outlined),
             selectedIcon: Icon(Icons.assignment),
             label: Text('Kuesioner'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.chat_bubble_outline_rounded),
+            selectedIcon: Icon(Icons.chat_bubble_rounded),
+            label: Text('Chat'),
           ),
         ],
         onDesktopDestinationSelected: _openDesktopAction,
@@ -132,6 +138,8 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
           () => const AdminKuesionerView(),
           binding: AdminKuesionerBinding(),
         );
+      case 3:
+        Get.toNamed(Routes.CHAT);
     }
   }
 }
