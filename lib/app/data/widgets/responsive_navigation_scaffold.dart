@@ -14,6 +14,8 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
     this.appBar,
     this.brandTitle = 'Cermatify',
     this.brandSubtitle,
+    this.desktopDestinations = const [],
+    this.onDesktopDestinationSelected,
   });
 
   final Widget body;
@@ -24,6 +26,8 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final String brandTitle;
   final String? brandSubtitle;
+  final List<NavigationRailDestination> desktopDestinations;
+  final ValueChanged<int>? onDesktopDestinationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +45,10 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
 
         final isExpanded =
             constraints.maxWidth >= AppBreakpoints.expandedNavigation;
+        final visibleDestinations = [
+          ...destinations,
+          if (isExpanded) ...desktopDestinations,
+        ];
 
         return Scaffold(
           appBar: appBar,
@@ -66,7 +74,16 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
                   right: false,
                   child: NavigationRail(
                     selectedIndex: selectedIndex,
-                    onDestinationSelected: onDestinationSelected,
+                    onDestinationSelected: (index) {
+                      if (index < destinations.length) {
+                        onDestinationSelected(index);
+                        return;
+                      }
+
+                      onDesktopDestinationSelected?.call(
+                        index - destinations.length,
+                      );
+                    },
                     extended: isExpanded,
                     groupAlignment: -0.48,
                     labelType: isExpanded
@@ -169,7 +186,7 @@ class ResponsiveNavigationScaffold extends StatelessWidget {
                               ),
                             ),
                     ),
-                    destinations: destinations,
+                    destinations: visibleDestinations,
                   ),
                 ),
               ),

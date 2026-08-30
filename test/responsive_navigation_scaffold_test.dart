@@ -94,6 +94,55 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('extra actions only appear on expanded desktop sidebar', (
+    tester,
+  ) async {
+    var selectedAction = -1;
+    tester.view.physicalSize = const Size(1024, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    Widget buildDesktopShell() {
+      return MaterialApp(
+        home: ResponsiveNavigationScaffold(
+          body: const Text('Content'),
+          selectedIndex: 0,
+          destinations: const [
+            NavigationRailDestination(
+              icon: Icon(Icons.home_outlined),
+              label: Text('Home'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.person_outline),
+              label: Text('Profile'),
+            ),
+          ],
+          desktopDestinations: const [
+            NavigationRailDestination(
+              icon: Icon(Icons.shopping_bag_outlined),
+              label: Text('Orders'),
+            ),
+          ],
+          onDestinationSelected: (_) {},
+          onDesktopDestinationSelected: (index) => selectedAction = index,
+          mobileNavigation: const SizedBox.shrink(),
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildDesktopShell());
+    expect(find.text('Orders'), findsNothing);
+
+    tester.view.physicalSize = const Size(1280, 900);
+    await tester.pumpWidget(buildDesktopShell());
+    expect(find.text('Orders'), findsOneWidget);
+
+    await tester.tap(find.text('Orders'));
+    expect(selectedAction, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in <double>[320, 375, 768, 1024, 1366, 1920]) {
     testWidgets('lays out without exceptions at ${width.toInt()} px', (
       tester,

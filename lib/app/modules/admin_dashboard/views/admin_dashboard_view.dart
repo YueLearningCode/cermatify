@@ -7,6 +7,12 @@ import '../../admin_home/views/admin_home_view.dart';
 import '../../users/views/users_view.dart';
 import '../../master_data/views/master_data_view.dart';
 import '../../profile/views/profile_view.dart';
+import '../../admin_kuesioner/bindings/admin_kuesioner_binding.dart';
+import '../../admin_kuesioner/views/admin_kuesioner_view.dart';
+import '../../admin_orders/bindings/admin_orders_binding.dart';
+import '../../admin_orders/views/admin_orders_view.dart';
+import '../../admin_withdraw/bindings/admin_withdraw_binding.dart';
+import '../../admin_withdraw/views/admin_withdraw_view.dart';
 
 class AdminDashboardView extends GetView<AdminDashboardController> {
   const AdminDashboardView({super.key});
@@ -40,6 +46,24 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
             label: Text('Profile'),
           ),
         ],
+        desktopDestinations: const [
+          NavigationRailDestination(
+            icon: Icon(Icons.shopping_bag_outlined),
+            selectedIcon: Icon(Icons.shopping_bag),
+            label: Text('Orders'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: Text('Withdraw'),
+          ),
+          NavigationRailDestination(
+            icon: Icon(Icons.assignment_outlined),
+            selectedIcon: Icon(Icons.assignment),
+            label: Text('Kuesioner'),
+          ),
+        ],
+        onDesktopDestinationSelected: _openDesktopAction,
         onDestinationSelected: controller.changeTab,
         mobileNavigation: AdminBottomNavbar(
           currentIndex: controller.currentIndex.value,
@@ -92,5 +116,22 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
 
   Widget _buildProfileView() {
     return const ProfileView();
+  }
+
+  void _openDesktopAction(int index) {
+    switch (index) {
+      case 0:
+        Get.to(() => const AdminOrdersView(), binding: AdminOrdersBinding());
+      case 1:
+        Get.to(
+          () => const AdminWithdrawView(),
+          binding: AdminWithdrawBinding(),
+        );
+      case 2:
+        Get.to(
+          () => const AdminKuesionerView(),
+          binding: AdminKuesionerBinding(),
+        );
+    }
   }
 }
