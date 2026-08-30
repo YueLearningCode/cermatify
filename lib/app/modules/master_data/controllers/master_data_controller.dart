@@ -488,6 +488,13 @@ class MasterDataController extends GetxController {
     searchQuery.value = value.trim().toLowerCase();
   }
 
+  void openJurusanForKampus(String kampusId) {
+    selectedTab.value = 1;
+    selectedKampus.value = kampusId;
+    selectedLayananFilter.value = 'all';
+    searchQuery.value = '';
+  }
+
   void openCreateDialog() {
     nameController.clear();
     hargaController.clear();

@@ -45,4 +45,42 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('campus card opens majors without hijacking edit action', (
+    tester,
+  ) async {
+    var opened = 0;
+    var edited = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 520,
+              height: 108,
+              child: AdminMasterDataCard(
+                item: MasterDataItem(
+                  id: 'kampus-1',
+                  name: 'Universitas Cermatify',
+                ),
+                tabIndex: 0,
+                kampusName: '',
+                onOpen: () => opened++,
+                onEdit: () => edited++,
+                onDelete: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Universitas Cermatify'));
+    expect(opened, 1);
+
+    await tester.tap(find.byTooltip('Edit data'));
+    expect(edited, 1);
+    expect(opened, 1);
+    expect(tester.takeException(), isNull);
+  });
 }

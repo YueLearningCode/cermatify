@@ -149,10 +149,62 @@ class MasterDataView extends GetView<MasterDataController> {
       AlertDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         constraints: const BoxConstraints(maxWidth: 560),
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          isEdit ? 'Edit $dataLabel' : 'Tambah $dataLabel',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        titlePadding: const EdgeInsets.fromLTRB(24, 22, 16, 8),
+        contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        actionsOverflowAlignment: OverflowBarAlignment.end,
+        actionsOverflowButtonSpacing: 10,
+        title: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.checkoutButtonColor,
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Icon(
+                _masterDataIcon(controller.selectedTab.value),
+                color: AppColors.primaryColor,
+                size: 21,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEdit ? 'Edit $dataLabel' : 'Tambah $dataLabel',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isEdit
+                        ? 'Perbarui informasi data yang dipilih.'
+                        : 'Lengkapi informasi data baru.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'Tutup',
+              onPressed: Get.back,
+              icon: const Icon(Icons.close_rounded, size: 20),
+            ),
+          ],
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -181,7 +233,7 @@ class MasterDataView extends GetView<MasterDataController> {
                                 controller.selectedKampusForJurusan.value,
                           )
                           ?.name ??
-                      'No Kampus Selected';
+                      'Kampus belum dipilih';
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -235,7 +287,7 @@ class MasterDataView extends GetView<MasterDataController> {
                             (k) => k.id == controller.selectedKampus.value,
                           )
                           ?.name ??
-                      'No Kampus Selected';
+                      'Kampus belum dipilih';
                   return Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -307,7 +359,7 @@ class MasterDataView extends GetView<MasterDataController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Type',
+                                'Tipe layanan',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
@@ -336,7 +388,9 @@ class MasterDataView extends GetView<MasterDataController> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'Harga (Rupiah)',
-                    border: const OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     labelStyle: GoogleFonts.poppins(),
                     prefixText: 'Rp ',
                     prefixStyle: GoogleFonts.poppins(),
@@ -386,7 +440,7 @@ class MasterDataView extends GetView<MasterDataController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Type',
+                                'Tipe layanan',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
@@ -416,7 +470,9 @@ class MasterDataView extends GetView<MasterDataController> {
                   decoration: InputDecoration(
                     labelText: 'Harga (Rupiah)',
                     hintText: 'Contoh: 500000',
-                    border: const OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     labelStyle: GoogleFonts.poppins(),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(12),
@@ -439,7 +495,16 @@ class MasterDataView extends GetView<MasterDataController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('Batal', style: GoogleFonts.poppins()),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(88, 46),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Batal',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            ),
           ),
           Obx(
             () => ElevatedButton(
@@ -490,6 +555,12 @@ class MasterDataView extends GetView<MasterDataController> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.surface,
+                minimumSize: const Size(142, 46),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: controller.isSaving.value
                   ? const SizedBox(
@@ -572,6 +643,9 @@ class MasterDataView extends GetView<MasterDataController> {
           item: item,
           tabIndex: controller.selectedTab.value,
           kampusName: kampusName,
+          onOpen: controller.selectedTab.value == 0
+              ? () => controller.openJurusanForKampus(item.id)
+              : null,
           onEdit: () => _showEditDialog(item),
           onDelete: () => _showDeleteDialog(item),
         );
@@ -937,6 +1011,7 @@ class AdminMasterDataCard extends StatelessWidget {
     required this.kampusName,
     required this.onEdit,
     required this.onDelete,
+    this.onOpen,
   });
 
   final MasterDataItem item;
@@ -944,98 +1019,108 @@ class AdminMasterDataCard extends StatelessWidget {
   final String kampusName;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onOpen;
 
   @override
   Widget build(BuildContext context) {
     final color = tabIndex == 2 ? AppColors.greenColor : AppColors.primaryColor;
-    final detail = tabIndex == 1 && kampusName.isNotEmpty
+    final detail = tabIndex == 0
+        ? 'Klik untuk melihat jurusan'
+        : tabIndex == 1 && kampusName.isNotEmpty
         ? kampusName
         : tabIndex == 2 && item.harga != null
         ? AppFormats.hargaPendek(item.harga!)
         : _masterDataLabel(tabIndex);
 
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(17),
+      child: InkWell(
+        onTap: onOpen,
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.025),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+        child: Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.9)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.textPrimary.withValues(alpha: 0.025),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(_masterDataIcon(tabIndex), color: color, size: 21),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  detail,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (tabIndex == 2 && item.type != null) ...[
-                  const SizedBox(height: 5),
-                  Text(
-                    item.type == 'complink'
-                        ? 'Cermat Competition'
-                        : 'Cermat Paper',
-                    style: GoogleFonts.poppins(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                      color: color,
+                child: Icon(_masterDataIcon(tabIndex), color: color, size: 21),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
-                  ),
-                ],
-              ],
-            ),
+                    const SizedBox(height: 4),
+                    Text(
+                      detail,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (tabIndex == 2 && item.type != null) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        item.type == 'complink'
+                            ? 'Cermat Competition'
+                            : 'Cermat Paper',
+                        style: GoogleFonts.poppins(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              _CardAction(
+                tooltip: 'Edit data',
+                icon: Icons.edit_outlined,
+                color: AppColors.primaryColor,
+                onTap: onEdit,
+              ),
+              const SizedBox(width: 6),
+              _CardAction(
+                tooltip: 'Hapus data',
+                icon: Icons.delete_outline_rounded,
+                color: AppColors.redColor,
+                onTap: onDelete,
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          _CardAction(
-            tooltip: 'Edit data',
-            icon: Icons.edit_outlined,
-            color: AppColors.primaryColor,
-            onTap: onEdit,
-          ),
-          const SizedBox(width: 6),
-          _CardAction(
-            tooltip: 'Hapus data',
-            icon: Icons.delete_outline_rounded,
-            color: AppColors.redColor,
-            onTap: onDelete,
-          ),
-        ],
+        ),
       ),
     );
   }
