@@ -13,6 +13,15 @@ void main() {
     expect(AppPages.unknownRoute.name, Routes.NOT_FOUND);
   });
 
+  test('admin and account actions have stable named routes', () {
+    expect(Routes.ADMIN_ORDERS, '/admin/orders');
+    expect(Routes.ADMIN_WITHDRAW, '/admin/withdraw');
+    expect(Routes.EDIT_PROFILE, '/profile/edit');
+    expect(Routes.CHANGE_PASSWORD, '/profile/change-password');
+    expect(Routes.adminUserDetail('user 1'), '/admin/users/user%201');
+    expect(Routes.adminMentorDetail('mentor/1'), '/admin/mentors/mentor%2F1');
+  });
+
   test('all private routes declare middleware', () {
     const publicRoutes = {
       Routes.LANDING,

@@ -11,9 +11,8 @@ import 'package:cermatify/app/data/models/mentor_model.dart';
 import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
 import 'package:cermatify/app/modules/chat/views/chat_room_view.dart';
 import '../controllers/profile_controller.dart';
-import 'edit_profile_view.dart';
 import 'withdraw_dialog_view.dart';
-import 'change_password_view.dart';
+import '../../../routes/app_pages.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -430,7 +429,7 @@ class ProfileView extends GetView<ProfileController> {
                           Expanded(
                             child: _buildActionButton(
                               onPressed: () {
-                                Get.to(() => const EditProfileView());
+                                Get.toNamed(Routes.EDIT_PROFILE);
                               },
                               icon: Icons.edit_rounded,
                               label: "Edit Profil",
@@ -455,8 +454,7 @@ class ProfileView extends GetView<ProfileController> {
                       SizedBox(
                         width: double.infinity,
                         child: _buildActionButton(
-                          onPressed: () =>
-                              Get.to(() => const ChangePasswordView()),
+                          onPressed: () => Get.toNamed(Routes.CHANGE_PASSWORD),
                           icon: Icons.lock_reset_rounded,
                           label: "Ubah Kata Sandi",
                           backgroundColor: AppColors.surface,
@@ -1019,9 +1017,8 @@ class ProfileView extends GetView<ProfileController> {
               ),
               const SizedBox(height: 14),
               AdminProfileActions(
-                onEdit: () => Get.to(() => const EditProfileView()),
-                onChangePassword: () =>
-                    Get.to(() => const ChangePasswordView()),
+                onEdit: () => Get.toNamed(Routes.EDIT_PROFILE),
+                onChangePassword: () => Get.toNamed(Routes.CHANGE_PASSWORD),
                 onLogout: _showLogoutDialog,
               ),
             ],

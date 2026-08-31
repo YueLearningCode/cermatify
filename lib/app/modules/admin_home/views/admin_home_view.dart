@@ -1,12 +1,6 @@
 import 'package:cermatify/app/data/layout/app_breakpoints.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/modules/admin_dashboard/controllers/admin_dashboard_controller.dart';
-import 'package:cermatify/app/modules/admin_kuesioner/bindings/admin_kuesioner_binding.dart';
-import 'package:cermatify/app/modules/admin_kuesioner/views/admin_kuesioner_view.dart';
-import 'package:cermatify/app/modules/admin_orders/bindings/admin_orders_binding.dart';
-import 'package:cermatify/app/modules/admin_orders/views/admin_orders_view.dart';
-import 'package:cermatify/app/modules/admin_withdraw/bindings/admin_withdraw_binding.dart';
-import 'package:cermatify/app/modules/admin_withdraw/views/admin_withdraw_view.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -300,30 +294,21 @@ class AdminHomeView extends GetView<AdminHomeController> {
         subtitle: 'Periksa dan kelola seluruh pesanan.',
         icon: Icons.shopping_bag_outlined,
         color: AppColors.orangeColor,
-        onTap: () => Get.to(
-          () => const AdminOrdersView(),
-          binding: AdminOrdersBinding(),
-        ),
+        onTap: () => Get.toNamed(Routes.ADMIN_ORDERS),
       ),
       _AdminAction(
         title: 'Withdraw',
         subtitle: 'Tinjau permintaan pencairan dana.',
         icon: Icons.account_balance_wallet_outlined,
         color: AppColors.primaryDark,
-        onTap: () => Get.to(
-          () => const AdminWithdrawView(),
-          binding: AdminWithdrawBinding(),
-        ),
+        onTap: () => Get.toNamed(Routes.ADMIN_WITHDRAW),
       ),
       _AdminAction(
         title: 'Kuesioner',
         subtitle: 'Pantau dan kelola layanan kuesioner.',
         icon: Icons.assignment_outlined,
         color: AppColors.yellow2Color,
-        onTap: () => Get.to(
-          () => const AdminKuesionerView(),
-          binding: AdminKuesionerBinding(),
-        ),
+        onTap: () => Get.toNamed(Routes.ADMIN_KUESIONER),
       ),
       _AdminAction(
         title: 'Chat',

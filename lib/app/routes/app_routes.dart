@@ -22,7 +22,19 @@ abstract class Routes {
   static const SOURCELINK = _Paths.SOURCELINK;
   static const ORDER_HISTORY = _Paths.ORDER_HISTORY;
   static const ADMIN_KUESIONER = _Paths.ADMIN_KUESIONER;
+  static const ADMIN_ORDERS = _Paths.ADMIN_ORDERS;
+  static const ADMIN_WITHDRAW = _Paths.ADMIN_WITHDRAW;
+  static const ADMIN_USER_DETAIL = _Paths.ADMIN_USER_DETAIL;
+  static const ADMIN_MENTOR_DETAIL = _Paths.ADMIN_MENTOR_DETAIL;
+  static const EDIT_PROFILE = _Paths.EDIT_PROFILE;
+  static const CHANGE_PASSWORD = _Paths.CHANGE_PASSWORD;
   static const NOT_FOUND = _Paths.NOT_FOUND;
+
+  static String adminUserDetail(String userId) =>
+      '/admin/users/${Uri.encodeComponent(userId)}';
+
+  static String adminMentorDetail(String mentorId) =>
+      '/admin/mentors/${Uri.encodeComponent(mentorId)}';
 }
 
 abstract class _Paths {
@@ -43,5 +55,11 @@ abstract class _Paths {
   static const SOURCELINK = '/sourcelink';
   static const ORDER_HISTORY = '/order-history';
   static const ADMIN_KUESIONER = '/admin-kuesioner';
+  static const ADMIN_ORDERS = '/admin/orders';
+  static const ADMIN_WITHDRAW = '/admin/withdraw';
+  static const ADMIN_USER_DETAIL = '/admin/users/:userId';
+  static const ADMIN_MENTOR_DETAIL = '/admin/mentors/:mentorId';
+  static const EDIT_PROFILE = '/profile/edit';
+  static const CHANGE_PASSWORD = '/profile/change-password';
   static const NOT_FOUND = '/not-found';
 }

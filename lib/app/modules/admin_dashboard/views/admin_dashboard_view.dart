@@ -7,12 +7,6 @@ import '../../admin_home/views/admin_home_view.dart';
 import '../../users/views/users_view.dart';
 import '../../master_data/views/master_data_view.dart';
 import '../../profile/views/profile_view.dart';
-import '../../admin_kuesioner/bindings/admin_kuesioner_binding.dart';
-import '../../admin_kuesioner/views/admin_kuesioner_view.dart';
-import '../../admin_orders/bindings/admin_orders_binding.dart';
-import '../../admin_orders/views/admin_orders_view.dart';
-import '../../admin_withdraw/bindings/admin_withdraw_binding.dart';
-import '../../admin_withdraw/views/admin_withdraw_view.dart';
 import '../../../routes/app_pages.dart';
 
 class AdminDashboardView extends GetView<AdminDashboardController> {
@@ -127,17 +121,11 @@ class AdminDashboardView extends GetView<AdminDashboardController> {
   void _openDesktopAction(int index) {
     switch (index) {
       case 0:
-        Get.to(() => const AdminOrdersView(), binding: AdminOrdersBinding());
+        Get.toNamed(Routes.ADMIN_ORDERS);
       case 1:
-        Get.to(
-          () => const AdminWithdrawView(),
-          binding: AdminWithdrawBinding(),
-        );
+        Get.toNamed(Routes.ADMIN_WITHDRAW);
       case 2:
-        Get.to(
-          () => const AdminKuesionerView(),
-          binding: AdminKuesionerBinding(),
-        );
+        Get.toNamed(Routes.ADMIN_KUESIONER);
       case 3:
         Get.toNamed(Routes.CHAT);
     }

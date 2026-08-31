@@ -1,523 +1,965 @@
+import 'package:cermatify/app/data/models/kuesioner_model.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/modules/admin_kuesioner/controllers/admin_kuesioner_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
-import '../controllers/admin_kuesioner_controller.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AdminKuesionerView extends GetView<AdminKuesionerController> {
   const AdminKuesionerView({super.key});
+
+  static const _filters = <(String, String)>[
+    ('Semua', 'all'),
+    ('Menunggu verifikasi', 'waiting verification'),
+    ('Disetujui', 'approved'),
+    ('Ditolak', 'rejected'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final pagePadding = width < 600 ? 16.0 : 28.0;
+          final gutter = width > 1256 ? (width - 1200) / 2 : pagePadding;
+          final columns = width >= 1050 ? 2 : 1;
+
+          return Obx(() {
+            final visibleItems = controller.filteredKuesioners;
+            if (controller.isLoading.value && controller.kuesioners.isEmpty) {
+              return const _KuesionerLoadingState();
+            }
+
+            return RefreshIndicator(
+              onRefresh: controller.fetchKuesioners,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      gutter,
+                      width < 600 ? 16 : 28,
+                      gutter,
+                      0,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: AdminKuesionerHeader(
+                        loadedCount: visibleItems.length,
+                        onBack: () => Get.offAllNamed(Routes.ADMIN_DASHBOARD),
+                        onRefresh: controller.fetchKuesioners,
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 0),
+                    sliver: SliverToBoxAdapter(child: _buildFilters()),
+                  ),
+                  if (controller.loadError.value.isNotEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _KuesionerErrorState(
+                        message: controller.loadError.value,
+                        onRetry: controller.fetchKuesioners,
+                      ),
+                    )
+                  else if (visibleItems.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _KuesionerEmptyState(),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 0),
+                      sliver: width < 600
+                          ? SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 14),
+                                  child: _buildCard(
+                                    context,
+                                    visibleItems[index],
+                                  ),
+                                ),
+                                childCount: visibleItems.length,
+                              ),
+                            )
+                          : SliverGrid(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: columns,
+                                    crossAxisSpacing: 14,
+                                    mainAxisSpacing: 14,
+                                    mainAxisExtent: 390,
+                                  ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) =>
+                                    _buildCard(context, visibleItems[index]),
+                                childCount: visibleItems.length,
+                              ),
+                            ),
+                    ),
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(gutter, 18, gutter, 36),
+                    sliver: SliverToBoxAdapter(
+                      child: AdminKuesionerLoadMoreButton(
+                        hasMore: controller.hasMore.value,
+                        hasItems: controller.kuesioners.isNotEmpty,
+                        isLoading: controller.isLoadingMore.value,
+                        onLoadMore: controller.loadMore,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilters() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: _filters.map((filter) {
+          final selected = controller.selectedStatusFilter.value == filter.$2;
+          return FilterChip(
+            selected: selected,
+            showCheckmark: false,
+            label: Text(filter.$1),
+            onSelected: (_) => controller.changeStatusFilter(filter.$2),
+            backgroundColor: Colors.transparent,
+            selectedColor: AppColors.primaryColor,
+            side: BorderSide.none,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(11),
+            ),
+            labelStyle: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              color: selected ? AppColors.surface : AppColors.textSecondary,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, AdminKuesionerItem item) {
+    final kuesioner = item.kuesioner;
+    final status = kuesioner.status ?? '';
+    return AdminKuesionerCard(
+      item: item,
+      statusColor: controller.getStatusColor(status),
+      statusText: controller.getStatusText(status),
+      isUpdating: controller.isUpdating.value,
+      onViewDetail: () => _showDetails(context, item),
+      onStatusChanged: (newStatus) =>
+          _confirmStatusChange(context, item, newStatus),
+    );
+  }
+
+  Future<void> _confirmStatusChange(
+    BuildContext context,
+    AdminKuesionerItem item,
+    String status,
+  ) async {
+    final approve = status == 'approved';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        icon: Icon(
+          approve ? Icons.verified_outlined : Icons.cancel_outlined,
+          color: approve ? AppColors.greenColor : AppColors.redColor,
+          size: 32,
+        ),
         title: Text(
-          'Pengelolaan Kuesioner',
+          approve ? 'Setujui kuesioner?' : 'Tolak kuesioner?',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          approve
+              ? 'Order terkait akan dilanjutkan ke tahap pemrosesan.'
+              : 'Order terkait juga akan ditandai sebagai ditolak.',
+          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: AppColors.surface,
+            color: AppColors.textSecondary,
+            fontSize: 12,
           ),
         ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        elevation: 0,
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: approve
+                  ? AppColors.greenColor
+                  : AppColors.redColor,
+            ),
+            child: Text(approve ? 'Ya, setujui' : 'Ya, tolak'),
+          ),
+        ],
       ),
-      body: Column(
-        children: [
-          // Filter Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: AppColors.surface,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Filter by Status',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+    );
+    if (confirmed == true) {
+      await controller.updateKuesionerStatus(item.kuesioner.id, status);
+    }
+  }
+
+  void _showDetails(BuildContext context, AdminKuesionerItem item) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AdminKuesionerDetailDialog(item: item),
+    );
+  }
+}
+
+class AdminKuesionerHeader extends StatelessWidget {
+  const AdminKuesionerHeader({
+    super.key,
+    required this.loadedCount,
+    required this.onBack,
+    required this.onRefresh,
+  });
+
+  final int loadedCount;
+  final VoidCallback onBack;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 620;
+        return Container(
+          padding: EdgeInsets.all(compact ? 18 : 24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryColor.withValues(alpha: 0.08),
+                AppColors.lightPrimaryColor.withValues(alpha: 0.28),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.primaryColor.withValues(alpha: 0.16),
+            ),
+          ),
+          child: Row(
+            children: [
+              _HeaderIconButton(
+                tooltip: 'Kembali',
+                icon: Icons.arrow_back_rounded,
+                onPressed: onBack,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pengelolaan kuesioner',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textPrimary,
+                        fontSize: compact ? 20 : 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Verifikasi kebutuhan responden dan pantau progres layanan.',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!compact) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '$loadedCount dimuat',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.primaryColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Obx(
-                  () => SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
+                const SizedBox(width: 10),
+                _HeaderIconButton(
+                  tooltip: 'Muat ulang',
+                  icon: Icons.refresh_rounded,
+                  onPressed: onRefresh,
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class AdminKuesionerCard extends StatelessWidget {
+  const AdminKuesionerCard({
+    super.key,
+    required this.item,
+    required this.statusColor,
+    required this.statusText,
+    required this.isUpdating,
+    required this.onViewDetail,
+    required this.onStatusChanged,
+  });
+
+  final AdminKuesionerItem item;
+  final Color statusColor;
+  final String statusText;
+  final bool isUpdating;
+  final VoidCallback onViewDetail;
+  final ValueChanged<String> onStatusChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final kuesioner = item.kuesioner;
+    final status = kuesioner.status?.toLowerCase() ?? '';
+    final isWaiting = status == 'waiting verification' || status == 'pending';
+    final shortId = kuesioner.id.length > 8
+        ? kuesioner.id.substring(0, 8)
+        : kuesioner.id;
+    final criteria = _criteriaFor(kuesioner);
+
+    return LayoutBuilder(
+      builder: (context, _) {
+        return Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: statusColor.withValues(alpha: 0.06),
+                blurRadius: 22,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.11),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Icon(
+                      Icons.assignment_outlined,
+                      color: statusColor,
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildFilterChip(
-                          'All',
-                          'all',
-                          controller.selectedStatusFilter.value == 'all',
+                        Text(
+                          'Kuesioner #$shortId',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          'Waiting Verification',
-                          'waiting verification',
-                          controller.selectedStatusFilter.value ==
-                              'waiting verification',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          'Approved',
-                          'approved',
-                          controller.selectedStatusFilter.value == 'approved',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          'Rejected',
-                          'rejected',
-                          controller.selectedStatusFilter.value == 'rejected',
+                        Text(
+                          DateFormat(
+                            'dd/MM/yyyy, HH:mm',
+                          ).format(kuesioner.createdAt),
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textSecondary,
+                            fontSize: 10,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          // Kuesioners List
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (controller.kuesioners.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.assignment_outlined,
-                        size: 80,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Tidak ada kuesioner',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Kuesioner akan muncul di sini',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.kuesioners.length,
-                itemBuilder: (context, index) {
-                  final kuesioner = controller.kuesioners[index];
-                  return _buildKuesionerCard(kuesioner);
-                },
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String value, bool isSelected) {
-    return InkWell(
-      onTap: () => controller.changeStatusFilter(value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.background,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? AppColors.surface : AppColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKuesionerCard(kuesioner) {
-    final statusColor = controller.getStatusColor(kuesioner.status);
-    final statusText = controller.getStatusText(kuesioner.status);
-    final isWaitingVerification = kuesioner.status == 'waiting verification';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: statusColor.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+                  _StatusBadge(color: statusColor, label: statusText),
+                ],
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusText,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.surface,
-                    ),
-                  ),
+              const SizedBox(height: 16),
+              _InfoRow(
+                icon: Icons.person_outline_rounded,
+                label: 'Pembuat',
+                value: item.userName,
+              ),
+              const SizedBox(height: 8),
+              _InfoRow(
+                icon: Icons.groups_outlined,
+                label: 'Responden',
+                value: '${item.respondentCount} orang',
+              ),
+              const SizedBox(height: 8),
+              _InfoRow(
+                icon: Icons.link_rounded,
+                label: 'Tautan',
+                value: kuesioner.link?.isNotEmpty == true
+                    ? kuesioner.link!
+                    : 'Belum tersedia',
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Kriteria responden',
+                style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
-                const Spacer(),
+              ),
+              const SizedBox(height: 7),
+              if (criteria.isEmpty)
                 Text(
-                  _formatDate(kuesioner.createdAt),
+                  'Tidak ada kriteria khusus',
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
                     color: AppColors.textSecondary,
+                    fontSize: 10,
                   ),
+                )
+              else
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: criteria
+                      .map((value) => _CriteriaChip(label: value))
+                      .toList(),
                 ),
-              ],
-            ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Statistics Row
+              const SizedBox(height: 18),
+              OutlinedButton.icon(
+                onPressed: onViewDetail,
+                icon: const Icon(Icons.visibility_outlined, size: 17),
+                label: const Text('Lihat detail'),
+              ),
+              if (isWaiting) ...[
+                const SizedBox(height: 9),
                 Row(
                   children: [
                     Expanded(
-                      child: _buildStatItem(
-                        icon: Icons.link_rounded,
-                        label: 'Link',
-                        value:
-                            (kuesioner.link != null &&
-                                kuesioner.link!.isNotEmpty)
-                            ? 'Ada'
-                            : 'Tidak Ada',
-                        color:
-                            (kuesioner.link != null &&
-                                kuesioner.link!.isNotEmpty)
-                            ? AppColors.greenColor
-                            : AppColors.textSecondary,
+                      child: OutlinedButton(
+                        onPressed: isUpdating
+                            ? null
+                            : () => onStatusChanged('rejected'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.redColor,
+                          side: const BorderSide(color: AppColors.redColor),
+                        ),
+                        child: const Text('Tolak'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 9),
                     Expanded(
-                      child:
-                          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                            stream: FirebaseFirestore.instance
-                                .collection('kuesioners')
-                                .doc(kuesioner.id)
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              final List<dynamic> signedBy =
-                                  (snapshot.data?.data()?['signedBy']
-                                      as List<dynamic>?) ??
-                                  [];
-                              final int jumlahResponden = signedBy.length;
-                              return _buildStatItem(
-                                icon: Icons.people_outline_rounded,
-                                label: 'Responden',
-                                value: '$jumlahResponden',
-                                color: AppColors.primary,
-                              );
-                            },
-                          ),
+                      child: FilledButton(
+                        onPressed: isUpdating
+                            ? null
+                            : () => onStatusChanged('approved'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.greenColor,
+                        ),
+                        child: const Text('Setujui'),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                // Link
-                if (kuesioner.link != null && kuesioner.link!.isNotEmpty) ...[
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.link,
-                        size: 16,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          kuesioner.link!,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                // Creator Info
-                if (kuesioner.userId != null && kuesioner.userId!.isNotEmpty)
-                  FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    future: FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(kuesioner.userId)
-                        .get(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data!.exists) {
-                        final userData = snapshot.data!.data();
-                        final userName =
-                            userData?['nama'] as String? ?? 'Unknown User';
-                        return Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline_rounded,
-                              size: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Dibuat oleh: ',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            Text(
-                              userName,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                if (kuesioner.userId != null && kuesioner.userId!.isNotEmpty)
-                  const SizedBox(height: 12),
-                // Criteria
-                if (kuesioner.rentangUsia != null ||
-                    kuesioner.jenisKelamin != null ||
-                    kuesioner.tingkatPenghasilan != null ||
-                    kuesioner.pendidikanTerakhir != null) ...[
-                  Text(
-                    'Kriteria Responden:',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (kuesioner.rentangUsia != null)
-                        _buildCriteriaChip('Usia: ${kuesioner.rentangUsia}'),
-                      if (kuesioner.jenisKelamin != null)
-                        _buildCriteriaChip('${kuesioner.jenisKelamin}'),
-                      if (kuesioner.tingkatPenghasilan != null)
-                        _buildCriteriaChip('${kuesioner.tingkatPenghasilan}'),
-                      if (kuesioner.pendidikanTerakhir != null)
-                        _buildCriteriaChip('${kuesioner.pendidikanTerakhir}'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                // // View Details Button
-                // SizedBox(
-                //   width: double.infinity,
-                //   child: OutlinedButton.icon(
-                //     onPressed: () {
-                //       Get.to(() => KuesionerDetailView(kuesioner: kuesioner));
-                //     },
-                //     icon: const Icon(Icons.visibility_outlined, size: 18),
-                //     label: Text('Lihat Detail', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                //     style: OutlinedButton.styleFrom(
-                //       foregroundColor: AppColors.primary,
-                //       side: const BorderSide(color: AppColors.primary),
-                //       padding: const EdgeInsets.symmetric(vertical: 12),
-                //     ),
-                //   ),
-                // ),
-                const SizedBox(height: 12),
-                // Action Buttons
-                if (isWaitingVerification)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: controller.isUpdating.value
-                              ? null
-                              : () => controller.updateKuesionerStatus(
-                                  kuesioner.id,
-                                  'rejected',
-                                ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.redColor,
-                            side: const BorderSide(color: AppColors.redColor),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: Text(
-                            'Reject',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: controller.isUpdating.value
-                              ? null
-                              : () => controller.updateKuesionerStatus(
-                                  kuesioner.id,
-                                  'approved',
-                                ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.greenColor,
-                            foregroundColor: AppColors.surface,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: controller.isUpdating.value
-                              ? const SizedBox(
-                                  height: 16,
-                                  width: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.surface,
-                                    ),
-                                  ),
-                                )
-                              : Text(
-                                  'Approve',
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
               ],
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildCriteriaChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryLight.withValues(alpha: 0.3),
+  List<String> _criteriaFor(Kuesioner kuesioner) {
+    return <String?>[
+      kuesioner.rentangUsia == null ? null : 'Usia ${kuesioner.rentangUsia}',
+      kuesioner.jenisKelamin,
+      kuesioner.tingkatPenghasilan,
+      kuesioner.pendidikanTerakhir,
+    ].whereType<String>().where((value) => value.trim().isNotEmpty).toList();
+  }
+}
+
+class AdminKuesionerDetailDialog extends StatelessWidget {
+  const AdminKuesionerDetailDialog({super.key, required this.item});
+
+  final AdminKuesionerItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final kuesioner = item.kuesioner;
+    return Dialog(
+      insetPadding: const EdgeInsets.all(18),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720, maxHeight: 720),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 15, 10, 15),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primaryColor.withValues(alpha: 0.08),
+                    AppColors.lightPrimaryColor.withValues(alpha: 0.22),
+                  ],
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.assignment_outlined,
+                    color: AppColors.primaryColor,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Detail kuesioner',
+                      style: GoogleFonts.poppins(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Tutup',
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _DetailTile(label: 'Pembuat', value: item.userName),
+                    _DetailTile(
+                      label: 'Jumlah responden',
+                      value: '${item.respondentCount} orang',
+                    ),
+                    _DetailTile(
+                      label: 'Dibuat pada',
+                      value: DateFormat(
+                        'dd/MM/yyyy, HH:mm',
+                      ).format(kuesioner.createdAt),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Kriteria responden',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 9),
+                    Wrap(
+                      spacing: 7,
+                      runSpacing: 7,
+                      children:
+                          <String?>[
+                                kuesioner.rentangUsia,
+                                kuesioner.jenisKelamin,
+                                kuesioner.tingkatPenghasilan,
+                                kuesioner.pendidikanTerakhir,
+                              ]
+                              .whereType<String>()
+                              .where((value) => value.trim().isNotEmpty)
+                              .map((value) => _CriteriaChip(label: value))
+                              .toList(),
+                    ),
+                    if (kuesioner.link?.isNotEmpty == true) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.link_rounded,
+                              color: AppColors.primaryColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                kuesioner.link!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(fontSize: 11),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Salin tautan',
+                              onPressed: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: kuesioner.link!),
+                                );
+                              },
+                              icon: const Icon(Icons.copy_rounded),
+                            ),
+                            IconButton(
+                              tooltip: 'Buka tautan',
+                              onPressed: () async {
+                                final uri = Uri.tryParse(kuesioner.link!);
+                                if (uri != null) {
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.open_in_new_rounded),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class AdminKuesionerLoadMoreButton extends StatelessWidget {
+  const AdminKuesionerLoadMoreButton({
+    super.key,
+    required this.hasMore,
+    required this.hasItems,
+    required this.isLoading,
+    required this.onLoadMore,
+  });
+
+  final bool hasMore;
+  final bool hasItems;
+  final bool isLoading;
+  final VoidCallback onLoadMore;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasMore) {
+      return Center(
+        child: Text(
+          hasItems ? 'Semua kuesioner telah ditampilkan' : '',
+          style: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 11,
+          ),
+        ),
+      );
+    }
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : onLoadMore,
+        icon: isLoading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.expand_more_rounded),
+        label: Text(
+          isLoading ? 'Memuat kuesioner...' : 'Tampilkan lebih banyak',
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface.withValues(alpha: 0.9),
+      borderRadius: BorderRadius.circular(14),
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onPressed,
+        icon: Icon(icon, color: AppColors.primaryColor),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 120),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.11),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(
+            color: color,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 15, color: AppColors.primaryColor),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 72,
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CriteriaChip extends StatelessWidget {
+  const _CriteriaChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.checkoutButtonColor,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
-        style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textPrimary),
+        style: GoogleFonts.poppins(
+          color: AppColors.primaryColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
+}
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+class _DetailTile extends StatelessWidget {
+  const _DetailTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(width: 8),
+          SizedBox(
+            width: 130,
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                  ),
-                ),
-              ],
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+class _KuesionerLoadingState extends StatelessWidget {
+  const _KuesionerLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: CircularProgressIndicator(color: AppColors.primaryColor),
+    );
+  }
+}
+
+class _KuesionerEmptyState extends StatelessWidget {
+  const _KuesionerEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.assignment_outlined,
+            size: 54,
+            color: AppColors.textLight,
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Tidak ada kuesioner',
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Data dengan status yang dipilih belum tersedia.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KuesionerErrorState extends StatelessWidget {
+  const _KuesionerErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            size: 48,
+            color: AppColors.textLight,
+          ),
+          const SizedBox(height: 12),
+          Text(message, style: GoogleFonts.poppins()),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Coba lagi'),
+          ),
+        ],
+      ),
+    );
   }
 }

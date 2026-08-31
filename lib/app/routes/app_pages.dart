@@ -34,6 +34,15 @@ import '../modules/order/bindings/order_binding.dart';
 import '../modules/order/views/order_history_view.dart';
 import '../modules/admin_kuesioner/bindings/admin_kuesioner_binding.dart';
 import '../modules/admin_kuesioner/views/admin_kuesioner_view.dart';
+import '../modules/admin_orders/bindings/admin_orders_binding.dart';
+import '../modules/admin_orders/views/admin_orders_view.dart';
+import '../modules/admin_withdraw/bindings/admin_withdraw_binding.dart';
+import '../modules/admin_withdraw/views/admin_withdraw_view.dart';
+import '../modules/users/bindings/users_binding.dart';
+import '../modules/users/views/mentor_detail_view.dart';
+import '../modules/users/views/user_detail_view.dart';
+import '../modules/profile/views/change_password_view.dart';
+import '../modules/profile/views/edit_profile_view.dart';
 import 'route_access_middleware.dart';
 
 part 'app_routes.dart';
@@ -144,6 +153,50 @@ class AppPages {
       middlewares: [
         AuthenticatedMiddleware(allowedRoles: {'admin'}),
       ],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_ORDERS,
+      page: () => const AdminOrdersView(),
+      binding: AdminOrdersBinding(),
+      middlewares: [
+        AuthenticatedMiddleware(allowedRoles: {'admin'}),
+      ],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_WITHDRAW,
+      page: () => const AdminWithdrawView(),
+      binding: AdminWithdrawBinding(),
+      middlewares: [
+        AuthenticatedMiddleware(allowedRoles: {'admin'}),
+      ],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_USER_DETAIL,
+      page: () => UserDetailView(userId: Get.parameters['userId'] ?? ''),
+      binding: UsersBinding(),
+      middlewares: [
+        AuthenticatedMiddleware(allowedRoles: {'admin'}),
+      ],
+    ),
+    GetPage(
+      name: _Paths.ADMIN_MENTOR_DETAIL,
+      page: () => MentorDetailView(mentorId: Get.parameters['mentorId'] ?? ''),
+      binding: UsersBinding(),
+      middlewares: [
+        AuthenticatedMiddleware(allowedRoles: {'admin'}),
+      ],
+    ),
+    GetPage(
+      name: _Paths.EDIT_PROFILE,
+      page: () => const EditProfileView(),
+      binding: ProfileBinding(),
+      middlewares: [AuthenticatedMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.CHANGE_PASSWORD,
+      page: () => const ChangePasswordView(),
+      binding: ProfileBinding(),
+      middlewares: [AuthenticatedMiddleware()],
     ),
   ];
 }
