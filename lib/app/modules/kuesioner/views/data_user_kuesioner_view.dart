@@ -1,16 +1,14 @@
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/modules/kuesioner/controllers/kuesioner_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../controllers/kuesioner_controller.dart';
+
+int respondentFormColumnCount(double width) => width >= 900 ? 2 : 1;
 
 class DataUserKuesionerView extends StatefulWidget {
-  final String? initialUsia;
-  final String? initialKelamin;
-  final String? initialPenghasilan;
-  final String? initialPendidikan;
   const DataUserKuesionerView({
     super.key,
     this.initialUsia,
@@ -18,42 +16,32 @@ class DataUserKuesionerView extends StatefulWidget {
     this.initialPenghasilan,
     this.initialPendidikan,
   });
+  final String? initialUsia;
+  final String? initialKelamin;
+  final String? initialPenghasilan;
+  final String? initialPendidikan;
 
   @override
   State<DataUserKuesionerView> createState() => _DataUserKuesionerViewState();
 }
 
 class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
-  final _formKey = GlobalKey<FormState>();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  String? _selectedUsia;
-  String? _selectedKelamin;
-  String? _selectedPenghasilan;
-  String? _selectedPendidikan;
-  bool _hasExistingData = false;
-
-  // Dummy data untuk dropdown
-  final List<String> _rentangUsia = [
+  static const _ages = [
     '18-25 tahun',
     '26-35 tahun',
     '36-45 tahun',
     '46-55 tahun',
     '56 tahun ke atas',
   ];
-
-  final List<String> _jenisKelamin = ['Laki-laki', 'Perempuan'];
-
-  final List<String> _tingkatPenghasilan = [
+  static const _genders = ['Laki-laki', 'Perempuan'];
+  static const _incomes = [
     '< Rp 2.000.000',
     'Rp 2.000.000 - Rp 5.000.000',
     'Rp 5.000.000 - Rp 10.000.000',
     'Rp 10.000.000 - Rp 20.000.000',
     '> Rp 20.000.000',
   ];
-
-  final List<String> _pendidikanTerakhir = [
+  static const _educations = [
     'SD/Sederajat',
     'SMP/Sederajat',
     'SMA/Sederajat',
@@ -63,140 +51,51 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
     'S3',
   ];
 
+  final _formKey = GlobalKey<FormState>();
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+  String? _age;
+  String? _gender;
+  String? _income;
+  String? _education;
+  bool _loading = false;
+  bool _saving = false;
+
   @override
   void initState() {
     super.initState();
-    // Prefill from initial values if provided
-    _selectedUsia = widget.initialUsia;
-    _selectedKelamin = widget.initialKelamin;
-    _selectedPenghasilan = widget.initialPenghasilan;
-    _selectedPendidikan = widget.initialPendidikan;
-    // Check if we have initial values (means data exists)
-    if (_selectedUsia != null ||
-        _selectedKelamin != null ||
-        _selectedPenghasilan != null ||
-        _selectedPendidikan != null) {
-      _hasExistingData = true;
-    }
-    // Also try to load from data_diri collection if initial values are not provided
-    if (_selectedUsia == null &&
-        _selectedKelamin == null &&
-        _selectedPenghasilan == null &&
-        _selectedPendidikan == null) {
+    _age = _valid(widget.initialUsia, _ages);
+    _gender = _valid(widget.initialKelamin, _genders);
+    _income = _valid(widget.initialPenghasilan, _incomes);
+    _education = _valid(widget.initialPendidikan, _educations);
+    if ([_age, _gender, _income, _education].every((value) => value == null)) {
       _loadExistingData();
     }
   }
 
-  Future<void> _loadExistingData() async {
-    try {
-      final String uid = _auth.currentUser?.uid ?? '';
-      if (uid.isEmpty) return;
+  String? _valid(String? value, List<String> options) =>
+      value != null && options.contains(value) ? value : null;
 
-      final doc = await _firestore.collection('data_diri').doc(uid).get();
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data()!;
+  Future<void> _loadExistingData() async {
+    final uid = _auth.currentUser?.uid ?? '';
+    if (uid.isEmpty) return;
+    setState(() => _loading = true);
+    try {
+      final snapshot = await _firestore.collection('data_diri').doc(uid).get();
+      final data = snapshot.data();
+      if (mounted && data != null) {
         setState(() {
-          _hasExistingData = true;
-          _selectedUsia = data['rentangUsia'] as String?;
-          _selectedKelamin = data['jenisKelamin'] as String?;
-          _selectedPenghasilan = data['tingkatPenghasilan'] as String?;
-          _selectedPendidikan = data['pendidikanTerakhir'] as String?;
+          _age = _valid(data['rentangUsia'] as String?, _ages);
+          _gender = _valid(data['jenisKelamin'] as String?, _genders);
+          _income = _valid(data['tingkatPenghasilan'] as String?, _incomes);
+          _education = _valid(
+            data['pendidikanTerakhir'] as String?,
+            _educations,
+          );
         });
       }
-    } catch (e) {
-      // Silently fail if data doesn't exist
-    }
-  }
-
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-
-      try {
-        // Ensure user id
-        final String uid =
-            _auth.currentUser?.uid ??
-            (await _auth.signInAnonymously()).user!.uid;
-        // Save to data_diri collection with userId
-        await _firestore.collection('data_diri').doc(uid).set({
-          'userId': uid,
-          'rentangUsia': _selectedUsia,
-          'jenisKelamin': _selectedKelamin,
-          'tingkatPenghasilan': _selectedPenghasilan,
-          'pendidikanTerakhir': _selectedPendidikan,
-          'updatedAt': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-
-        // Reload kuesioner controller to refresh filtered list
-        try {
-          final controller = Get.find<KuesionerController>();
-          await controller.reloadRespondenData();
-        } catch (_) {
-          // Controller might not be initialized, ignore
-        }
-
-        if (!mounted) return;
-
-        // Show success dialog
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 24,
-            ),
-            constraints: const BoxConstraints(maxWidth: 480),
-            scrollable: true,
-            backgroundColor: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.check_circle, color: AppColors.success, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  "Berhasil!",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-            content: Text(
-              "Data diri Anda telah tersimpan. Sekarang Anda dapat mengisi kuesioner yang tersedia.",
-              style: GoogleFonts.poppins(color: AppColors.textSecondary),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Get.back();
-                  Get.back();
-                },
-                child: Text(
-                  "Kembali ke Kuesioner",
-                  style: GoogleFonts.poppins(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      } catch (e) {
-        Get.snackbar(
-          'Gagal',
-          'Tidak dapat menyimpan data: $e',
-          backgroundColor: AppColors.error,
-          colorText: AppColors.surface,
-          snackPosition: SnackPosition.BOTTOM,
-          borderRadius: 12,
-          margin: const EdgeInsets.all(16),
-        );
-      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -204,438 +103,356 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // Header dengan gradient
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(
-              top: 60,
-              bottom: 30,
-              left: 24,
-              right: 24,
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.primaryLight],
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Get.back(),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Data Diri Responden',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Lengkapi data diri Anda terlebih dahulu',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Data ini akan membantu peneliti dalam menganalisis hasil kuesioner',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          // Konten form
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, viewport) {
+            final desktop = respondentFormColumnCount(viewport.maxWidth) == 2;
+            final padding = viewport.maxWidth < 600 ? 16.0 : 28.0;
+            final gutter = viewport.maxWidth > 1156
+                ? (viewport.maxWidth - 1100) / 2
+                : padding;
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(gutter, padding, gutter, 40),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Informasi penting
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                  RespondentFormHeader(onBack: Get.back),
+                  const SizedBox(height: 20),
+                  if (_loading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(40),
+                        child: CircularProgressIndicator(),
                       ),
-                    ),
-                    child: Row(
+                    )
+                  else if (desktop)
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: AppColors.primary,
-                          size: 20,
+                        const SizedBox(
+                          width: 330,
+                          child: RespondentPrivacyPanel(),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Informasi Penting',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Data yang Anda berikan akan dijaga kerahasiaannya dan hanya digunakan untuk keperluan penelitian akademis.',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        const SizedBox(width: 20),
+                        Expanded(child: _buildForm()),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Form container
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: AppColors.border.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Section header
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.person_outline_rounded,
-                                  color: AppColors.primary,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  "Data Demografi",
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Rentang Usia
-                          _buildFormField(
-                            icon: Icons.calendar_today_rounded,
-                            title: "Rentang Usia",
-                            subtitle: "Pilih rentang usia Anda",
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedUsia,
-                              isExpanded: true,
-                              decoration: _buildInputDecoration(),
-                              items: _rentangUsia
-                                  .map(
-                                    (item) => DropdownMenuItem(
-                                      value: item,
-                                      child: Text(
-                                        item,
-                                        style: GoogleFonts.poppins(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedUsia = value;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Pilih rentang usia';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Jenis Kelamin
-                          _buildFormField(
-                            icon: Icons.people_alt_rounded,
-                            title: "Jenis Kelamin",
-                            subtitle: "Pilih jenis kelamin Anda",
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedKelamin,
-                              isExpanded: true,
-                              decoration: _buildInputDecoration(),
-                              items: _jenisKelamin
-                                  .map(
-                                    (item) => DropdownMenuItem(
-                                      value: item,
-                                      child: Text(
-                                        item,
-                                        style: GoogleFonts.poppins(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedKelamin = value;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Pilih jenis kelamin';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Tingkat Penghasilan
-                          _buildFormField(
-                            icon: Icons.attach_money_rounded,
-                            title: "Tingkat Penghasilan",
-                            subtitle: "Pilih tingkat penghasilan per bulan",
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedPenghasilan,
-                              isExpanded: true,
-                              decoration: _buildInputDecoration(),
-                              items: _tingkatPenghasilan
-                                  .map(
-                                    (item) => DropdownMenuItem(
-                                      value: item,
-                                      child: Text(
-                                        item,
-                                        style: GoogleFonts.poppins(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedPenghasilan = value;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Pilih tingkat penghasilan';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Pendidikan Terakhir
-                          _buildFormField(
-                            icon: Icons.school_rounded,
-                            title: "Pendidikan Terakhir",
-                            subtitle: "Pilih tingkat pendidikan terakhir",
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _selectedPendidikan,
-                              isExpanded: true,
-                              decoration: _buildInputDecoration(),
-                              items: _pendidikanTerakhir
-                                  .map(
-                                    (item) => DropdownMenuItem(
-                                      value: item,
-                                      child: Text(
-                                        item,
-                                        style: GoogleFonts.poppins(
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedPendidikan = value;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Pilih pendidikan terakhir';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-                          // Submit Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 24,
-                                ),
-                                elevation: 2,
-                                shadowColor: AppColors.primary.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                              onPressed: _submitForm,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    _hasExistingData
-                                        ? "Update Data Diri"
-                                        : "Simpan Data Diri",
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    _hasExistingData
-                                        ? Icons.edit_rounded
-                                        : Icons.check_rounded,
-                                    size: 20,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                    )
+                  else ...[
+                    const RespondentPrivacyPanel(compact: true),
+                    const SizedBox(height: 14),
+                    _buildForm(),
+                  ],
                 ],
               ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm() {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Data demografi', style: _text(18, FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text(
+              'Isi setiap pilihan sesuai kondisi Anda saat ini.',
+              style: _text(11, FontWeight.w400, AppColors.textSecondary),
+            ),
+            const SizedBox(height: 20),
+            _dropdown(
+              label: 'Rentang usia',
+              icon: Icons.calendar_today_outlined,
+              value: _age,
+              items: _ages,
+              onChanged: (value) => setState(() => _age = value),
+            ),
+            const SizedBox(height: 15),
+            _dropdown(
+              label: 'Jenis kelamin',
+              icon: Icons.people_alt_outlined,
+              value: _gender,
+              items: _genders,
+              onChanged: (value) => setState(() => _gender = value),
+            ),
+            const SizedBox(height: 15),
+            _dropdown(
+              label: 'Tingkat penghasilan per bulan',
+              icon: Icons.payments_outlined,
+              value: _income,
+              items: _incomes,
+              onChanged: (value) => setState(() => _income = value),
+            ),
+            const SizedBox(height: 15),
+            _dropdown(
+              label: 'Pendidikan terakhir',
+              icon: Icons.school_outlined,
+              value: _education,
+              items: _educations,
+              onChanged: (value) => setState(() => _education = value),
+            ),
+            const SizedBox(height: 22),
+            FilledButton.icon(
+              onPressed: _saving ? null : _submit,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              icon: _saving
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.surface,
+                      ),
+                    )
+                  : const Icon(Icons.save_outlined, size: 18),
+              label: Text(_saving ? 'Menyimpan...' : 'Simpan data responden'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dropdown({
+    required String label,
+    required IconData icon,
+    required String? value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: AppColors.border),
+    );
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      items: items
+          .map(
+            (item) => DropdownMenuItem(
+              value: item,
+              child: Text(
+                item,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: _text(12, FontWeight.w400),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: onChanged,
+      validator: (selected) => selected == null ? '$label wajib dipilih' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: _text(11, FontWeight.w400, AppColors.textSecondary),
+        prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
+        filled: true,
+        fillColor: AppColors.background,
+        border: border,
+        enabledBorder: border,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _saving = true);
+    try {
+      final uid =
+          _auth.currentUser?.uid ??
+          (await _auth.signInAnonymously()).user?.uid ??
+          '';
+      if (uid.isEmpty) throw StateError('Akun pengguna tidak tersedia');
+      await _firestore.collection('data_diri').doc(uid).set({
+        'userId': uid,
+        'rentangUsia': _age,
+        'jenisKelamin': _gender,
+        'tingkatPenghasilan': _income,
+        'pendidikanTerakhir': _education,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      if (Get.isRegistered<KuesionerController>()) {
+        await Get.find<KuesionerController>().reloadRespondenData();
+      }
+      Get.snackbar(
+        'Data tersimpan',
+        'Rekomendasi kuesioner telah diperbarui.',
+        backgroundColor: AppColors.greenColor,
+        colorText: AppColors.surface,
+      );
+      if (mounted) Navigator.of(context).pop();
+    } catch (error) {
+      Get.snackbar(
+        'Gagal menyimpan',
+        'Tidak dapat menyimpan data: $error',
+        backgroundColor: AppColors.redColor,
+        colorText: AppColors.surface,
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+}
+
+class RespondentFormHeader extends StatelessWidget {
+  const RespondentFormHeader({super.key, required this.onBack});
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.07),
+            AppColors.lightPrimaryColor.withValues(alpha: 0.31),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.lightPrimaryColor.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton.filled(
+            tooltip: 'Kembali',
+            onPressed: onBack,
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.primary,
+            ),
+            icon: const Icon(Icons.arrow_back_rounded),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Data responden',
+                  style: _text(
+                    MediaQuery.sizeOf(context).width < 600 ? 20 : 24,
+                    FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  'Lengkapi profil untuk memperoleh rekomendasi yang relevan.',
+                  style: _text(11, FontWeight.w400, AppColors.textSecondary),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildFormField({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Widget child,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 18, color: AppColors.primary),
+class RespondentPrivacyPanel extends StatelessWidget {
+  const RespondentPrivacyPanel({super.key, this.compact = false});
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(compact ? 18 : 22),
+      decoration: BoxDecoration(
+        color: AppColors.primaryDark,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(15),
             ),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-                fontSize: 14,
-              ),
+            child: const Icon(
+              Icons.privacy_tip_outlined,
+              color: AppColors.surface,
             ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Privasi tetap terjaga',
+            style: _text(17, FontWeight.w700, AppColors.surface),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            'Data digunakan untuk pencocokan kriteria penelitian dan tidak ditampilkan sebagai identitas publik.',
+            style: GoogleFonts.poppins(
+              color: AppColors.surface.withValues(alpha: 0.78),
+              fontSize: 11,
+              height: 1.6,
+            ),
+          ),
+          if (!compact) ...[
+            const SizedBox(height: 20),
+            for (final text in const [
+              'Digunakan untuk rekomendasi',
+              'Dapat diperbarui kapan saja',
+              'Tersimpan pada akun Anda',
+            ])
+              Padding(
+                padding: const EdgeInsets.only(bottom: 11),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.surface,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        text,
+                        style: _text(10, FontWeight.w500, AppColors.surface),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          subtitle,
-          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
-        ),
-        const SizedBox(height: 8),
-        child,
-      ],
-    );
-  }
-
-  InputDecoration _buildInputDecoration() {
-    return InputDecoration(
-      filled: true,
-      fillColor: AppColors.background,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        ],
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.error),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.error, width: 2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
 }
+
+TextStyle _text(double size, FontWeight weight, [Color? color]) =>
+    GoogleFonts.poppins(
+      color: color ?? AppColors.textPrimary,
+      fontSize: size,
+      fontWeight: weight,
+    );

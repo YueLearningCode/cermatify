@@ -28,6 +28,9 @@ abstract class Routes {
   static const ADMIN_MENTOR_DETAIL = _Paths.ADMIN_MENTOR_DETAIL;
   static const EDIT_PROFILE = _Paths.EDIT_PROFILE;
   static const CHANGE_PASSWORD = _Paths.CHANGE_PASSWORD;
+  static const CHAT_ROOM = _Paths.CHAT_ROOM;
+  static const RESPONDENT_DATA = _Paths.RESPONDENT_DATA;
+  static const KUESIONER_DETAIL = _Paths.KUESIONER_DETAIL;
   static const NOT_FOUND = _Paths.NOT_FOUND;
 
   static String adminUserDetail(String userId) =>
@@ -35,6 +38,12 @@ abstract class Routes {
 
   static String adminMentorDetail(String mentorId) =>
       '/admin/mentors/${Uri.encodeComponent(mentorId)}';
+
+  static String chatRoom(String partnerId) =>
+      '/chat/${Uri.encodeComponent(partnerId)}';
+
+  static String kuesionerDetail(String kuesionerId) =>
+      '/kuesioner/${Uri.encodeComponent(kuesionerId)}';
 }
 
 abstract class _Paths {
@@ -61,5 +70,8 @@ abstract class _Paths {
   static const ADMIN_MENTOR_DETAIL = '/admin/mentors/:mentorId';
   static const EDIT_PROFILE = '/profile/edit';
   static const CHANGE_PASSWORD = '/profile/change-password';
+  static const CHAT_ROOM = '/chat/:partnerId';
+  static const RESPONDENT_DATA = '/kuesioner/respondent-data';
+  static const KUESIONER_DETAIL = '/kuesioner/:kuesionerId';
   static const NOT_FOUND = '/not-found';
 }

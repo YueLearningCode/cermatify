@@ -7,9 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
-import 'package:cermatify/app/data/models/mentor_model.dart';
 import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
-import 'package:cermatify/app/modules/chat/views/chat_room_view.dart';
 import '../controllers/profile_controller.dart';
 import 'withdraw_dialog_view.dart';
 import '../../../routes/app_pages.dart';
@@ -228,6 +226,8 @@ class ProfileView extends GetView<ProfileController> {
             ? const Center(child: CircularProgressIndicator())
             : controller.userRole.value == 'admin'
             ? _buildAdminProfile(context)
+            : controller.userRole.value == 'mentor'
+            ? _buildMentorProfile(context)
             : SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -736,26 +736,13 @@ class ProfileView extends GetView<ProfileController> {
                                                           mentorId: adminId,
                                                         );
 
-                                                    Get.to(
-                                                      () => ChatRoomView(
-                                                        mentorId: adminId,
-                                                        mentor: Mentor(
-                                                          id: adminId,
-                                                          name: adminName,
-                                                          image:
-                                                              adminData['image'] ??
-                                                              '',
-                                                          kampus: '',
-                                                          jurusan: '',
-                                                          email:
-                                                              adminData['email'] ??
-                                                              '',
-                                                          layanan: '',
-                                                          bio: '',
-                                                          rating: 0.0,
-                                                          totalSessions: 0,
-                                                        ),
-                                                      ),
+                                                    Get.toNamed(
+                                                      Routes.chatRoom(adminId),
+                                                      arguments:
+                                                          <String, dynamic>{
+                                                            'partnerName':
+                                                                adminName,
+                                                          },
                                                     );
                                                   } catch (e) {
                                                     CustomSnackbar.show(
@@ -934,6 +921,150 @@ class ProfileView extends GetView<ProfileController> {
               ),
       ),
     );
+  }
+
+  Widget _buildMentorProfile(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        final padding = viewport.maxWidth < 600 ? 16.0 : 28.0;
+        final gutter = viewport.maxWidth > 1256
+            ? (viewport.maxWidth - 1200) / 2
+            : padding;
+        return RefreshIndicator(
+          onRefresh: controller.fetchUserData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(gutter, padding, gutter, 44),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AdminProfileHero(
+                  name: controller.userName.value,
+                  email: controller.userEmail.value,
+                  imageUrl: controller.userImage.value,
+                  campus: controller.userKampus.value,
+                  profileLabel: 'MENTOR PROFILE',
+                  statusLabel: 'Mentor terverifikasi',
+                  onChangePhoto: () => _showImageSourceDialog(context),
+                ),
+                const SizedBox(height: 26),
+                const _ProfileSectionHeading(
+                  title: 'Informasi mentor',
+                  subtitle:
+                      'Identitas akademik dan layanan pendampingan yang aktif.',
+                ),
+                const SizedBox(height: 14),
+                AdminProfileInfoGrid(
+                  items: [
+                    AdminProfileInfo(
+                      icon: Icons.workspace_premium_outlined,
+                      label: 'Spesialisasi',
+                      value: _mentorRoleLabel(controller.userMentorRole.value),
+                      color: AppColors.primary,
+                    ),
+                    AdminProfileInfo(
+                      icon: Icons.menu_book_outlined,
+                      label: 'Program studi',
+                      value: controller.userJurusan.value.isEmpty
+                          ? 'Belum dilengkapi'
+                          : controller.userJurusan.value,
+                      color: AppColors.primary,
+                    ),
+                    AdminProfileInfo(
+                      icon: Icons.calendar_month_outlined,
+                      label: 'Semester',
+                      value: controller.userSemester.value.isEmpty
+                          ? 'Belum dilengkapi'
+                          : controller.userSemester.value,
+                      color: AppColors.primaryLight,
+                    ),
+                    AdminProfileInfo(
+                      icon: Icons.category_outlined,
+                      label: 'Layanan aktif',
+                      value: '${controller.userLayanan.length} layanan',
+                      color: AppColors.greenColor,
+                    ),
+                    AdminProfileInfo(
+                      icon: Icons.work_outline_rounded,
+                      label: 'Order berjalan',
+                      value: '${controller.mentorOrders.length} order',
+                      color: AppColors.greenColor,
+                    ),
+                    const AdminProfileInfo(
+                      icon: Icons.verified_user_outlined,
+                      label: 'Status akun',
+                      value: 'Aktif dan terverifikasi',
+                      color: AppColors.greenColor,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 26),
+                MentorBalanceCard(
+                  balance: controller.saldo.value,
+                  onWithdraw: () => Get.dialog(
+                    WithdrawDialogView(currentSaldo: controller.saldo.value),
+                    barrierDismissible: false,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: _ProfileSectionHeading(
+                        title: 'Order aktif',
+                        subtitle:
+                            'Daftar pendampingan yang sedang berlangsung.',
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      tooltip: 'Muat ulang order',
+                      onPressed: controller.isLoadingOrders.value
+                          ? null
+                          : controller.fetchMentorOrders,
+                      icon: const Icon(Icons.refresh_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (controller.isLoadingOrders.value)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(28),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else if (controller.mentorOrders.isEmpty)
+                  const MentorProfileEmptyOrders()
+                else
+                  MentorProfileOrderGrid(orders: controller.mentorOrders),
+                const SizedBox(height: 26),
+                const _ProfileSectionHeading(
+                  title: 'Pengaturan akun',
+                  subtitle: 'Kelola identitas, keamanan, dan sesi akun Anda.',
+                ),
+                const SizedBox(height: 14),
+                AdminProfileActions(
+                  onEdit: () => Get.toNamed(Routes.EDIT_PROFILE),
+                  onChangePassword: () => Get.toNamed(Routes.CHANGE_PASSWORD),
+                  onLogout: _showLogoutDialog,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _mentorRoleLabel(String value) {
+    switch (value.toLowerCase()) {
+      case 'complink':
+        return 'Cermat Competition';
+      case 'paperlink':
+        return 'Cermat Paper';
+      default:
+        return 'Mentor Cermatify';
+    }
   }
 
   Widget _buildAdminProfile(BuildContext context) {
@@ -1136,6 +1267,295 @@ class ProfileView extends GetView<ProfileController> {
   }
 }
 
+class MentorBalanceCard extends StatelessWidget {
+  const MentorBalanceCard({
+    super.key,
+    required this.balance,
+    required this.onWithdraw,
+  });
+
+  final int balance;
+  final VoidCallback onWithdraw;
+
+  String get formattedBalance =>
+      'Rp ${balance.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryDark,
+            AppColors.primaryColor.withValues(alpha: 0.86),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryColor.withValues(alpha: 0.16),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 560;
+          final information = Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: AppColors.surface,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saldo tersedia',
+                      style: GoogleFonts.poppins(
+                        color: AppColors.surface.withValues(alpha: 0.76),
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      formattedBalance,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.surface,
+                        fontSize: compact ? 20 : 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+          final action = FilledButton.icon(
+            onPressed: onWithdraw,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.primaryDark,
+              minimumSize: Size(compact ? double.infinity : 160, 46),
+            ),
+            icon: const Icon(Icons.payments_outlined, size: 18),
+            label: const Text('Ajukan withdraw'),
+          );
+          if (compact) {
+            return Column(
+              children: [information, const SizedBox(height: 18), action],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: information),
+              const SizedBox(width: 20),
+              action,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class MentorProfileOrderGrid extends StatelessWidget {
+  const MentorProfileOrderGrid({super.key, required this.orders});
+  final List<Map<String, dynamic>> orders;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900 ? 2 : 1;
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: (orders.length / columns).ceil(),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          itemBuilder: (context, rowIndex) {
+            final first = rowIndex * columns;
+            if (columns == 1) {
+              return MentorProfileOrderCard(order: orders[first]);
+            }
+            final second = first + 1;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: MentorProfileOrderCard(order: orders[first])),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: second < orders.length
+                      ? MentorProfileOrderCard(order: orders[second])
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class MentorProfileOrderCard extends StatelessWidget {
+  const MentorProfileOrderCard({super.key, required this.order});
+  final Map<String, dynamic> order;
+
+  @override
+  Widget build(BuildContext context) {
+    final id = order['id']?.toString() ?? '';
+    final shortId = id.length > 8 ? id.substring(0, 8) : id;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.greenColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.work_outline_rounded,
+                  color: AppColors.greenColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Text(
+                  'Order #$shortId',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.greenColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Berjalan',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.greenColor,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _MentorOrderInfo(
+            icon: Icons.person_outline_rounded,
+            value: order['customerName']?.toString() ?? 'Pengguna',
+          ),
+          const SizedBox(height: 8),
+          _MentorOrderInfo(
+            icon: Icons.category_outlined,
+            value: order['layananName']?.toString() ?? 'Layanan pendampingan',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MentorOrderInfo extends StatelessWidget {
+  const _MentorOrderInfo({required this.icon, required this.value});
+  final IconData icon;
+  final String value;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class MentorProfileEmptyOrders extends StatelessWidget {
+  const MentorProfileEmptyOrders({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(26),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.work_history_outlined,
+            color: AppColors.textLight,
+            size: 38,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Belum ada order aktif',
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            'Pendampingan baru akan tampil pada bagian ini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class AdminProfileHero extends StatelessWidget {
   const AdminProfileHero({
     super.key,
@@ -1144,6 +1564,8 @@ class AdminProfileHero extends StatelessWidget {
     required this.imageUrl,
     required this.campus,
     required this.onChangePhoto,
+    this.profileLabel = 'ADMIN PROFILE',
+    this.statusLabel = 'Administrator aktif',
   });
 
   final String name;
@@ -1151,6 +1573,8 @@ class AdminProfileHero extends StatelessWidget {
   final String imageUrl;
   final String campus;
   final VoidCallback onChangePhoto;
+  final String profileLabel;
+  final String statusLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1232,7 +1656,7 @@ class AdminProfileHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'ADMIN PROFILE',
+                  profileLabel,
                   style: GoogleFonts.poppins(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
@@ -1292,7 +1716,7 @@ class AdminProfileHero extends StatelessWidget {
               ],
             ],
           );
-          const status = _ProfileStatusBadge();
+          final status = _ProfileStatusBadge(label: statusLabel);
 
           if (compact) {
             return Column(
@@ -1520,7 +1944,9 @@ class _ProfileSectionHeading extends StatelessWidget {
 }
 
 class _ProfileStatusBadge extends StatelessWidget {
-  const _ProfileStatusBadge();
+  const _ProfileStatusBadge({this.label = 'Administrator aktif'});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -1541,7 +1967,7 @@ class _ProfileStatusBadge extends StatelessWidget {
           ),
           const SizedBox(width: 7),
           Text(
-            'Administrator aktif',
+            label,
             style: GoogleFonts.poppins(
               fontSize: 10,
               fontWeight: FontWeight.w600,

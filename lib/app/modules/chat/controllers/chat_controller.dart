@@ -112,9 +112,9 @@ class ChatController extends GetxController {
   // Check if current user is a mentor
   bool get isMentor {
     try {
-      return Get.isRegistered<HomeController>()
-          ? Get.find<HomeController>().isMentor.value
-          : false;
+      return SessionState.role == 'mentor' ||
+          (Get.isRegistered<HomeController>() &&
+              Get.find<HomeController>().isMentor.value);
     } catch (_) {
       return false;
     }

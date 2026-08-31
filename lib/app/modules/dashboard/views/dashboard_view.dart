@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:cermatify/app/data/widgets/bottom_navbar.dart';
 import 'package:cermatify/app/data/widgets/responsive_navigation_scaffold.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/services/session_state.dart';
 import '../../chat/controllers/chat_controller.dart';
 import '../../home/controllers/home_controller.dart';
 import '../controllers/dashboard_controller.dart';
@@ -11,6 +12,7 @@ import '../../chat/views/chat_list_view.dart';
 import '../../profile/views/profile_view.dart';
 import '../../kuesioner/views/kuesioner_view.dart';
 import '../../faq/views/faq_view.dart';
+import '../../mentor_home/views/mentor_home_view.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -18,40 +20,30 @@ class DashboardView extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final bool isMentor = Get.isRegistered<HomeController>()
-          ? Get.find<HomeController>().isMentor.value
-          : false;
+      final bool isMentor =
+          SessionState.role == 'mentor' ||
+          (Get.isRegistered<HomeController>() &&
+              Get.find<HomeController>().isMentor.value);
       final int chatCount = Get.isRegistered<ChatController>()
           ? Get.find<ChatController>().chatRoomCount.value
           : 0;
       final int currentIndex = controller.currentIndex.value;
-      final int navIndex = isMentor
-          ? (currentIndex == 0 ? 0 : currentIndex - 1)
-          : currentIndex;
-
-      void changeNavigationTab(int tapped) {
-        if (isMentor) {
-          controller.changeTab(tapped == 0 ? 1 : tapped + 1);
-        } else {
-          controller.changeTab(tapped);
-        }
-      }
-
       return ResponsiveNavigationScaffold(
         appBar: _buildAppBar(currentIndex),
         body: _buildBody(currentIndex),
-        selectedIndex: navIndex,
+        selectedIndex: currentIndex,
         destinations: _buildDesktopDestinations(
-          hideBeranda: isMentor,
+          hideBeranda: false,
           chatCount: chatCount,
         ),
-        onDestinationSelected: changeNavigationTab,
+        onDestinationSelected: controller.changeTab,
         mobileNavigation: BottomNavbar(
-          currentIndex: navIndex,
-          onTap: changeNavigationTab,
+          currentIndex: currentIndex,
+          onTap: controller.changeTab,
           chatBadgeCount: chatCount,
-          hideBeranda: isMentor,
+          hideBeranda: false,
         ),
+        brandSubtitle: isMentor ? 'Mentor Workspace' : 'Student Workspace',
       );
     });
   }
@@ -132,11 +124,7 @@ class DashboardView extends GetView<DashboardController> {
   Widget _buildBody(int currentIndex) {
     switch (currentIndex) {
       case 0:
-        // If logged-in user is a mentor, skip Beranda and show Chat
-        final bool isMentor = Get.isRegistered<HomeController>()
-            ? Get.find<HomeController>().isMentor.value
-            : false;
-        return isMentor ? _buildChatView() : _buildBerandaView();
+        return _buildBerandaView();
       case 1:
         return _buildChatView();
       case 2:
@@ -151,10 +139,11 @@ class DashboardView extends GetView<DashboardController> {
   }
 
   Widget _buildBerandaView() {
-    final bool isMentor = Get.isRegistered<HomeController>()
-        ? Get.find<HomeController>().isMentor.value
-        : false;
-    return isMentor ? const ChatListView() : const HomeContent();
+    final bool isMentor =
+        SessionState.role == 'mentor' ||
+        (Get.isRegistered<HomeController>() &&
+            Get.find<HomeController>().isMentor.value);
+    return isMentor ? const MentorHomeView() : const HomeContent();
   }
 
   Widget _buildChatView() {

@@ -2,13 +2,13 @@ import 'package:cermatify/app/data/models/chat_model.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/chat_controller.dart';
-import 'chat_room_view.dart';
 
 class ChatListView extends GetView<ChatController> {
   const ChatListView({super.key, this.embed = true});
@@ -18,6 +18,10 @@ class ChatListView extends GetView<ChatController> {
   void _goBack() {
     if (controller.isAdmin) {
       Get.offAllNamed(Routes.ADMIN_DASHBOARD);
+      return;
+    }
+    if (controller.isMentor && Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().changeTab(0);
       return;
     }
     if (Get.key.currentState?.canPop() ?? false) {
@@ -41,7 +45,10 @@ class ChatListView extends GetView<ChatController> {
     );
     if (contact == null) return;
     await controller.createOrGetChatRoom(mentorId: contact.id);
-    Get.to(() => ChatRoomView(mentorId: contact.id, partnerName: contact.name));
+    Get.toNamed(
+      Routes.chatRoom(contact.id),
+      arguments: <String, dynamic>{'partnerName': contact.name},
+    );
   }
 
   Future<void> _openConversation(ChatMessage chat) async {
@@ -54,7 +61,13 @@ class ChatListView extends GetView<ChatController> {
         orderId: chat.orderId,
       );
     }
-    Get.to(() => ChatRoomView(mentorId: partnerId, orderId: chat.orderId));
+    Get.toNamed(
+      Routes.chatRoom(partnerId),
+      arguments: <String, dynamic>{
+        'orderId': chat.orderId,
+        'partnerName': controller.getUserName(partnerId),
+      },
+    );
   }
 
   Widget _conversationContent({required bool includePageHeader}) {
@@ -65,6 +78,7 @@ class ChatListView extends GetView<ChatController> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             child: ChatPageHeader(
               isAdmin: controller.isAdmin,
+              isMentor: controller.isMentor,
               conversationCount: controller.chatRoomCount.value,
               searchController: controller.searchController,
               onBack: _goBack,
@@ -90,6 +104,7 @@ class ChatListView extends GetView<ChatController> {
             if (controller.filteredChats.isEmpty) {
               return ChatEmptyState(
                 isAdmin: controller.isAdmin,
+                isMentor: controller.isMentor,
                 isSearchResult: controller.searchController.text
                     .trim()
                     .isNotEmpty,
@@ -186,6 +201,7 @@ class ChatPageHeader extends StatelessWidget {
   const ChatPageHeader({
     super.key,
     required this.isAdmin,
+    this.isMentor = false,
     required this.conversationCount,
     required this.searchController,
     required this.onBack,
@@ -194,6 +210,7 @@ class ChatPageHeader extends StatelessWidget {
   });
 
   final bool isAdmin;
+  final bool isMentor;
   final int conversationCount;
   final TextEditingController searchController;
   final VoidCallback onBack;
@@ -216,7 +233,11 @@ class ChatPageHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                isAdmin ? 'PUSAT PERCAKAPAN' : 'PERCAKAPAN',
+                isAdmin
+                    ? 'PUSAT PERCAKAPAN'
+                    : isMentor
+                    ? 'MENTOR WORKSPACE'
+                    : 'PERCAKAPAN',
                 style: GoogleFonts.poppins(
                   color: AppColors.primaryColor,
                   fontSize: 10,
@@ -227,7 +248,11 @@ class ChatPageHeader extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              isAdmin ? 'Pesan dari pengguna' : 'Pesan',
+              isAdmin
+                  ? 'Pesan dari pengguna'
+                  : isMentor
+                  ? 'Percakapan pendampingan'
+                  : 'Pesan',
               style: GoogleFonts.poppins(
                 color: AppColors.textPrimary,
                 fontSize: compact ? 23 : 28,
@@ -239,6 +264,8 @@ class ChatPageHeader extends StatelessWidget {
             Text(
               isAdmin
                   ? 'Pantau dan tanggapi kebutuhan pengguna dari satu tempat.'
+                  : isMentor
+                  ? 'Tanggapi pengguna dan lanjutkan setiap sesi pendampingan.'
                   : 'Lanjutkan percakapan dan pendampingan Anda.',
               style: GoogleFonts.poppins(
                 color: AppColors.textSecondary,
@@ -597,12 +624,14 @@ class ChatEmptyState extends StatelessWidget {
   const ChatEmptyState({
     super.key,
     required this.isAdmin,
+    this.isMentor = false,
     required this.isSearchResult,
     required this.onRefresh,
     this.onStartConversation,
   });
 
   final bool isAdmin;
+  final bool isMentor;
   final bool isSearchResult;
   final VoidCallback onRefresh;
   final VoidCallback? onStartConversation;
@@ -669,6 +698,8 @@ class ChatEmptyState extends StatelessWidget {
                           ? 'Coba gunakan nama atau kata kunci pesan yang berbeda.'
                           : isAdmin
                           ? 'Pesan bantuan dari pengguna akan tampil di halaman ini.'
+                          : isMentor
+                          ? 'Percakapan dari order pendampingan aktif akan tampil di sini.'
                           : 'Percakapan aktif Anda akan tampil di halaman ini.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(

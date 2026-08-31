@@ -20,6 +20,8 @@ void main() {
     expect(Routes.CHANGE_PASSWORD, '/profile/change-password');
     expect(Routes.adminUserDetail('user 1'), '/admin/users/user%201');
     expect(Routes.adminMentorDetail('mentor/1'), '/admin/mentors/mentor%2F1');
+    expect(Routes.chatRoom('user/1'), '/chat/user%2F1');
+    expect(Routes.kuesionerDetail('kuesioner 1'), '/kuesioner/kuesioner%201');
   });
 
   test('all private routes declare middleware', () {

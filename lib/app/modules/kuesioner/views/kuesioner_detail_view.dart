@@ -1,464 +1,293 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/models/kuesioner_model.dart';
-import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+
+int kuesionerDetailColumnCount(double width) => width >= 920 ? 2 : 1;
 
 class KuesionerDetailView extends StatelessWidget {
-  final Kuesioner kuesioner;
-
   const KuesionerDetailView({super.key, required this.kuesioner});
+  final Kuesioner kuesioner;
 
   @override
   Widget build(BuildContext context) {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String currentUid = auth.currentUser?.uid ?? '';
-
+    final firestore = FirebaseFirestore.instance;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          "Detail Kuesioner",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: AppColors.surface,
-          ),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        elevation: 0,
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-      ),
-      body: Column(
-        children: [
-          // Header Information
-          Container(
-            margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.9),
-                  AppColors.primaryDark,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.assignment_rounded,
-                    color: AppColors.surface,
-                    size: 30,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Kuesioner Selesai",
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: AppColors.surface,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "Tanggal: ${_formatDate(kuesioner.createdAt)}",
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: AppColors.surface.withValues(alpha: 0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        stream: FirebaseFirestore.instance
-                            .collection('kuesioners')
-                            .doc(kuesioner.id)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          final List<dynamic> signedBy =
-                              (snapshot.data?.data()?['signedBy']
-                                  as List<dynamic>?) ??
-                              [];
-                          final int jumlahResponden = signedBy.length;
-                          return Text(
-                            "Jumlah Responden: $jumlahResponden",
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: AppColors.surface.withValues(alpha: 0.8),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Actions / Link area driven by Firestore doc (realtime)
-          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection('kuesioners')
-                .doc(kuesioner.id)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return const SizedBox.shrink();
-              }
-              final data = snapshot.data!.data() ?? {};
-              final String userId =
-                  data['userId'] as String? ??
-                  data['createdBy'] as String? ??
-                  '';
-              final String link = data['link'] as String? ?? '';
-              final List<dynamic> signedBy =
-                  (data['signedBy'] as List<dynamic>?) ?? [];
-              final bool isCreator =
-                  currentUid.isNotEmpty && currentUid == userId;
-              final bool alreadySigned =
-                  currentUid.isNotEmpty &&
-                  signedBy.map((e) => e.toString()).contains(currentUid);
-
-              if (isCreator || alreadySigned) {
-                if (link.isEmpty) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, viewport) {
+            final padding = viewport.maxWidth < 600 ? 16.0 : 28.0;
+            final gutter = viewport.maxWidth > 1156
+                ? (viewport.maxWidth - 1100) / 2
+                : padding;
+            final columns = kuesionerDetailColumnCount(viewport.maxWidth);
+            return CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(gutter, padding, gutter, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: KuesionerDetailHeader(
+                      item: kuesioner,
+                      onBack: Get.back,
                     ),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.link_rounded,
-                        color: AppColors.primary,
-                      ),
-                      title: Text(
-                        'Buka Link Kuesioner',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        link,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(),
-                      ),
-                      trailing: const Icon(
-                        Icons.copy_rounded,
-                        color: AppColors.primary,
-                      ),
-                      onTap: () async {
-                        await Clipboard.setData(ClipboardData(text: link));
-                        Get.snackbar(
-                          'Disalin',
-                          'Link kuesioner disalin ke clipboard',
-                          backgroundColor: AppColors.primary,
-                          colorText: AppColors.surface,
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(gutter, 16, gutter, 0),
+                  sliver: SliverToBoxAdapter(
+                    child:
+                        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                          stream: firestore
+                              .collection('kuesioners')
+                              .doc(kuesioner.id)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            final data = snapshot.data?.data() ?? const {};
+                            return KuesionerAccessCard(
+                              link:
+                                  data['link']?.toString() ??
+                                  kuesioner.link ??
+                                  '',
+                              isCreator:
+                                  currentUid.isNotEmpty &&
+                                  currentUid ==
+                                      (data['userId']?.toString() ??
+                                          data['createdBy']?.toString()),
+                              alreadySigned:
+                                  currentUid.isNotEmpty &&
+                                  ((data['signedBy'] as List?) ?? const [])
+                                      .map((value) => value.toString())
+                                      .contains(currentUid),
+                              respondentCount:
+                                  ((data['signedBy'] as List?) ?? const [])
+                                      .length,
+                              onCopy: (link) => _copyLink(link),
+                              onRegister: () => _registerRespondent(
+                                firestore: firestore,
+                                currentUid: currentUid,
+                              ),
+                            );
+                          },
+                        ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(gutter, 26, gutter, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pertanyaan dan jawaban',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${kuesioner.answers.length} informasi tercatat pada kuesioner ini.',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (kuesioner.answers.isEmpty)
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(gutter, 14, gutter, 40),
+                    sliver: const SliverToBoxAdapter(child: _EmptyAnswers()),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(gutter, 14, gutter, 40),
+                    sliver: SliverList.separated(
+                      itemCount: (kuesioner.answers.length / columns).ceil(),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder: (context, rowIndex) {
+                        final first = rowIndex * columns;
+                        if (columns == 1) {
+                          return KuesionerAnswerCard(
+                            index: first,
+                            answer: kuesioner.answers[first],
+                          );
+                        }
+                        final second = first + 1;
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: KuesionerAnswerCard(
+                                index: first,
+                                answer: kuesioner.answers[first],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: second < kuesioner.answers.length
+                                  ? KuesionerAnswerCard(
+                                      index: second,
+                                      answer: kuesioner.answers[second],
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ],
                         );
                       },
                     ),
                   ),
-                );
-              }
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-              // Not creator and not signed yet → show apply button
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      if (currentUid.isEmpty) return;
+  Future<void> _copyLink(String link) async {
+    if (link.isEmpty) return;
+    await Clipboard.setData(ClipboardData(text: link));
+    Get.snackbar(
+      'Tautan disalin',
+      'Tautan kuesioner telah disalin ke clipboard.',
+      backgroundColor: AppColors.primary,
+      colorText: AppColors.surface,
+    );
+  }
 
-                      try {
-                        // Check if user is already in signedBy to avoid duplicate rewards
-                        final kuesionerDoc = await firestore
-                            .collection('kuesioners')
-                            .doc(kuesioner.id)
-                            .get();
-                        final kuesionerData = kuesionerDoc.data();
-                        final List<dynamic> signedBy =
-                            (kuesionerData?['signedBy'] as List<dynamic>?) ??
-                            [];
-                        final bool alreadySigned = signedBy
-                            .map((e) => e.toString())
-                            .contains(currentUid);
+  Future<void> _registerRespondent({
+    required FirebaseFirestore firestore,
+    required String currentUid,
+  }) async {
+    if (currentUid.isEmpty) return;
+    try {
+      final questionnaireRef = firestore
+          .collection('kuesioners')
+          .doc(kuesioner.id);
+      final snapshot = await questionnaireRef.get();
+      final signedBy = (snapshot.data()?['signedBy'] as List?) ?? const [];
+      if (signedBy.map((value) => value.toString()).contains(currentUid)) {
+        Get.snackbar('Info', 'Anda sudah terdaftar sebagai responden.');
+        return;
+      }
+      final userRef = firestore.collection('users').doc(currentUid);
+      await firestore.runTransaction((transaction) async {
+        final userSnapshot = await transaction.get(userRef);
+        final balance = (userSnapshot.data()?['saldo'] as int?) ?? 0;
+        transaction.set(questionnaireRef, {
+          'signedBy': FieldValue.arrayUnion([currentUid]),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        if (userSnapshot.exists) {
+          transaction.update(userRef, {
+            'saldo': balance + 100,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+      Get.snackbar(
+        'Berhasil',
+        'Anda terdaftar sebagai responden dan saldo bertambah Rp 100.',
+        backgroundColor: AppColors.greenColor,
+        colorText: AppColors.surface,
+      );
+    } catch (error) {
+      Get.snackbar(
+        'Gagal',
+        'Tidak dapat mendaftarkan responden: $error',
+        backgroundColor: AppColors.redColor,
+        colorText: AppColors.surface,
+      );
+    }
+  }
+}
 
-                        if (alreadySigned) {
-                          Get.snackbar(
-                            'Info',
-                            'Anda sudah terdaftar sebagai responden',
-                            backgroundColor: AppColors.primary,
-                            colorText: AppColors.surface,
-                          );
-                          return;
-                        }
+class KuesionerDetailHeader extends StatelessWidget {
+  const KuesionerDetailHeader({
+    super.key,
+    required this.item,
+    required this.onBack,
+  });
+  final Kuesioner item;
+  final VoidCallback onBack;
 
-                        // Add user to signedBy array
-                        final docRef = firestore
-                            .collection('kuesioners')
-                            .doc(kuesioner.id);
-                        await docRef.set({
-                          'signedBy': FieldValue.arrayUnion([currentUid]),
-                          'updatedAt': FieldValue.serverTimestamp(),
-                        }, SetOptions(merge: true));
-
-                        // Update user's saldo - add Rp. 100 (only if not already signed)
-                        final userDocRef = firestore
-                            .collection('users')
-                            .doc(currentUid);
-                        final userDoc = await userDocRef.get();
-
-                        if (userDoc.exists) {
-                          final userData = userDoc.data();
-                          final currentSaldo =
-                              (userData?['saldo'] as int?) ?? 0;
-                          final newSaldo = currentSaldo + 100;
-
-                          await userDocRef.update({
-                            'saldo': newSaldo,
-                            'updatedAt': FieldValue.serverTimestamp(),
-                          });
-                        }
-
-                        Get.snackbar(
-                          'Berhasil',
-                          'Anda terdaftar sebagai responden. Saldo bertambah Rp. 100',
-                          backgroundColor: AppColors.primary,
-                          colorText: AppColors.surface,
-                          duration: const Duration(seconds: 3),
-                        );
-                      } catch (e) {
-                        Get.snackbar(
-                          'Error',
-                          'Gagal mendaftar sebagai responden: ${e.toString()}',
-                          backgroundColor: AppColors.redColor,
-                          colorText: AppColors.surface,
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: const Icon(Icons.person_add_rounded),
-                    label: Text(
-                      'Ajukan sebagai Responden',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 20 : 26),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.07),
+            AppColors.lightPrimaryColor.withValues(alpha: 0.31),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: AppColors.lightPrimaryColor.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton.filled(
+            tooltip: 'Kembali',
+            onPressed: onBack,
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.primary,
+            ),
+            icon: const Icon(Icons.arrow_back_rounded),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Detail kuesioner',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textPrimary,
+                    fontSize: MediaQuery.sizeOf(context).width < 600 ? 20 : 25,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-              );
-            },
+                Text(
+                  DateFormat('dd/MM/yyyy, HH:mm').format(item.createdAt),
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
           ),
-          // Questions List
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  ...kuesioner.answers.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final qa = entry.value;
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Stack(
-                        children: [
-                          // Main Card
-                          Card(
-                            elevation: 6,
-                            shadowColor: AppColors.primary.withValues(
-                              alpha: 0.1,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppColors.surface,
-                                    AppColors.background.withValues(alpha: 0.5),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Question Number
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            AppColors.primary,
-                                            AppColors.primaryDark,
-                                          ],
-                                        ),
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.primary.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${index + 1}',
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 16,
-                                            color: AppColors.surface,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    // Content
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Question
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Icon(
-                                                Icons.help_outline_rounded,
-                                                color: AppColors.primary,
-                                                size: 18,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  qa.question,
-                                                  style: GoogleFonts.poppins(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 15,
-                                                    color:
-                                                        AppColors.textPrimary,
-                                                    height: 1.4,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 12),
-                                          // Answer
-                                          Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primaryLight
-                                                  .withValues(alpha: 0.08),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: AppColors.primaryLight
-                                                    .withValues(alpha: 0.2),
-                                              ),
-                                            ),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Icon(
-                                                  Icons
-                                                      .lightbulb_outline_rounded,
-                                                  color: AppColors.primary,
-                                                  size: 18,
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Text(
-                                                    qa.answer,
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 14,
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      height: 1.5,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Decorative element
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight.withValues(
-                                  alpha: 0.05,
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              item.status?.toLowerCase() == 'approved'
+                  ? 'Disetujui'
+                  : 'Menunggu',
+              style: GoogleFonts.poppins(
+                color: item.status?.toLowerCase() == 'approved'
+                    ? AppColors.greenColor
+                    : AppColors.yellow2Color,
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -466,8 +295,201 @@ class KuesionerDetailView extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+class KuesionerAccessCard extends StatelessWidget {
+  const KuesionerAccessCard({
+    super.key,
+    required this.link,
+    required this.isCreator,
+    required this.alreadySigned,
+    required this.respondentCount,
+    required this.onCopy,
+    required this.onRegister,
+  });
+  final String link;
+  final bool isCreator;
+  final bool alreadySigned;
+  final int respondentCount;
+  final ValueChanged<String> onCopy;
+  final VoidCallback onRegister;
+
+  @override
+  Widget build(BuildContext context) {
+    final canAccess = isCreator || alreadySigned;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 650;
+          final information = Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Icon(
+                  Icons.groups_outlined,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$respondentCount responden',
+                      style: _text(13, FontWeight.w700),
+                    ),
+                    Text(
+                      canAccess
+                          ? (link.isEmpty ? 'Tautan belum tersedia' : link)
+                          : 'Daftar untuk memperoleh akses kuesioner.',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _text(
+                        10,
+                        FontWeight.w400,
+                        AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+          final action = canAccess
+              ? OutlinedButton.icon(
+                  onPressed: link.isEmpty ? null : () => onCopy(link),
+                  icon: const Icon(Icons.copy_rounded, size: 17),
+                  label: const Text('Salin tautan'),
+                )
+              : FilledButton.icon(
+                  onPressed: onRegister,
+                  icon: const Icon(Icons.person_add_alt_rounded, size: 17),
+                  label: const Text('Jadi responden'),
+                );
+          if (compact) {
+            return Column(
+              children: [
+                information,
+                const SizedBox(height: 14),
+                SizedBox(width: double.infinity, child: action),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: information),
+              const SizedBox(width: 16),
+              action,
+            ],
+          );
+        },
+      ),
+    );
   }
 }
+
+class KuesionerAnswerCard extends StatelessWidget {
+  const KuesionerAnswerCard({
+    super.key,
+    required this.index,
+    required this.answer,
+  });
+  final int index;
+  final QuestionAnswer answer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${index + 1}',
+              style: _text(12, FontWeight.w700, AppColors.primary),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(answer.question, style: _text(13, FontWeight.w600)),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.055),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Text(
+                    answer.answer,
+                    style: GoogleFonts.poppins(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      height: 1.55,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyAnswers extends StatelessWidget {
+  const _EmptyAnswers();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Center(
+        child: Text(
+          'Belum ada pertanyaan dan jawaban.',
+          style: _text(12, FontWeight.w500, AppColors.textSecondary),
+        ),
+      ),
+    );
+  }
+}
+
+TextStyle _text(double size, FontWeight weight, [Color? color]) =>
+    GoogleFonts.poppins(
+      color: color ?? AppColors.textPrimary,
+      fontSize: size,
+      fontWeight: weight,
+    );

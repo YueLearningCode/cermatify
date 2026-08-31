@@ -43,6 +43,9 @@ import '../modules/users/views/mentor_detail_view.dart';
 import '../modules/users/views/user_detail_view.dart';
 import '../modules/profile/views/change_password_view.dart';
 import '../modules/profile/views/edit_profile_view.dart';
+import '../modules/chat/views/chat_room_view.dart';
+import '../modules/kuesioner/views/data_user_kuesioner_view.dart';
+import '../modules/kuesioner/views/kuesioner_detail_route_view.dart';
 import 'route_access_middleware.dart';
 
 part 'app_routes.dart';
@@ -196,6 +199,45 @@ class AppPages {
       name: _Paths.CHANGE_PASSWORD,
       page: () => const ChangePasswordView(),
       binding: ProfileBinding(),
+      middlewares: [AuthenticatedMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.CHAT_ROOM,
+      page: () {
+        final arguments = Get.arguments;
+        final data = arguments is Map<String, dynamic>
+            ? arguments
+            : const <String, dynamic>{};
+        return ChatRoomView(
+          mentorId: Get.parameters['partnerId'] ?? '',
+          orderId: data['orderId'] as String?,
+          partnerName: data['partnerName'] as String?,
+        );
+      },
+      binding: ChatBinding(),
+      middlewares: [AuthenticatedMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.RESPONDENT_DATA,
+      page: () {
+        final arguments = Get.arguments;
+        final data = arguments is Map<String, dynamic>
+            ? arguments
+            : const <String, dynamic>{};
+        return DataUserKuesionerView(
+          initialUsia: data['rentangUsia'] as String?,
+          initialKelamin: data['jenisKelamin'] as String?,
+          initialPenghasilan: data['tingkatPenghasilan'] as String?,
+          initialPendidikan: data['pendidikanTerakhir'] as String?,
+        );
+      },
+      binding: KuesionerBinding(),
+      middlewares: [AuthenticatedMiddleware()],
+    ),
+    GetPage(
+      name: _Paths.KUESIONER_DETAIL,
+      page: () => const KuesionerDetailRouteView(),
+      binding: KuesionerBinding(),
       middlewares: [AuthenticatedMiddleware()],
     ),
   ];
