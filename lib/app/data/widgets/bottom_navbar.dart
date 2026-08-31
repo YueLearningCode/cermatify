@@ -6,6 +6,7 @@ class BottomNavbar extends StatelessWidget {
   final Function(int) onTap;
   final int chatBadgeCount;
   final bool hideBeranda;
+  final String homeLabel;
 
   const BottomNavbar({
     super.key,
@@ -13,6 +14,7 @@ class BottomNavbar extends StatelessWidget {
     required this.onTap,
     this.chatBadgeCount = 0,
     this.hideBeranda = false,
+    this.homeLabel = 'Beranda',
   });
 
   @override
@@ -89,7 +91,7 @@ class BottomNavbar extends StatelessWidget {
                     _buildNavBarItem(
                       Icons.home_outlined,
                       Icons.home,
-                      "Beranda",
+                      homeLabel,
                       0,
                     ),
                     _buildNavBarItem(

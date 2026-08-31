@@ -3,6 +3,7 @@ import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/services/session_state.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/widgets/verification_status_dialog.dart';
+import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -125,9 +126,9 @@ class LoginController extends GetxController {
 
       // Navigasi ke dashboard berdasarkan role.
       if (userRole == 'customer') {
-        Get.offAllNamed(Routes.DASHBOARD);
+        _openMemberDashboard();
       } else if (userRole == 'mentor') {
-        Get.offAllNamed(Routes.DASHBOARD);
+        _openMemberDashboard();
       } else if (userRole == 'admin') {
         Get.offAllNamed(Routes.ADMIN_DASHBOARD);
       } else {
@@ -216,7 +217,7 @@ class LoginController extends GetxController {
 
             // Navigate to dashboard based on role
             if (userRole == 'customer' || userRole == 'mentor') {
-              Get.offAllNamed(Routes.DASHBOARD);
+              _openMemberDashboard();
             } else if (userRole == 'admin') {
               Get.offAllNamed(Routes.ADMIN_DASHBOARD);
             } else {
@@ -255,5 +256,12 @@ class LoginController extends GetxController {
   // Metode untuk memeriksa status login (kept for backward compatibility).
   Future<void> checkLoginStatus() async {
     await checkAuthSession();
+  }
+
+  void _openMemberDashboard() {
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().resetToHome();
+    }
+    Get.offAllNamed(Routes.DASHBOARD);
   }
 }

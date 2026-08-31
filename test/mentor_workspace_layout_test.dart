@@ -1,5 +1,7 @@
 import 'package:cermatify/app/data/models/kuesioner_model.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/bottom_navbar.dart';
+import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:cermatify/app/modules/faq/views/faq_view.dart';
 import 'package:cermatify/app/modules/kuesioner/views/data_user_kuesioner_view.dart';
 import 'package:cermatify/app/modules/kuesioner/views/kuesioner_detail_view.dart';
@@ -10,6 +12,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('dashboard mentor dapat dikembalikan ke tab Home', () {
+    final controller = DashboardController();
+    controller.changeTab(1);
+
+    controller.resetToHome();
+
+    expect(controller.currentIndex.value, DashboardController.homeIndex);
+  });
+
+  testWidgets('navigasi mentor menampilkan tombol Home', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          bottomNavigationBar: BottomNavbar(
+            currentIndex: 0,
+            onTap: (_) {},
+            homeLabel: 'Home',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Home'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   test('mentor workspace breakpoints adapt across phone and desktop', () {
     expect(mentorMetricColumnCount(320), 1);
     expect(mentorMetricColumnCount(700), 2);

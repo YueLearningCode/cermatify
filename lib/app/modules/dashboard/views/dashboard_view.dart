@@ -5,7 +5,6 @@ import 'package:cermatify/app/data/widgets/responsive_navigation_scaffold.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/services/session_state.dart';
 import '../../chat/controllers/chat_controller.dart';
-import '../../home/controllers/home_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import '../../home/views/home_view.dart';
 import '../../chat/views/chat_list_view.dart';
@@ -20,10 +19,7 @@ class DashboardView extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final bool isMentor =
-          SessionState.role == 'mentor' ||
-          (Get.isRegistered<HomeController>() &&
-              Get.find<HomeController>().isMentor.value);
+      final bool isMentor = SessionState.role == 'mentor';
       final int chatCount = Get.isRegistered<ChatController>()
           ? Get.find<ChatController>().chatRoomCount.value
           : 0;
@@ -35,6 +31,7 @@ class DashboardView extends GetView<DashboardController> {
         destinations: _buildDesktopDestinations(
           hideBeranda: false,
           chatCount: chatCount,
+          homeLabel: isMentor ? 'Home' : 'Beranda',
         ),
         onDestinationSelected: controller.changeTab,
         mobileNavigation: BottomNavbar(
@@ -42,6 +39,7 @@ class DashboardView extends GetView<DashboardController> {
           onTap: controller.changeTab,
           chatBadgeCount: chatCount,
           hideBeranda: false,
+          homeLabel: isMentor ? 'Home' : 'Beranda',
         ),
         brandSubtitle: isMentor ? 'Mentor Workspace' : 'Student Workspace',
       );
@@ -51,6 +49,7 @@ class DashboardView extends GetView<DashboardController> {
   List<NavigationRailDestination> _buildDesktopDestinations({
     required bool hideBeranda,
     required int chatCount,
+    required String homeLabel,
   }) {
     final chatDestination = NavigationRailDestination(
       icon: Badge(
@@ -64,10 +63,10 @@ class DashboardView extends GetView<DashboardController> {
 
     return [
       if (!hideBeranda)
-        const NavigationRailDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: Text('Beranda'),
+        NavigationRailDestination(
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home),
+          label: Text(homeLabel),
         ),
       chatDestination,
       const NavigationRailDestination(
@@ -139,10 +138,7 @@ class DashboardView extends GetView<DashboardController> {
   }
 
   Widget _buildBerandaView() {
-    final bool isMentor =
-        SessionState.role == 'mentor' ||
-        (Get.isRegistered<HomeController>() &&
-            Get.find<HomeController>().isMentor.value);
+    final bool isMentor = SessionState.role == 'mentor';
     return isMentor ? const MentorHomeView() : const HomeContent();
   }
 
