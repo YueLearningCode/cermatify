@@ -121,6 +121,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('approved desktop card uses its natural content height', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 520,
+              child: AdminKuesionerCard(
+                item: _item(status: 'approved'),
+                statusColor: AppColors.greenColor,
+                statusText: 'Disetujui',
+                isUpdating: false,
+                onViewDetail: () {},
+                onStatusChanged: (_) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('admin-kuesioner-card-surface')))
+          .height,
+      lessThan(350),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('detail dialog fits a narrow viewport', (tester) async {
     await tester.binding.setSurfaceSize(const Size(360, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));

@@ -1,10 +1,15 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/services/session_state.dart';
 import 'package:cermatify/app/modules/profile/controllers/profile_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 int changePasswordColumnCount(double width) => width >= 900 ? 2 : 1;
+
+String changePasswordFallbackRoute(String? role) =>
+    role == 'admin' ? Routes.ADMIN_DASHBOARD : Routes.PROFILE;
 
 class ChangePasswordView extends StatefulWidget {
   const ChangePasswordView({super.key});
@@ -59,7 +64,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _SecurityHeader(onBack: Get.back),
+                  _SecurityHeader(onBack: _goBack),
                   const SizedBox(height: 20),
                   if (desktop)
                     Row(
@@ -249,8 +254,17 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     );
     if (updated) {
       await Future<void>.delayed(const Duration(milliseconds: 250));
-      if (Get.key.currentState?.canPop() ?? false) Get.back();
+      _goBack();
     }
+  }
+
+  void _goBack() {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+    Get.offAllNamed(changePasswordFallbackRoute(SessionState.role));
   }
 }
 

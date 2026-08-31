@@ -11,4 +11,10 @@ void main() {
     expect(changePasswordColumnCount(900), 2);
     expect(changePasswordColumnCount(1440), 2);
   });
+
+  test('change password has a role-aware fallback destination', () {
+    expect(changePasswordFallbackRoute('admin'), '/admin-dashboard');
+    expect(changePasswordFallbackRoute('customer'), '/profile');
+    expect(changePasswordFallbackRoute('mentor'), '/profile');
+  });
 }

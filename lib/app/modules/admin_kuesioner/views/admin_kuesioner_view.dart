@@ -89,18 +89,51 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
                                 childCount: visibleItems.length,
                               ),
                             )
-                          : SliverGrid(
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: columns,
-                                    crossAxisSpacing: 14,
-                                    mainAxisSpacing: 14,
-                                    mainAxisExtent: 390,
-                                  ),
+                          : SliverList(
                               delegate: SliverChildBuilderDelegate(
-                                (context, index) =>
-                                    _buildCard(context, visibleItems[index]),
-                                childCount: visibleItems.length,
+                                (context, rowIndex) {
+                                  final firstIndex = rowIndex * columns;
+                                  if (columns == 1) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 14,
+                                      ),
+                                      child: _buildCard(
+                                        context,
+                                        visibleItems[firstIndex],
+                                      ),
+                                    );
+                                  }
+
+                                  final secondIndex = firstIndex + 1;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 14),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: _buildCard(
+                                            context,
+                                            visibleItems[firstIndex],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child:
+                                              secondIndex < visibleItems.length
+                                              ? _buildCard(
+                                                  context,
+                                                  visibleItems[secondIndex],
+                                                )
+                                              : const SizedBox.shrink(),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                childCount: (visibleItems.length / columns)
+                                    .ceil(),
                               ),
                             ),
                     ),
@@ -360,157 +393,155 @@ class AdminKuesionerCard extends StatelessWidget {
         : kuesioner.id;
     final criteria = _criteriaFor(kuesioner);
 
-    return LayoutBuilder(
-      builder: (context, _) {
-        return Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: statusColor.withValues(alpha: 0.06),
-                blurRadius: 22,
-                offset: const Offset(0, 8),
-              ),
-            ],
+    return Container(
+      key: const ValueKey('admin-kuesioner-card-surface'),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: 0.06),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.11),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: Icon(
-                      Icons.assignment_outlined,
-                      color: statusColor,
-                      size: 21,
-                    ),
-                  ),
-                  const SizedBox(width: 11),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Kuesioner #$shortId',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          DateFormat(
-                            'dd/MM/yyyy, HH:mm',
-                          ).format(kuesioner.createdAt),
-                          style: GoogleFonts.poppins(
-                            color: AppColors.textSecondary,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _StatusBadge(color: statusColor, label: statusText),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _InfoRow(
-                icon: Icons.person_outline_rounded,
-                label: 'Pembuat',
-                value: item.userName,
-              ),
-              const SizedBox(height: 8),
-              _InfoRow(
-                icon: Icons.groups_outlined,
-                label: 'Responden',
-                value: '${item.respondentCount} orang',
-              ),
-              const SizedBox(height: 8),
-              _InfoRow(
-                icon: Icons.link_rounded,
-                label: 'Tautan',
-                value: kuesioner.link?.isNotEmpty == true
-                    ? kuesioner.link!
-                    : 'Belum tersedia',
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Kriteria responden',
-                style: GoogleFonts.poppins(
-                  color: AppColors.textPrimary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.11),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  Icons.assignment_outlined,
+                  color: statusColor,
+                  size: 21,
                 ),
               ),
-              const SizedBox(height: 7),
-              if (criteria.isEmpty)
-                Text(
-                  'Tidak ada kriteria khusus',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                  ),
-                )
-              else
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: criteria
-                      .map((value) => _CriteriaChip(label: value))
-                      .toList(),
-                ),
-              const SizedBox(height: 18),
-              OutlinedButton.icon(
-                onPressed: onViewDetail,
-                icon: const Icon(Icons.visibility_outlined, size: 17),
-                label: const Text('Lihat detail'),
-              ),
-              if (isWaiting) ...[
-                const SizedBox(height: 9),
-                Row(
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: isUpdating
-                            ? null
-                            : () => onStatusChanged('rejected'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.redColor,
-                          side: const BorderSide(color: AppColors.redColor),
-                        ),
-                        child: const Text('Tolak'),
+                    Text(
+                      'Kuesioner #$shortId',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: isUpdating
-                            ? null
-                            : () => onStatusChanged('approved'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.greenColor,
-                        ),
-                        child: const Text('Setujui'),
+                    Text(
+                      DateFormat(
+                        'dd/MM/yyyy, HH:mm',
+                      ).format(kuesioner.createdAt),
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textSecondary,
+                        fontSize: 10,
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
+              _StatusBadge(color: statusColor, label: statusText),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          _InfoRow(
+            icon: Icons.person_outline_rounded,
+            label: 'Pembuat',
+            value: item.userName,
+          ),
+          const SizedBox(height: 8),
+          _InfoRow(
+            icon: Icons.groups_outlined,
+            label: 'Responden',
+            value: '${item.respondentCount} orang',
+          ),
+          const SizedBox(height: 8),
+          _InfoRow(
+            icon: Icons.link_rounded,
+            label: 'Tautan',
+            value: kuesioner.link?.isNotEmpty == true
+                ? kuesioner.link!
+                : 'Belum tersedia',
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Kriteria responden',
+            style: GoogleFonts.poppins(
+              color: AppColors.textPrimary,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 7),
+          if (criteria.isEmpty)
+            Text(
+              'Tidak ada kriteria khusus',
+              style: GoogleFonts.poppins(
+                color: AppColors.textSecondary,
+                fontSize: 10,
+              ),
+            )
+          else
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: criteria
+                  .map((value) => _CriteriaChip(label: value))
+                  .toList(),
+            ),
+          const SizedBox(height: 18),
+          OutlinedButton.icon(
+            onPressed: onViewDetail,
+            icon: const Icon(Icons.visibility_outlined, size: 17),
+            label: const Text('Lihat detail'),
+          ),
+          if (isWaiting) ...[
+            const SizedBox(height: 9),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: isUpdating
+                        ? null
+                        : () => onStatusChanged('rejected'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.redColor,
+                      side: const BorderSide(color: AppColors.redColor),
+                    ),
+                    child: const Text('Tolak'),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: isUpdating
+                        ? null
+                        : () => onStatusChanged('approved'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.greenColor,
+                    ),
+                    child: const Text('Setujui'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 
