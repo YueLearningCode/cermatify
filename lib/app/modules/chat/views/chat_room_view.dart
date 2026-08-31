@@ -1,463 +1,571 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/models/chat_model.dart';
 import 'package:cermatify/app/data/models/mentor_model.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+
 import '../controllers/chat_controller.dart';
 
 class ChatRoomView extends GetView<ChatController> {
-  final String mentorId;
-  final Mentor? mentor;
-  final String? orderId;
-
   const ChatRoomView({
     super.key,
     required this.mentorId,
     this.mentor,
     this.orderId,
+    this.partnerName,
   });
 
-  Widget _buildTypingIndicator() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.border.withValues(alpha: 0.2),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              "Mentor sedang mengetik...",
-              style: GoogleFonts.poppins(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  /// Kept for compatibility with existing callers; this is the chat partner ID.
+  final String mentorId;
+  final Mentor? mentor;
+  final String? orderId;
+  final String? partnerName;
+
+  String get _displayName {
+    if (partnerName?.trim().isNotEmpty == true) return partnerName!.trim();
+    if (mentor?.name.trim().isNotEmpty == true) return mentor!.name.trim();
+    return controller.getUserName(mentorId);
   }
 
-  Widget _buildMessageBubble(ChatMessage msg, bool isMe) {
-    final viewportWidth = MediaQuery.sizeOf(Get.context!).width;
-
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: (viewportWidth * 0.82).clamp(0, 640).toDouble(),
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: isMe
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMe) ...[
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  mentorId.isNotEmpty ? mentorId[0].toUpperCase() : 'M',
-                  style: const TextStyle(
-                    color: AppColors.surface,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isMe ? AppColors.primary : AppColors.surface,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: isMe
-                      ? const Radius.circular(20)
-                      : const Radius.circular(4),
-                  bottomRight: isMe
-                      ? const Radius.circular(4)
-                      : const Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.border.withValues(alpha: isMe ? 0.3 : 0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    msg.message,
-                    style: GoogleFonts.poppins(
-                      color: isMe ? AppColors.surface : AppColors.textPrimary,
-                      fontSize: 15,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        DateFormat('HH:mm').format(msg.timestamp),
-                        style: GoogleFonts.poppins(
-                          color: isMe
-                              ? AppColors.surface.withValues(alpha: 0.7)
-                              : AppColors.textLight,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      if (isMe) ...[
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.done_all_rounded,
-                          size: 12,
-                          color: AppColors.surface.withValues(alpha: 0.7),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (isMe) ...[
-            const SizedBox(width: 8),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.person_rounded,
-                  color: AppColors.surface,
-                  size: 16,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+  void _goBack() {
+    if (controller.isAdmin) {
+      Get.offNamed(Routes.CHAT);
+      return;
+    }
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offAllNamed(Routes.DASHBOARD);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Load messages when view is created
     controller.loadMessages(mentorId, orderId: orderId);
-    final String displayName = (mentor?.name.isNotEmpty == true
-        ? mentor!.name
-        : controller.getUserName(mentorId));
+    final compact = MediaQuery.sizeOf(context).width < 600;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Stack(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.greenColor, AppColors.primaryLight],
-                    ),
-                    shape: BoxShape.circle,
+      body: SafeArea(
+        child: ResponsiveContent(
+          maxWidth: 1160,
+          child: Padding(
+            padding: EdgeInsets.all(compact ? 0 : 20),
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(compact ? 0 : 28),
+                border: compact ? null : Border.all(color: AppColors.border),
+                boxShadow: compact
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppColors.primaryColor.withValues(alpha: 0.08),
+                          blurRadius: 26,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+              ),
+              child: Column(
+                children: [
+                  ChatRoomHeader(
+                    displayName: _displayName,
+                    isAdmin: controller.isAdmin,
+                    imageUrl: mentor?.image,
+                    orderId: orderId,
+                    onBack: _goBack,
                   ),
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: AppColors.surface,
-                    backgroundImage: mentor != null && mentor!.image.isNotEmpty
-                        ? NetworkImage(mentor!.image)
-                        : null,
-                    child: (mentor == null || mentor!.image.isEmpty)
-                        ? Text(
-                            (displayName.isNotEmpty
-                                    ? displayName[0]
-                                    : (mentorId.isNotEmpty ? mentorId[0] : 'M'))
-                                .toUpperCase(),
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null,
+                  Expanded(child: _buildMessages()),
+                  _buildMessageComposer(compact),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessages() {
+    return ColoredBox(
+      color: AppColors.background,
+      child: Obx(() {
+        if (controller.isLoadingMessages.value) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryColor),
+          );
+        }
+        if (controller.messageLoadError.value.isNotEmpty) {
+          return _ChatRoomErrorState(
+            message: controller.messageLoadError.value,
+            onRetry: () => controller.loadMessages(mentorId, orderId: orderId),
+          );
+        }
+        if (controller.chatMessages.isEmpty) {
+          return _ChatRoomEmptyState(
+            partnerName: _displayName,
+            isAdmin: controller.isAdmin,
+          );
+        }
+
+        return ListView.builder(
+          controller: controller.scrollController,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+          itemCount:
+              controller.chatMessages.length +
+              (controller.isTyping.value ? 1 : 0) +
+              1,
+          itemBuilder: (context, index) {
+            if (index == 0) return const _TodaySeparator();
+            final messageIndex = index - 1;
+            if (messageIndex == controller.chatMessages.length) {
+              return _TypingIndicator(isAdmin: controller.isAdmin);
+            }
+            final message = controller.chatMessages[messageIndex];
+            return ChatMessageBubble(
+              message: message,
+              isMine: message.senderId == controller.currentUserId,
+              partnerName: _displayName,
+            );
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildMessageComposer(bool compact) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        compact ? 12 : 18,
+        12,
+        compact ? 12 : 18,
+        compact ? 12 : 16,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!compact) ...[
+            IconButton.filledTonal(
+              tooltip: 'Lampiran',
+              onPressed: () => Get.snackbar(
+                'Info',
+                'Fitur lampiran akan segera hadir',
+                snackPosition: SnackPosition.BOTTOM,
+              ),
+              icon: const Icon(Icons.attach_file_rounded),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: TextField(
+              key: const Key('chat-message-field'),
+              controller: controller.messageController,
+              focusNode: controller.focusNode,
+              minLines: 1,
+              maxLines: 4,
+              textCapitalization: TextCapitalization.sentences,
+              onSubmitted: (_) =>
+                  controller.sendMessage(mentorId, orderId: orderId),
+              style: GoogleFonts.poppins(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Tulis pesan...',
+                hintStyle: GoogleFonts.poppins(
+                  color: AppColors.textLight,
+                  fontSize: 13,
+                ),
+                filled: true,
+                fillColor: AppColors.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Obx(
+            () => SizedBox(
+              width: 48,
+              height: 48,
+              child: FilledButton(
+                key: const Key('send-chat-button'),
+                onPressed: controller.isSending.value
+                    ? null
+                    : () => controller.sendMessage(mentorId, orderId: orderId),
+                style: FilledButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: AppColors.greenColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.surface, width: 2),
+                child: controller.isSending.value
+                    ? const SizedBox(
+                        width: 19,
+                        height: 19,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.surface,
+                        ),
+                      )
+                    : const Icon(Icons.send_rounded, size: 21),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ChatRoomHeader extends StatelessWidget {
+  const ChatRoomHeader({
+    super.key,
+    required this.displayName,
+    required this.isAdmin,
+    required this.onBack,
+    this.imageUrl,
+    this.orderId,
+  });
+
+  final String displayName;
+  final bool isAdmin;
+  final String? imageUrl;
+  final String? orderId;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = displayName.trim().isEmpty
+        ? 'P'
+        : displayName.trim()[0].toUpperCase();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 600;
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 8 : 20,
+            vertical: compact ? 12 : 16,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.surface,
+                AppColors.primaryLight.withValues(alpha: 0.18),
+              ],
+            ),
+            border: const Border(bottom: BorderSide(color: AppColors.border)),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: compact ? 40 : 48,
+                height: compact ? 40 : 48,
+                child: IconButton(
+                  key: const Key('chat-room-back-button'),
+                  tooltip: 'Kembali',
+                  padding: EdgeInsets.zero,
+                  onPressed: onBack,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                ),
+              ),
+              SizedBox(width: compact ? 3 : 6),
+              CircleAvatar(
+                radius: compact ? 19 : 24,
+                backgroundColor: AppColors.checkoutButtonColor,
+                backgroundImage: imageUrl?.isNotEmpty == true
+                    ? NetworkImage(imageUrl!)
+                    : null,
+                child: imageUrl?.isNotEmpty == true
+                    ? null
+                    : Text(
+                        initial,
+                        style: GoogleFonts.poppins(
+                          color: AppColors.primaryColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
+              SizedBox(width: compact ? 9 : 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textPrimary,
+                        fontSize: compact ? 14 : 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isAdmin
+                          ? 'Pengguna Cermatify'
+                          : 'Percakapan pendampingan',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textSecondary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!compact && orderId?.isNotEmpty == true)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.receipt_long_outlined,
+                        size: 15,
+                        color: AppColors.primaryColor,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Terkait order',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.textSecondary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ChatMessageBubble extends StatelessWidget {
+  const ChatMessageBubble({
+    super.key,
+    required this.message,
+    required this.isMine,
+    required this.partnerName,
+  });
+
+  final ChatMessage message;
+  final bool isMine;
+  final String partnerName;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxBubbleWidth = (constraints.maxWidth * 0.72).clamp(180, 620);
+        return Align(
+          alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: maxBubbleWidth.toDouble()),
+            margin: const EdgeInsets.only(bottom: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+            decoration: BoxDecoration(
+              color: isMine ? AppColors.primaryColor : AppColors.surface,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(18),
+                topRight: const Radius.circular(18),
+                bottomLeft: Radius.circular(isMine ? 18 : 5),
+                bottomRight: Radius.circular(isMine ? 5 : 18),
+              ),
+              border: isMine ? null : Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message.message,
+                  style: GoogleFonts.poppins(
+                    color: isMine ? AppColors.surface : AppColors.textPrimary,
+                    fontSize: 13,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  DateFormat('HH:mm').format(message.timestamp.toLocal()),
+                  style: GoogleFonts.poppins(
+                    color: isMine
+                        ? AppColors.surface.withValues(alpha: 0.76)
+                        : AppColors.textLight,
+                    fontSize: 9,
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.surface,
-                    ),
-                  ),
-                  Text(
-                    "Online",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: AppColors.surface.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TodaySeparator extends StatelessWidget {
+  const _TodaySeparator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
         ),
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.surface),
-        actions: const [],
+        child: Text(
+          'Hari ini',
+          style: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
-      body: ResponsiveContent(
-        maxWidth: 1000,
+    );
+  }
+}
+
+class _TypingIndicator extends StatelessWidget {
+  const _TypingIndicator({required this.isAdmin});
+
+  final bool isAdmin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Text(
+          isAdmin ? 'Pengguna sedang mengetik...' : 'Sedang mengetik...',
+          style: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 11,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatRoomEmptyState extends StatelessWidget {
+  const _ChatRoomEmptyState({required this.partnerName, required this.isAdmin});
+
+  final String partnerName;
+  final bool isAdmin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Date separator
-            Obx(
-              () => controller.chatMessages.isNotEmpty
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.border.withValues(alpha: 0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            "Hari ini",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  : const SizedBox(),
-            ),
-            // Messages list
-            Expanded(
-              child: Obx(
-                () => ListView.builder(
-                  controller: controller.scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  itemCount:
-                      controller.chatMessages.length +
-                      (controller.isTyping.value ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == controller.chatMessages.length &&
-                        controller.isTyping.value) {
-                      return _buildTypingIndicator();
-                    }
-                    final msg = controller.chatMessages[index];
-                    // Align bubbles by actual sender: current user on the right, mentor on the left
-                    final bool isMe = msg.senderId == controller.currentUserId;
-                    return _buildMessageBubble(msg, isMe);
-                  },
-                ),
-              ),
-            ),
-            // Input area
             Container(
-              padding: const EdgeInsets.all(16),
+              width: 68,
+              height: 68,
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.border.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
+                color: AppColors.checkoutButtonColor,
+                borderRadius: BorderRadius.circular(22),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        Get.snackbar(
-                          'Info',
-                          'Fitur lampiran akan segera hadir',
-                          backgroundColor: AppColors.primary,
-                          colorText: AppColors.surface,
-                          snackPosition: SnackPosition.BOTTOM,
-                          borderRadius: 12,
-                          margin: const EdgeInsets.all(16),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.attach_file_rounded,
-                        color: AppColors.textSecondary,
-                        size: 22,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: TextField(
-                        controller: controller.messageController,
-                        focusNode: controller.focusNode,
-                        decoration: InputDecoration(
-                          hintText: "Ketik pesan...",
-                          hintStyle: GoogleFonts.poppins(
-                            color: AppColors.textLight,
-                            fontSize: 15,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.background,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                        ),
-                        textCapitalization: TextCapitalization.sentences,
-                        maxLines: 5,
-                        minLines: 1,
-                        onSubmitted: (_) =>
-                            controller.sendMessage(mentorId, orderId: orderId),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Obx(
-                    () => Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.primaryDark],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: controller.isSending.value
-                            ? null
-                            : () => controller.sendMessage(
-                                mentorId,
-                                orderId: orderId,
-                              ),
-                        icon: controller.isSending.value
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.surface,
-                                  ),
-                                ),
-                              )
-                            : const Icon(
-                                Icons.send_rounded,
-                                color: AppColors.surface,
-                                size: 22,
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: const Icon(
+                Icons.waving_hand_outlined,
+                size: 30,
+                color: AppColors.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 17),
+            Text(
+              'Mulai percakapan',
+              style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              isAdmin
+                  ? 'Kirim pesan pertama kepada $partnerName.'
+                  : 'Belum ada pesan dalam percakapan ini.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                color: AppColors.textSecondary,
+                fontSize: 12,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChatRoomErrorState extends StatelessWidget {
+  const _ChatRoomErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            size: 42,
+            color: AppColors.textLight,
+          ),
+          const SizedBox(height: 12),
+          Text(message, style: GoogleFonts.poppins()),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Coba lagi'),
+          ),
+        ],
       ),
     );
   }

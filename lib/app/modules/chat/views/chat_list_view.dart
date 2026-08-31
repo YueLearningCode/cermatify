@@ -16,13 +16,32 @@ class ChatListView extends GetView<ChatController> {
   final bool embed;
 
   void _goBack() {
+    if (controller.isAdmin) {
+      Get.offAllNamed(Routes.ADMIN_DASHBOARD);
+      return;
+    }
     if (Get.key.currentState?.canPop() ?? false) {
       Get.back();
       return;
     }
-    Get.offAllNamed(
-      controller.isAdmin ? Routes.ADMIN_DASHBOARD : Routes.DASHBOARD,
+    Get.offAllNamed(Routes.DASHBOARD);
+  }
+
+  Future<void> _startAdminConversation(BuildContext context) async {
+    await controller.loadAdminContacts();
+    if (!context.mounted) return;
+    final contact = await showDialog<ChatContact>(
+      context: context,
+      builder: (context) => Obx(
+        () => AdminChatContactPicker(
+          contacts: controller.adminContacts,
+          isLoading: controller.isLoadingContacts.value,
+        ),
+      ),
     );
+    if (contact == null) return;
+    await controller.createOrGetChatRoom(mentorId: contact.id);
+    Get.to(() => ChatRoomView(mentorId: contact.id, partnerName: contact.name));
   }
 
   Future<void> _openConversation(ChatMessage chat) async {
@@ -50,6 +69,9 @@ class ChatListView extends GetView<ChatController> {
               searchController: controller.searchController,
               onBack: _goBack,
               onRefresh: controller.loadChats,
+              onStartConversation: controller.isAdmin
+                  ? () => _startAdminConversation(Get.context!)
+                  : null,
             ),
           ),
         Expanded(
@@ -72,6 +94,9 @@ class ChatListView extends GetView<ChatController> {
                     .trim()
                     .isNotEmpty,
                 onRefresh: controller.loadChats,
+                onStartConversation: controller.isAdmin
+                    ? () => _startAdminConversation(Get.context!)
+                    : null,
               );
             }
             return _buildConversationGrid();
@@ -165,6 +190,7 @@ class ChatPageHeader extends StatelessWidget {
     required this.searchController,
     required this.onBack,
     required this.onRefresh,
+    this.onStartConversation,
   });
 
   final bool isAdmin;
@@ -172,6 +198,7 @@ class ChatPageHeader extends StatelessWidget {
   final TextEditingController searchController;
   final VoidCallback onBack;
   final VoidCallback onRefresh;
+  final VoidCallback? onStartConversation;
 
   @override
   Widget build(BuildContext context) {
@@ -222,11 +249,30 @@ class ChatPageHeader extends StatelessWidget {
           ],
         );
 
-        final actions = Row(
-          mainAxisSize: MainAxisSize.min,
+        final actions = Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _HeaderCountBadge(count: conversationCount),
-            const SizedBox(width: 8),
+            _HeaderCountBadge(count: conversationCount, compact: compact),
+            if (onStartConversation != null) ...[
+              FilledButton.icon(
+                key: const Key('start-admin-chat-button'),
+                onPressed: onStartConversation,
+                icon: compact
+                    ? const SizedBox.shrink()
+                    : const Icon(Icons.add_comment_outlined, size: 17),
+                label: Text(compact ? 'Baru' : 'Pesan baru'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: AppColors.surface,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ],
             _HeaderIconButton(
               tooltip: 'Muat ulang',
               icon: Icons.refresh_rounded,
@@ -341,9 +387,10 @@ class _HeaderIconButton extends StatelessWidget {
 }
 
 class _HeaderCountBadge extends StatelessWidget {
-  const _HeaderCountBadge({required this.count});
+  const _HeaderCountBadge({required this.count, required this.compact});
 
   final int count;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +410,7 @@ class _HeaderCountBadge extends StatelessWidget {
           ),
           const SizedBox(width: 7),
           Text(
-            '$count percakapan',
+            compact ? '$count chat' : '$count percakapan',
             style: GoogleFonts.poppins(
               color: AppColors.textPrimary,
               fontSize: 11,
@@ -552,11 +599,13 @@ class ChatEmptyState extends StatelessWidget {
     required this.isAdmin,
     required this.isSearchResult,
     required this.onRefresh,
+    this.onStartConversation,
   });
 
   final bool isAdmin;
   final bool isSearchResult;
   final VoidCallback onRefresh;
+  final VoidCallback? onStartConversation;
 
   @override
   Widget build(BuildContext context) {
@@ -630,18 +679,36 @@ class ChatEmptyState extends StatelessWidget {
                     ),
                     if (!isSearchResult) ...[
                       const SizedBox(height: 20),
-                      OutlinedButton.icon(
-                        onPressed: onRefresh,
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Periksa kembali'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryColor,
-                          side: const BorderSide(color: AppColors.primaryColor),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 13,
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          if (onStartConversation != null)
+                            FilledButton.icon(
+                              onPressed: onStartConversation,
+                              icon: const Icon(
+                                Icons.add_comment_outlined,
+                                size: 18,
+                              ),
+                              label: const Text('Pilih pengguna'),
+                            ),
+                          OutlinedButton.icon(
+                            onPressed: onRefresh,
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: const Text('Periksa kembali'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primaryColor,
+                              side: const BorderSide(
+                                color: AppColors.primaryColor,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 13,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ],
@@ -651,6 +718,228 @@ class ChatEmptyState extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class AdminChatContactPicker extends StatefulWidget {
+  const AdminChatContactPicker({
+    super.key,
+    required this.contacts,
+    required this.isLoading,
+  });
+
+  final List<ChatContact> contacts;
+  final bool isLoading;
+
+  @override
+  State<AdminChatContactPicker> createState() => _AdminChatContactPickerState();
+}
+
+class _AdminChatContactPickerState extends State<AdminChatContactPicker> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<ChatContact> get _filteredContacts {
+    if (_query.isEmpty) return widget.contacts;
+    return widget.contacts
+        .where(
+          (contact) =>
+              contact.name.toLowerCase().contains(_query) ||
+              contact.email.toLowerCase().contains(_query),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewport = MediaQuery.sizeOf(context);
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: viewport.width < 600 ? 16 : 40,
+        vertical: 24,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 620,
+          maxHeight: viewport.height * 0.82,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(viewport.width < 600 ? 18 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.checkoutButtonColor,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.add_comment_outlined,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pilih pengguna',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textPrimary,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Buka detail percakapan dengan pengguna.',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Tutup',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: _searchController,
+                onChanged: (value) =>
+                    setState(() => _query = value.trim().toLowerCase()),
+                decoration: InputDecoration(
+                  hintText: 'Cari nama atau email pengguna...',
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  filled: true,
+                  fillColor: AppColors.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Expanded(child: _buildContactList()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactList() {
+    if (widget.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryColor),
+      );
+    }
+    final contacts = _filteredContacts;
+    if (contacts.isEmpty) {
+      return Center(
+        child: Text(
+          _query.isEmpty
+              ? 'Belum ada akun pengguna.'
+              : 'Pengguna tidak ditemukan.',
+          style: GoogleFonts.poppins(color: AppColors.textSecondary),
+        ),
+      );
+    }
+    return ListView.separated(
+      itemCount: contacts.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 9),
+      itemBuilder: (context, index) {
+        final contact = contacts[index];
+        final initial = contact.name.trim().isEmpty
+            ? 'P'
+            : contact.name.trim()[0].toUpperCase();
+        return Material(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(17),
+          child: InkWell(
+            key: ValueKey('admin-chat-contact-${contact.id}'),
+            onTap: () => Navigator.of(context).pop(contact),
+            borderRadius: BorderRadius.circular(17),
+            child: Padding(
+              padding: const EdgeInsets.all(13),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.checkoutButtonColor,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      initial,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.primaryColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          contact.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (contact.email.isNotEmpty)
+                          Text(
+                            contact.email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.primaryColor,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

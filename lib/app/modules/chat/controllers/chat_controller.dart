@@ -7,6 +7,20 @@ import 'package:cermatify/app/data/models/chat_model.dart';
 import 'package:cermatify/app/data/services/session_state.dart';
 import '../../home/controllers/home_controller.dart';
 
+class ChatContact {
+  const ChatContact({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.imageUrl,
+  });
+
+  final String id;
+  final String name;
+  final String email;
+  final String? imageUrl;
+}
+
 class ChatController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   final TextEditingController messageController = TextEditingController();
@@ -23,8 +37,12 @@ class ChatController extends GetxController {
   final isTyping = false.obs;
   final isSending = false.obs;
   final isLoadingChats = true.obs;
+  final isLoadingContacts = false.obs;
+  final isLoadingMessages = false.obs;
   final chatLoadError = ''.obs;
+  final messageLoadError = ''.obs;
   final RxInt chatRoomCount = 0.obs;
+  final adminContacts = <ChatContact>[].obs;
 
   String get currentUserId => _auth.currentUser?.uid ?? 'u1';
 
@@ -62,6 +80,7 @@ class ChatController extends GetxController {
     chatLoadError.value = '';
     try {
       await ensureSignedIn();
+      if (isAdmin) await loadAdminContacts();
       loadChats();
     } catch (_) {
       isLoadingChats.value = false;
@@ -86,6 +105,7 @@ class ChatController extends GetxController {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _ordersSubscription;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
   _messagesSubscription;
+  String? _activeRoomId;
 
   bool get isAdmin => SessionState.role == 'admin';
 
@@ -103,16 +123,19 @@ class ChatController extends GetxController {
   void loadChats() {
     isLoadingChats.value = true;
     chatLoadError.value = '';
-    if (isMentor || isAdmin) {
-      // Mentors and admins serve customers from orders in progress.
+    if (isMentor) {
+      // Mentors serve customers from orders in progress.
       _loadMentorChats();
+    } else if (isAdmin) {
+      // Admin support rooms are rooms where the admin is a participant.
+      _loadCustomerChats(includeEmptyRooms: true);
     } else {
       // For customers: load existing chat rooms
       _loadCustomerChats();
     }
   }
 
-  void _loadCustomerChats() {
+  void _loadCustomerChats({bool includeEmptyRooms = false}) {
     _roomsSubscription?.cancel();
     _roomsSubscription = _firestore
         .collection('chatRooms')
@@ -127,8 +150,11 @@ class ChatController extends GetxController {
                       (data['users'] as List<dynamic>? ?? []);
                   final String lastSenderId =
                       data['lastSenderId'] as String? ?? '';
-                  final String lastMessage =
+                  final String storedMessage =
                       data['lastMessage'] as String? ?? '';
+                  final String lastMessage = storedMessage.isNotEmpty
+                      ? storedMessage
+                      : 'Percakapan baru';
                   final DateTime ts =
                       (data['updatedAt'] as Timestamp?)?.toDate() ??
                       DateTime.now();
@@ -154,7 +180,10 @@ class ChatController extends GetxController {
                     orderId: orderId,
                   );
                 })
-                .where((c) => c.message.isNotEmpty)
+                .where(
+                  (chat) =>
+                      includeEmptyRooms || chat.message != 'Percakapan baru',
+                )
                 .toList();
 
             chats.sort(
@@ -172,6 +201,42 @@ class ChatController extends GetxController {
             chatLoadError.value = 'Percakapan belum dapat dimuat.';
           },
         );
+  }
+
+  Future<void> loadAdminContacts() async {
+    if (!isAdmin || isLoadingContacts.value) return;
+    isLoadingContacts.value = true;
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .where('role', isEqualTo: 'customer')
+          .get();
+      final contacts =
+          snapshot.docs.map((document) {
+            final data = document.data();
+            final name =
+                data['nama']?.toString() ??
+                data['namaLengkap']?.toString() ??
+                'Pengguna Cermatify';
+            return ChatContact(
+              id: document.id,
+              name: name,
+              email: data['email']?.toString() ?? '',
+              imageUrl: (data['image'] ?? data['foto'])?.toString(),
+            );
+          }).toList()..sort(
+            (first, second) =>
+                first.name.toLowerCase().compareTo(second.name.toLowerCase()),
+          );
+      adminContacts.assignAll(contacts);
+      for (final contact in contacts) {
+        userNames[contact.id] = contact.name;
+      }
+    } catch (_) {
+      adminContacts.clear();
+    } finally {
+      isLoadingContacts.value = false;
+    }
   }
 
   void _loadMentorChats() {
@@ -317,6 +382,15 @@ class ChatController extends GetxController {
 
   void loadMessages(String mentorId, {String? orderId}) {
     final String roomId = buildRoomId(mentorId, orderId: orderId);
+    if (_activeRoomId == roomId &&
+        _messagesSubscription != null &&
+        messageLoadError.value.isEmpty) {
+      return;
+    }
+    _activeRoomId = roomId;
+    isLoadingMessages.value = true;
+    messageLoadError.value = '';
+    chatMessages.clear();
     // Bind realtime stream from Firestore
     _messagesSubscription?.cancel();
     _messagesSubscription = _firestore
@@ -325,21 +399,29 @@ class ChatController extends GetxController {
         .collection('messages')
         .orderBy('timestamp')
         .snapshots()
-        .listen((snapshot) {
-          final msgs = snapshot.docs.map((d) {
-            final data = d.data();
-            return ChatMessage(
-              id: d.id,
-              senderId: data['senderId'] as String? ?? '',
-              receiverId: data['receiverId'] as String? ?? '',
-              message: data['message'] as String? ?? '',
-              timestamp:
-                  (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-            );
-          }).toList();
-          chatMessages.value = msgs;
-          scrollToBottom();
-        });
+        .listen(
+          (snapshot) {
+            final msgs = snapshot.docs.map((d) {
+              final data = d.data();
+              return ChatMessage(
+                id: d.id,
+                senderId: data['senderId'] as String? ?? '',
+                receiverId: data['receiverId'] as String? ?? '',
+                message: data['message'] as String? ?? '',
+                timestamp:
+                    (data['timestamp'] as Timestamp?)?.toDate() ??
+                    DateTime.now(),
+              );
+            }).toList();
+            chatMessages.value = msgs;
+            isLoadingMessages.value = false;
+            scrollToBottom();
+          },
+          onError: (_) {
+            isLoadingMessages.value = false;
+            messageLoadError.value = 'Pesan belum dapat dimuat.';
+          },
+        );
   }
 
   void scrollToBottom() {
@@ -368,44 +450,41 @@ class ChatController extends GetxController {
     messageController.clear();
 
     isSending.value = true;
+    try {
+      final String roomId = await createOrGetChatRoom(
+        mentorId: mentorId,
+        orderId: orderId,
+      );
+      final roomRef = _firestore.collection('chatRooms').doc(roomId);
+      await roomRef.set({
+        'updatedAt': FieldValue.serverTimestamp(),
+        'lastMessage': messageText,
+        'lastSenderId': currentUserId,
+      }, SetOptions(merge: true));
 
-    final String roomId = buildRoomId(mentorId, orderId: orderId);
-    final DocumentReference<Map<String, dynamic>> roomRef = _firestore
-        .collection('chatRooms')
-        .doc(roomId);
-    // Ensure room exists
-    final roomData = {
-      'roomId': roomId,
-      'users': [currentUserId, mentorId]..sort(),
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-      'lastMessage': messageText,
-      'lastSenderId': currentUserId,
-    };
+      final msgRef = roomRef.collection('messages').doc();
+      final now = DateTime.now();
+      await msgRef.set({
+        'senderId': currentUserId,
+        'receiverId': mentorId,
+        'message': messageText,
+        'timestamp': FieldValue.serverTimestamp(),
+        'localTime': now.toIso8601String(),
+      });
 
-    // Add orderId to room data if provided
-    if (orderId != null && orderId.isNotEmpty) {
-      roomData['orderId'] = orderId;
+      Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
+    } catch (_) {
+      if (messageController.text.isEmpty) {
+        messageController.text = messageText;
+      }
+      Get.snackbar(
+        'Pesan gagal dikirim',
+        'Periksa koneksi lalu coba kembali.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isSending.value = false;
     }
-
-    await roomRef.set(roomData, SetOptions(merge: true));
-
-    // Save message
-    final msgRef = roomRef.collection('messages').doc();
-    final DateTime now = DateTime.now();
-    await msgRef.set({
-      'senderId': currentUserId,
-      'receiverId': mentorId,
-      'message': messageText,
-      'timestamp': FieldValue.serverTimestamp(),
-      'localTime': now
-          .toIso8601String(), // optional local for ordering fallback
-    });
-
-    // After successful send, rely on Firestore stream to update the UI
-    Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
-
-    isSending.value = false;
   }
 
   // No auto-response: all messages should come from real users
