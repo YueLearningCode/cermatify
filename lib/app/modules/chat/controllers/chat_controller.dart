@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/models/chat_model.dart';
+import 'package:cermatify/app/data/services/session_state.dart';
 import '../../home/controllers/home_controller.dart';
 
 class ChatController extends GetxController {
@@ -21,13 +22,16 @@ class ChatController extends GetxController {
   final isSearching = false.obs;
   final isTyping = false.obs;
   final isSending = false.obs;
+  final isLoadingChats = true.obs;
+  final chatLoadError = ''.obs;
   final RxInt chatRoomCount = 0.obs;
 
   String get currentUserId => _auth.currentUser?.uid ?? 'u1';
 
   // Cache of userId -> display name
   final RxMap<String, String> userNames = <String, String>{}.obs;
-  String getUserName(String userId) => userNames[userId] ?? 'Mentor';
+  String getUserName(String userId) =>
+      userNames[userId] ?? (isAdmin ? 'Pengguna Cermatify' : 'Mentor');
 
   Future<void> ensureSignedIn() async {
     if (_auth.currentUser == null) {
@@ -49,10 +53,20 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Make sure we have a unique user id for this device/session
-    ensureSignedIn();
-    loadChats();
     searchController.addListener(_filterChats);
+    unawaited(_initializeChats());
+  }
+
+  Future<void> _initializeChats() async {
+    isLoadingChats.value = true;
+    chatLoadError.value = '';
+    try {
+      await ensureSignedIn();
+      loadChats();
+    } catch (_) {
+      isLoadingChats.value = false;
+      chatLoadError.value = 'Percakapan belum dapat dimuat.';
+    }
   }
 
   @override
@@ -64,11 +78,16 @@ class ChatController extends GetxController {
     focusNode.dispose();
     _roomsSubscription?.cancel();
     _ordersSubscription?.cancel();
+    _messagesSubscription?.cancel();
     super.onClose();
   }
 
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _roomsSubscription;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _ordersSubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
+  _messagesSubscription;
+
+  bool get isAdmin => SessionState.role == 'admin';
 
   // Check if current user is a mentor
   bool get isMentor {
@@ -82,8 +101,10 @@ class ChatController extends GetxController {
   }
 
   void loadChats() {
-    if (isMentor) {
-      // For mentors: load customers from orders in progress
+    isLoadingChats.value = true;
+    chatLoadError.value = '';
+    if (isMentor || isAdmin) {
+      // Mentors and admins serve customers from orders in progress.
       _loadMentorChats();
     } else {
       // For customers: load existing chat rooms
@@ -96,45 +117,61 @@ class ChatController extends GetxController {
     _roomsSubscription = _firestore
         .collection('chatRooms')
         .where('users', arrayContains: currentUserId)
-        .orderBy('updatedAt', descending: true)
         .snapshots()
-        .listen((snapshot) {
-          final chats = snapshot.docs
-              .map((doc) {
-                final data = doc.data();
-                final List<dynamic> users =
-                    (data['users'] as List<dynamic>? ?? []);
-                final String lastSenderId =
-                    data['lastSenderId'] as String? ?? '';
-                final String lastMessage = data['lastMessage'] as String? ?? '';
-                final DateTime ts =
-                    (data['updatedAt'] as Timestamp?)?.toDate() ??
-                    DateTime.now();
-                // partner is the other user in the room
-                final String partnerId = users
-                    .map((e) => e.toString())
-                    .firstWhere((id) => id != currentUserId, orElse: () => '');
-                final String receiverId = lastSenderId == currentUserId
-                    ? partnerId
-                    : currentUserId;
-                final String? orderId = data['orderId'] as String?;
-                return ChatMessage(
-                  id: doc.id,
-                  senderId: lastSenderId.isNotEmpty ? lastSenderId : partnerId,
-                  receiverId: receiverId,
-                  message: lastMessage,
-                  timestamp: ts,
-                  orderId: orderId,
-                );
-              })
-              .where((c) => c.message.isNotEmpty)
-              .toList();
+        .listen(
+          (snapshot) {
+            final chats = snapshot.docs
+                .map((doc) {
+                  final data = doc.data();
+                  final List<dynamic> users =
+                      (data['users'] as List<dynamic>? ?? []);
+                  final String lastSenderId =
+                      data['lastSenderId'] as String? ?? '';
+                  final String lastMessage =
+                      data['lastMessage'] as String? ?? '';
+                  final DateTime ts =
+                      (data['updatedAt'] as Timestamp?)?.toDate() ??
+                      DateTime.now();
+                  // partner is the other user in the room
+                  final String partnerId = users
+                      .map((e) => e.toString())
+                      .firstWhere(
+                        (id) => id != currentUserId,
+                        orElse: () => '',
+                      );
+                  final String receiverId = lastSenderId == currentUserId
+                      ? partnerId
+                      : currentUserId;
+                  final String? orderId = data['orderId'] as String?;
+                  return ChatMessage(
+                    id: doc.id,
+                    senderId: lastSenderId.isNotEmpty
+                        ? lastSenderId
+                        : partnerId,
+                    receiverId: receiverId,
+                    message: lastMessage,
+                    timestamp: ts,
+                    orderId: orderId,
+                  );
+                })
+                .where((c) => c.message.isNotEmpty)
+                .toList();
 
-          allChats.value = chats;
-          chatRoomCount.value = chats.length;
-          _hydratePartnerNames(chats);
-          _applySearchFilter();
-        });
+            chats.sort(
+              (first, second) => second.timestamp.compareTo(first.timestamp),
+            );
+
+            allChats.value = chats;
+            chatRoomCount.value = chats.length;
+            isLoadingChats.value = false;
+            _hydratePartnerNames(chats);
+            _applySearchFilter();
+          },
+          onError: (_) {
+            isLoadingChats.value = false;
+            chatLoadError.value = 'Percakapan belum dapat dimuat.';
+          },
+        );
   }
 
   void _loadMentorChats() {
@@ -144,80 +181,90 @@ class ChatController extends GetxController {
         .collection('orders')
         .where('mentorId', isEqualTo: currentUserId)
         .snapshots()
-        .listen((snapshot) async {
-          final Set<String> customerIds = {};
-          final Map<String, DateTime> customerLastUpdate = {};
-          final Map<String, String> customerOrderIds = {};
+        .listen(
+          (snapshot) async {
+            final Set<String> customerIds = {};
+            final Map<String, DateTime> customerLastUpdate = {};
+            final Map<String, String> customerOrderIds = {};
 
-          // Get unique customer IDs from orders with status 'progress'
-          for (var doc in snapshot.docs) {
-            final data = doc.data();
-            final String status = data['status']?.toString() ?? '';
-            // Filter for 'progress' status client-side
-            if (status.toLowerCase() != 'progress' &&
-                status.toLowerCase() != 'approved') {
-              continue;
-            }
-            final String customerId = data['userId']?.toString() ?? '';
-            if (customerId.isNotEmpty && customerId != currentUserId) {
-              customerIds.add(customerId);
-              final updatedAt =
-                  (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
-              if (!customerLastUpdate.containsKey(customerId) ||
-                  updatedAt.isAfter(customerLastUpdate[customerId]!)) {
-                customerLastUpdate[customerId] = updatedAt;
-                customerOrderIds[customerId] = doc.id;
+            // Get unique customer IDs from orders with status 'progress'
+            for (var doc in snapshot.docs) {
+              final data = doc.data();
+              final String status = data['status']?.toString() ?? '';
+              // Filter for 'progress' status client-side
+              if (status.toLowerCase() != 'progress' &&
+                  status.toLowerCase() != 'approved') {
+                continue;
               }
-            }
-          }
-
-          // Create ChatMessage objects for each customer
-          final List<ChatMessage> chats = [];
-          for (var customerId in customerIds) {
-            // Try to get last message from chat room
-            final String roomId = buildRoomId(customerId);
-            final roomDoc = await _firestore
-                .collection('chatRooms')
-                .doc(roomId)
-                .get();
-
-            String lastMessage = '';
-            String lastSenderId = '';
-            DateTime timestamp =
-                customerLastUpdate[customerId] ?? DateTime.now();
-
-            if (roomDoc.exists) {
-              final roomData = roomDoc.data();
-              lastMessage = roomData?['lastMessage']?.toString() ?? '';
-              lastSenderId = roomData?['lastSenderId']?.toString() ?? '';
-              final roomUpdatedAt = (roomData?['updatedAt'] as Timestamp?)
-                  ?.toDate();
-              if (roomUpdatedAt != null && roomUpdatedAt.isAfter(timestamp)) {
-                timestamp = roomUpdatedAt;
+              final String customerId = data['userId']?.toString() ?? '';
+              if (customerId.isNotEmpty && customerId != currentUserId) {
+                customerIds.add(customerId);
+                final updatedAt =
+                    (data['updatedAt'] as Timestamp?)?.toDate() ??
+                    DateTime.now();
+                if (!customerLastUpdate.containsKey(customerId) ||
+                    updatedAt.isAfter(customerLastUpdate[customerId]!)) {
+                  customerLastUpdate[customerId] = updatedAt;
+                  customerOrderIds[customerId] = doc.id;
+                }
               }
             }
 
-            // If no message yet, show default message
-            if (lastMessage.isEmpty) {
-              lastMessage = 'Order sedang berlangsung';
+            // Create ChatMessage objects for each customer
+            final List<ChatMessage> chats = [];
+            for (var customerId in customerIds) {
+              // Try to get last message from chat room
+              final orderId = customerOrderIds[customerId];
+              final String roomId = buildRoomId(customerId, orderId: orderId);
+              final roomDoc = await _firestore
+                  .collection('chatRooms')
+                  .doc(roomId)
+                  .get();
+
+              String lastMessage = '';
+              String lastSenderId = '';
+              DateTime timestamp =
+                  customerLastUpdate[customerId] ?? DateTime.now();
+
+              if (roomDoc.exists) {
+                final roomData = roomDoc.data();
+                lastMessage = roomData?['lastMessage']?.toString() ?? '';
+                lastSenderId = roomData?['lastSenderId']?.toString() ?? '';
+                final roomUpdatedAt = (roomData?['updatedAt'] as Timestamp?)
+                    ?.toDate();
+                if (roomUpdatedAt != null && roomUpdatedAt.isAfter(timestamp)) {
+                  timestamp = roomUpdatedAt;
+                }
+              }
+
+              // If no message yet, show default message
+              if (lastMessage.isEmpty) {
+                lastMessage = 'Order sedang berlangsung';
+              }
+
+              chats.add(
+                ChatMessage(
+                  id: customerOrderIds[customerId] ?? roomId,
+                  senderId: lastSenderId.isNotEmpty ? lastSenderId : customerId,
+                  receiverId: customerId,
+                  message: lastMessage,
+                  timestamp: timestamp,
+                  orderId: orderId,
+                ),
+              );
             }
 
-            chats.add(
-              ChatMessage(
-                id: customerOrderIds[customerId] ?? roomId,
-                senderId: lastSenderId.isNotEmpty ? lastSenderId : customerId,
-                receiverId: customerId,
-                message: lastMessage,
-                timestamp: timestamp,
-              ),
-            );
-          }
-
-          allChats.value = chats;
-          chatRoomCount.value = chats.length;
-          _hydratePartnerNames(chats);
-          _applySearchFilter();
-        });
+            allChats.value = chats;
+            chatRoomCount.value = chats.length;
+            isLoadingChats.value = false;
+            _hydratePartnerNames(chats);
+            _applySearchFilter();
+          },
+          onError: (_) {
+            isLoadingChats.value = false;
+            chatLoadError.value = 'Percakapan belum dapat dimuat.';
+          },
+        );
   }
 
   void _filterChats() {
@@ -237,15 +284,16 @@ class ChatController extends GetxController {
           final String displayName =
               (data?['nama'] as String?) ??
               (data?['name'] as String?) ??
-              'Mentor';
+              (isAdmin ? 'Pengguna Cermatify' : 'Mentor');
           userNames[userId] = displayName;
         } else {
-          userNames[userId] = 'Mentor';
+          userNames[userId] = isAdmin ? 'Pengguna Cermatify' : 'Mentor';
         }
       } catch (_) {
-        userNames[userId] = 'Mentor';
+        userNames[userId] = isAdmin ? 'Pengguna Cermatify' : 'Mentor';
       }
     }
+    _applySearchFilter();
   }
 
   void _applySearchFilter() {
@@ -260,15 +308,18 @@ class ChatController extends GetxController {
       final partnerId = chat.senderId == currentUserId
           ? chat.receiverId
           : chat.senderId;
+      final partnerName = getUserName(partnerId).toLowerCase();
       return chat.message.toLowerCase().contains(query) ||
-          partnerId.toLowerCase().contains(query);
+          partnerId.toLowerCase().contains(query) ||
+          partnerName.contains(query);
     }).toList();
   }
 
   void loadMessages(String mentorId, {String? orderId}) {
     final String roomId = buildRoomId(mentorId, orderId: orderId);
     // Bind realtime stream from Firestore
-    _firestore
+    _messagesSubscription?.cancel();
+    _messagesSubscription = _firestore
         .collection('chatRooms')
         .doc(roomId)
         .collection('messages')
