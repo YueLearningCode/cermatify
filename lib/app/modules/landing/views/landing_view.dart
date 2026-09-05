@@ -346,9 +346,9 @@ class _DesktopHeroSection extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 11,
+            flex: 12,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(56, 56, 24, 56),
+              padding: const EdgeInsets.fromLTRB(56, 52, 30, 52),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -416,57 +416,74 @@ class _DesktopHeroSection extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 10,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.whiteColor.withValues(alpha: 0.52),
-                    ),
+            flex: 9,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 26, 28, 26),
+              child: Container(
+                height: 380,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: .82),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.surface.withValues(alpha: .92),
+                    width: 2,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 34, 28, 20),
-                  child: Image.asset(
-                    'assets/images/banner1.jpg',
-                    fit: BoxFit.contain,
-                    semanticLabel: 'Ilustrasi pendampingan akademik',
-                  ),
-                ),
-                Positioned(
-                  right: 28,
-                  bottom: 28,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 18,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Image.asset(
+                          'assets/images/banner1.jpg',
+                          fit: BoxFit.contain,
+                          semanticLabel: 'Ilustrasi pendampingan akademik',
                         ),
-                      ],
+                      ),
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.verified_rounded,
-                          color: AppColors.primaryColor,
+                    Positioned(
+                      right: 18,
+                      bottom: 18,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 11,
                         ),
-                        SizedBox(width: 8),
-                        Text('Pendamping terverifikasi'),
-                      ],
+                        decoration: BoxDecoration(
+                          color: AppColors.surface.withValues(alpha: .96),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.primaryColor.withValues(
+                              alpha: .08,
+                            ),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 18,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.verified_rounded,
+                              color: AppColors.primaryColor,
+                              size: 21,
+                            ),
+                            SizedBox(width: 8),
+                            Text('Pendamping terverifikasi'),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
