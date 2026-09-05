@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/chat_controller.dart';
+import '../../dashboard/controllers/dashboard_controller.dart';
 
 class ChatRoomView extends GetView<ChatController> {
   const ChatRoomView({
@@ -36,11 +37,16 @@ class ChatRoomView extends GetView<ChatController> {
       Get.offNamed(Routes.CHAT);
       return;
     }
-    if (Get.key.currentState?.canPop() ?? false) {
-      Get.back();
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().changeTab(1);
+      if (Get.key.currentState?.canPop() ?? false) {
+        Get.back();
+      } else {
+        Get.offAllNamed(Routes.DASHBOARD);
+      }
       return;
     }
-    Get.offAllNamed(Routes.DASHBOARD);
+    Get.offAllNamed(Routes.DASHBOARD, arguments: const {'initialTab': 1});
   }
 
   @override

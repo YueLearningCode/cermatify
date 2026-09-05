@@ -5,6 +5,15 @@ class DashboardController extends GetxController {
 
   final currentIndex = 0.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    final arguments = Get.arguments;
+    if (arguments is Map && arguments['initialTab'] is int) {
+      currentIndex.value = (arguments['initialTab'] as int).clamp(0, 4);
+    }
+  }
+
   void changeTab(int index) {
     currentIndex.value = index;
   }

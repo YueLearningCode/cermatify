@@ -89,6 +89,41 @@ class WithdrawDialogView extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (currentSaldo < WithdrawController.minWithdraw) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.yellowColor.withValues(alpha: .1),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.yellowColor.withValues(alpha: .4),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            color: AppColors.orange2Color,
+                            size: 19,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Saldo belum mencapai minimal withdraw Rp 50.000.',
+                              style: GoogleFonts.poppins(
+                                color: AppColors.textPrimary,
+                                fontSize: 10,
+                                height: 1.45,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   Container(
                     padding: const EdgeInsets.all(18),
@@ -184,7 +219,9 @@ class WithdrawDialogView extends StatelessWidget {
                   const SizedBox(height: 20),
                   Obx(
                     () => FilledButton.icon(
-                      onPressed: controller.isLoading.value
+                      onPressed:
+                          controller.isLoading.value ||
+                              currentSaldo < WithdrawController.minWithdraw
                           ? null
                           : controller.submitWithdraw,
                       style: FilledButton.styleFrom(
@@ -205,6 +242,8 @@ class WithdrawDialogView extends StatelessWidget {
                       label: Text(
                         controller.isLoading.value
                             ? 'Mengirim permintaan...'
+                            : currentSaldo < WithdrawController.minWithdraw
+                            ? 'Saldo belum mencukupi'
                             : 'Kirim permintaan withdraw',
                       ),
                     ),

@@ -1,383 +1,351 @@
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
+import 'package:cermatify/app/modules/home/controllers/home_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:cermatify/app/data/widgets/responsive_content.dart';
-import 'package:cermatify/app/routes/app_pages.dart';
-import '../controllers/home_controller.dart';
-import '../../chat/views/chat_list_view.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: const HomeContent(),
-    );
-  }
+  Widget build(BuildContext context) => const Scaffold(
+    backgroundColor: AppColors.background,
+    body: HomeContent(),
+  );
 }
 
 class HomeContent extends GetView<HomeController> {
   const HomeContent({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      // If current user is a mentor, show chat list only
-      if (controller.isMentor.value) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(0, 40, 0, 0),
-          child: const ChatListView(embed: false),
-        );
-      }
-      return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 52, 16, 16),
-        child: ResponsiveContent(
-          maxWidth: 1200,
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, viewport) {
+      final compact = viewport.maxWidth < 600;
+      return RefreshIndicator(
+        onRefresh: controller.refreshUserData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(
+            compact ? 16 : 28,
+            compact ? 18 : 28,
+            compact ? 16 : 28,
+            compact ? 112 : 44,
+          ),
+          child: ResponsiveContent(
+            maxWidth: 1200,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Obx(
+                  () => _WelcomeHeader(
+                    name: controller.userName.value,
+                    imageUrl: controller.userImage.value,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                Text(
+                  'Mulai dari sini',
+                  style: GoogleFonts.poppins(
+                    fontSize: compact ? 19 : 21,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Pilih layanan yang sesuai dengan kebutuhan belajarmu.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const _ActionGrid(),
+                const SizedBox(height: 26),
+                const _SupportBanner(),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({required this.name, required this.imageUrl});
+  final String name;
+  final String imageUrl;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final compact = constraints.maxWidth < 680;
+      final avatar = CircleAvatar(
+        radius: compact ? 31 : 36,
+        backgroundColor: AppColors.surface,
+        backgroundImage: imageUrl.isNotEmpty
+            ? NetworkImage(imageUrl)
+            : const AssetImage('assets/images/profile_dummy.jpg')
+                  as ImageProvider,
+      );
+      final copy = Column(
+        crossAxisAlignment: compact
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: .8),
+              borderRadius: BorderRadius.circular(99),
+            ),
+            child: Text(
+              'STUDENT WORKSPACE',
+              style: GoogleFonts.poppins(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Selamat datang, $name',
+            textAlign: compact ? TextAlign.center : TextAlign.left,
+            style: GoogleFonts.poppins(
+              fontSize: compact ? 22 : 28,
+              height: 1.18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Temukan mentor, kelola pendampingan, dan pantau pesananmu.',
+            textAlign: compact ? TextAlign.center : TextAlign.left,
+            style: GoogleFonts.poppins(
+              fontSize: compact ? 11 : 13,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      );
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(compact ? 22 : 28),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primaryColor.withValues(alpha: .07),
+              AppColors.lightPrimaryColor.withValues(alpha: .32),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(compact ? 24 : 28),
+          border: Border.all(
+            color: AppColors.lightPrimaryColor.withValues(alpha: .36),
+          ),
+        ),
+        child: compact
+            ? Column(children: [avatar, const SizedBox(height: 16), copy])
+            : Row(
+                children: [
+                  Expanded(child: copy),
+                  const SizedBox(width: 28),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.surface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: avatar,
+                  ),
+                ],
+              ),
+      );
+    },
+  );
+}
+
+class _ActionGrid extends StatelessWidget {
+  const _ActionGrid();
+  static const actions = [
+    _Action(
+      'Cermat Paper',
+      'Bimbingan penyusunan paper',
+      Icons.description_outlined,
+      Routes.PAPERLINK,
+    ),
+    _Action(
+      'Cermat Competition',
+      'Kompetisi dan beasiswa',
+      Icons.school_outlined,
+      Routes.COMPLINK,
+    ),
+    _Action(
+      'Cermat Kuesioner',
+      'Publikasi kebutuhan responden',
+      Icons.assignment_outlined,
+      Routes.SOURCELINK,
+    ),
+    _Action(
+      'Riwayat pesanan',
+      'Pantau seluruh transaksimu',
+      Icons.shopping_bag_outlined,
+      Routes.ORDER_HISTORY,
+    ),
+  ];
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final columns = constraints.maxWidth >= 960
+          ? 4
+          : constraints.maxWidth >= 600
+          ? 2
+          : 1;
+      const gap = 14.0;
+      final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: actions
+            .map(
+              (action) => SizedBox(
+                width: width,
+                height: 154,
+                child: _ActionCard(action: action),
+              ),
+            )
+            .toList(),
+      );
+    },
+  );
+}
+
+class _Action {
+  const _Action(this.title, this.subtitle, this.icon, this.route);
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String route;
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({required this.action});
+  final _Action action;
+  @override
+  Widget build(BuildContext context) => Material(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.circular(20),
+    child: InkWell(
+      onTap: () => Get.toNamed(action.route),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withValues(alpha: .09),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(action.icon, color: AppColors.primaryColor),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        action.title,
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        action.subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppColors.primaryColor,
+                  size: 20,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _SupportBanner extends StatelessWidget {
+  const _SupportBanner();
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor.withValues(alpha: .09),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(
+            Icons.forum_outlined,
+            color: AppColors.primaryColor,
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header dengan avatar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Obx(
-                          () => Text(
-                            "Hai, ${controller.userName.value} 👋",
-                            style: GoogleFonts.poppins(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "Mari tingkatkan kemampuan belajarmu",
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Obx(
-                    () => Container(
-                      padding: const EdgeInsets.all(1.5),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.primaryLight],
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: CircleAvatar(
-                        radius: 20,
-                        backgroundColor: AppColors.surface,
-                        backgroundImage: controller.userImage.value.isNotEmpty
-                            ? NetworkImage(controller.userImage.value)
-                                  as ImageProvider
-                            : const AssetImage(
-                                'assets/images/profile_dummy.jpg',
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                'Butuh bantuan?',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
               ),
-              const SizedBox(height: 20),
-              // // Search Bar
-              // Container(
-              //   decoration: BoxDecoration(
-              //     borderRadius: BorderRadius.circular(14),
-              //     boxShadow: [
-              //       BoxShadow(color: AppColors.border.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 2)),
-              //     ],
-              //   ),
-              //   child: TextField(
-              //     readOnly: true,
-              //     onTap: () {
-              //       // Buka daftar mentor tanpa filter (tampilkan semua mentor)
-              //       Get.to(() => const ListMentorView());
-              //     },
-              //     decoration: InputDecoration(
-              //       hintText: "Cari mentor atau topik...",
-              //       hintStyle: GoogleFonts.poppins(color: AppColors.textLight),
-              //       prefixIcon: Icon(Icons.search_rounded, color: AppColors.primary),
-              //       filled: true,
-              //       fillColor: AppColors.surface,
-              //       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-              //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-              //       enabledBorder: OutlineInputBorder(
-              //         borderRadius: BorderRadius.circular(14),
-              //         borderSide: BorderSide.none,
-              //       ),
-              //       focusedBorder: OutlineInputBorder(
-              //         borderRadius: BorderRadius.circular(14),
-              //         borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              // const SizedBox(height: 20),
-              // Carousel Banner dengan auto slide
-              Column(
-                children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final bannerHeight = (constraints.maxWidth / 2.4).clamp(
-                        150.0,
-                        300.0,
-                      );
-                      return Container(
-                        height: bannerHeight,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: PageView.builder(
-                          controller: controller.pageController,
-                          itemCount: controller.bannerImages.length,
-                          onPageChanged: controller.onPageChanged,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 3),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    controller.bannerImages[index],
-                                  ),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  // Dot indicators
-                  Obx(
-                    () => Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(controller.bannerImages.length, (
-                        index,
-                      ) {
-                        return Container(
-                          width: 7,
-                          height: 10,
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: controller.currentPage.value == index
-                                ? AppColors.primary
-                                : AppColors.border,
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Section Title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Fitur Mentoring",
-                    style: GoogleFonts.poppins(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              // Feature Grid
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final crossAxisCount = constraints.maxWidth >= 1000
-                      ? 4
-                      : constraints.maxWidth >= 600
-                      ? 3
-                      : 2;
-                  final aspectRatio = constraints.maxWidth >= 1000
-                      ? 1.35
-                      : constraints.maxWidth >= 600
-                      ? 1.1
-                      : 0.85;
-
-                  return GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: aspectRatio,
-                    padding: EdgeInsets.zero,
-                    children: const [
-                      FeatureCard(
-                        title: "Cermat Paper",
-                        subtitle: "Bimbingan Paper",
-                        icon: Icons.description_rounded,
-                        color: AppColors.primaryLight,
-                      ),
-                      FeatureCard(
-                        title: "Cermat Competition",
-                        subtitle: "Kompetisi & Beasiswa",
-                        icon: Icons.school_rounded,
-                        color: AppColors.primary,
-                      ),
-                      FeatureCard(
-                        title: "Cermat Kuesioner",
-                        subtitle: "Sumber Belajar",
-                        icon: Icons.library_books_rounded,
-                        color: AppColors.primaryDark,
-                      ),
-                      FeatureCard(
-                        title: "Order History",
-                        subtitle: "Riwayat Pesanan",
-                        icon: Icons.shopping_bag_rounded,
-                        color: AppColors.primaryLight,
-                      ),
-                    ],
-                  );
-                },
+              Text(
+                'Buka menu Chat untuk melanjutkan diskusi dengan mentor.',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
         ),
-      );
-    });
-  }
-}
-
-class FeatureCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-
-  const FeatureCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      container: true,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withValues(alpha: 0.9), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: () {
-              switch (title) {
-                case "Cermat Paper":
-                  Get.toNamed(Routes.PAPERLINK);
-                  break;
-                case "Cermat Competition":
-                  Get.toNamed(Routes.COMPLINK);
-                  break;
-                case "Cermat Kuesioner":
-                  Get.toNamed(Routes.SOURCELINK);
-                  break;
-                case "Order History":
-                  Get.toNamed(Routes.ORDER_HISTORY);
-                  break;
-                default:
-                  Get.snackbar(
-                    title,
-                    "Menu '$title' sedang dalam pengembangan",
-                    backgroundColor: AppColors.primary,
-                    colorText: AppColors.surface,
-                    snackPosition: SnackPosition.BOTTOM,
-                    borderRadius: 12,
-                    margin: const EdgeInsets.all(16),
-                  );
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, color: AppColors.surface, size: 26),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.surface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: AppColors.surface.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
 }

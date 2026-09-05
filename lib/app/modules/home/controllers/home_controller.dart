@@ -1,83 +1,38 @@
-import 'dart:async';
 import 'package:cermatify/app/data/services/app_logger.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  final PageController pageController = PageController();
-  final currentPage = 0.obs;
   final userName = 'User'.obs;
   final userImage = ''.obs;
   final isMentor = false.obs;
-  Timer? _timer;
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  final List<String> bannerImages = [
-    'assets/images/banner1.jpg',
-    'assets/images/banner2.jpg',
-    'assets/images/banner3.jpg',
-  ];
 
   @override
   void onInit() {
     super.onInit();
-    _startAutoSlide();
     _fetchUserData();
   }
 
-  @override
-  void onClose() {
-    _timer?.cancel();
-    pageController.dispose();
-    super.onClose();
-  }
-
-  void _startAutoSlide() {
-    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
-      if (currentPage.value < bannerImages.length - 1) {
-        currentPage.value++;
-      } else {
-        currentPage.value = 0;
-      }
-      if (pageController.hasClients) {
-        pageController.animateToPage(
-          currentPage.value,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
-
-  void onPageChanged(int page) {
-    currentPage.value = page;
-  }
+  Future<void> refreshUserData() => _fetchUserData();
 
   Future<void> _fetchUserData() async {
     try {
-      final User? user = _auth.currentUser;
-      if (user != null) {
-        final DocumentSnapshot userDoc = await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        if (userDoc.exists) {
-          final data = userDoc.data() as Map<String, dynamic>;
-          userName.value = data['nama'] ?? user.displayName ?? 'User';
-          userImage.value = data['image'] ?? '';
-          isMentor.value = (data['role'] as String?) == 'mentor';
-        } else {
-          // Fallback to display name if Firestore doc doesn't exist
-          userName.value = user.displayName ?? 'User';
-        }
+      final user = _auth.currentUser;
+      if (user == null) return;
+      final snapshot = await _firestore.collection('users').doc(user.uid).get();
+      if (!snapshot.exists) {
+        userName.value = user.displayName ?? 'User';
+        return;
       }
-    } catch (e) {
-      AppLogger.info('Error fetching user data: $e');
+      final data = snapshot.data() ?? <String, dynamic>{};
+      userName.value = data['nama']?.toString() ?? user.displayName ?? 'User';
+      userImage.value = data['image']?.toString() ?? '';
+      isMentor.value = data['role']?.toString() == 'mentor';
+    } catch (error) {
+      AppLogger.info('Error fetching user data: $error');
       userName.value = 'User';
     }
   }
