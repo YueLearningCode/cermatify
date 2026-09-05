@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PaperlinkController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final isLoading = true.obs;
+  final loadError = ''.obs;
 
   // Filter selections - store IDs
   var selectedUniversitas = ''.obs; // Store kampus ID
@@ -72,9 +74,18 @@ class PaperlinkController extends GetxController {
 
   // Fetch master data from Firebase
   Future<void> fetchMasterData() async {
+    isLoading.value = true;
+    loadError.value = '';
     try {
-      // Fetch kampus
-      final kampusSnapshot = await _firestore.collection('kampus').get();
+      final snapshots = await Future.wait([
+        _firestore.collection('kampus').get(),
+        _firestore.collection('jurusan').get(),
+        _firestore
+            .collection('layanan')
+            .where('type', isEqualTo: 'paperlink')
+            .get(),
+      ]);
+      final kampusSnapshot = snapshots[0];
       listKampus.value = kampusSnapshot.docs
           .map((doc) {
             return {'id': doc.id, 'name': doc.data()['name']?.toString() ?? ''};
@@ -82,8 +93,7 @@ class PaperlinkController extends GetxController {
           .toList()
           .cast<Map<String, String>>();
 
-      // Fetch all jurusan
-      final jurusanSnapshot = await _firestore.collection('jurusan').get();
+      final jurusanSnapshot = snapshots[1];
       listJurusan.value = jurusanSnapshot.docs
           .map((doc) {
             final data = doc.data();
@@ -96,11 +106,7 @@ class PaperlinkController extends GetxController {
           .toList()
           .cast<Map<String, String>>();
 
-      // Fetch layanan filtered by paperlink type
-      final layananSnapshot = await _firestore
-          .collection('layanan')
-          .where('type', isEqualTo: 'paperlink')
-          .get();
+      final layananSnapshot = snapshots[2];
       listLayanan.value = layananSnapshot.docs
           .map((doc) {
             final data = doc.data();
@@ -112,8 +118,14 @@ class PaperlinkController extends GetxController {
           })
           .toList()
           .cast<Map<String, String>>();
+      listKampus.sort((a, b) => (a['name'] ?? '').compareTo(b['name'] ?? ''));
+      listJurusan.sort((a, b) => (a['name'] ?? '').compareTo(b['name'] ?? ''));
+      listLayanan.sort((a, b) => (a['name'] ?? '').compareTo(b['name'] ?? ''));
     } catch (e) {
       AppLogger.info('Error fetching master data: $e');
+      loadError.value = 'Data pencarian belum dapat dimuat.';
+    } finally {
+      isLoading.value = false;
     }
   }
 

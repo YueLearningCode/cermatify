@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ComplinkController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final isLoading = true.obs;
+  final loadError = ''.obs;
 
   // Single filter: Cabang Lomba Akademik - store ID
   var selectedCabang = ''.obs; // Store layanan ID
@@ -38,6 +40,8 @@ class ComplinkController extends GetxController {
 
   // Fetch master data from Firebase
   Future<void> fetchMasterData() async {
+    isLoading.value = true;
+    loadError.value = '';
     try {
       // Fetch layanan filtered by complink type
       final layananSnapshot = await _firestore
@@ -55,8 +59,12 @@ class ComplinkController extends GetxController {
           })
           .toList()
           .cast<Map<String, String>>();
+      listLayanan.sort((a, b) => (a['name'] ?? '').compareTo(b['name'] ?? ''));
     } catch (e) {
       AppLogger.info('Error fetching master data: $e');
+      loadError.value = 'Daftar kategori kompetisi belum dapat dimuat.';
+    } finally {
+      isLoading.value = false;
     }
   }
 

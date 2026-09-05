@@ -1,18 +1,20 @@
+import 'package:cermatify/app/data/models/mentor_model.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
+import 'package:cermatify/app/data/widgets/workspace_page_header.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:cermatify/app/data/models/mentor_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'detail_mentor_view.dart';
 
-class ListMentorView extends StatelessWidget {
-  final String? kampus;
-  final String? jurusan;
-  final String? layanan;
-  final String? layananId; // Layanan ID from filter
-  final int? layananPrice; // Layanan price from filter
-  final String? layananType; // Layanan type: 'paperlink' or 'complink'
+int mentorResultColumnCount(double width) {
+  if (width >= 1080) return 3;
+  if (width >= 700) return 2;
+  return 1;
+}
 
+class ListMentorView extends StatefulWidget {
   const ListMentorView({
     super.key,
     this.kampus,
@@ -23,313 +25,469 @@ class ListMentorView extends StatelessWidget {
     this.layananType,
   });
 
+  final String? kampus;
+  final String? jurusan;
+  final String? layanan;
+  final String? layananId;
+  final int? layananPrice;
+  final String? layananType;
+
+  @override
+  State<ListMentorView> createState() => _ListMentorViewState();
+}
+
+class _ListMentorViewState extends State<ListMentorView> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   String _toText(dynamic value) {
-    if (value == null) return '-';
-    if (value is String) return value;
-    if (value is List) {
-      try {
-        return value.whereType<String>().join(', ');
-      } catch (_) {
-        return value.map((e) => e?.toString() ?? '').join(', ');
-      }
-    }
+    if (value == null) return '';
+    if (value is List) return value.map((item) => '$item').join(', ');
     return value.toString();
   }
 
-  Widget _buildFilterBadge(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppColors.primary),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+  Query<Map<String, dynamic>> get _mentorQuery {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'mentor');
+    final kampus = widget.kampus?.trim() ?? '';
+    final jurusan = widget.jurusan?.trim() ?? '';
+    if (kampus.isNotEmpty) query = query.where('kampus', isEqualTo: kampus);
+    if (jurusan.isNotEmpty) query = query.where('jurusan', isEqualTo: jurusan);
+    return query;
+  }
+
+  void _goBack() => Navigator.of(context).pop();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ResponsiveContent(
+          maxWidth: 1280,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                WorkspacePageHeader(
+                  eyebrow: 'Mentor terverifikasi',
+                  title: 'Pilih mentor',
+                  subtitle:
+                      'Bandingkan profil mentor dan pilih pendamping yang paling sesuai.',
+                  onBack: _goBack,
+                ),
+                const SizedBox(height: 14),
+                _SearchAndFilters(
+                  controller: _searchController,
+                  filters: [
+                    if (widget.kampus?.isNotEmpty == true)
+                      (Icons.account_balance_outlined, widget.kampus!),
+                    if (widget.jurusan?.isNotEmpty == true)
+                      (Icons.menu_book_outlined, widget.jurusan!),
+                    if (widget.layanan?.isNotEmpty == true)
+                      (Icons.design_services_outlined, widget.layanan!),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _query = value.trim().toLowerCase()),
+                ),
+                const SizedBox(height: 14),
+                Expanded(child: _buildResults()),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Build Firestore query for mentors with optional filters
-    // Trim incoming filters to avoid mismatch due to leading/trailing spaces
-    final String? kampusFilter = kampus?.trim();
-    final String? jurusanFilter = jurusan?.trim();
-    final String? layananFilter = layanan?.trim();
+  Widget _buildResults() {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _mentorQuery.snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryColor),
+          );
+        }
+        if (snapshot.hasError) {
+          return const MentorResultEmptyState(
+            icon: Icons.cloud_off_outlined,
+            title: 'Mentor belum dapat dimuat',
+            subtitle: 'Periksa koneksi lalu buka kembali halaman ini.',
+          );
+        }
 
-    Query<Map<String, dynamic>> baseQuery = FirebaseFirestore.instance
-        .collection('users')
-        .where('role', isEqualTo: 'mentor');
-    // Note: isActive filtering is done client-side to avoid composite index requirements
-    if (kampusFilter != null && kampusFilter.isNotEmpty) {
-      baseQuery = baseQuery.where('kampus', isEqualTo: kampusFilter);
-    }
-    if (jurusanFilter != null && jurusanFilter.isNotEmpty) {
-      baseQuery = baseQuery.where('jurusan', isEqualTo: jurusanFilter);
-    }
-    // NOTE:
-    // We intentionally do NOT filter 'layanan' at the query level because:
-    // - It is stored as an array and requires exact, case-sensitive match via arrayContains
-    // - UI-provided labels may have case/spacing differences
-    // Instead, we filter by 'layanan' on the client with a case-insensitive contains check.
+        final serviceNeedle = widget.layanan?.trim().toLowerCase() ?? '';
+        final mentors = (snapshot.data?.docs ?? const [])
+            .where((document) {
+              final data = document.data();
+              if (data['verificationStatus']?.toString() != 'verified') {
+                return false;
+              }
+              final service = _toText(data['layanan']).toLowerCase();
+              if (serviceNeedle.isNotEmpty &&
+                  !service.contains(serviceNeedle)) {
+                return false;
+              }
+              final searchable = [
+                _toText(data['nama'] ?? data['name']),
+                _toText(data['kampus']),
+                _toText(data['jurusan']),
+                service,
+              ].join(' ').toLowerCase();
+              return _query.isEmpty || searchable.contains(_query);
+            })
+            .map((document) {
+              final data = document.data();
+              return Mentor(
+                id: document.id,
+                name: _toText(data['nama'] ?? data['name']).trim().isEmpty
+                    ? 'Mentor Cermatify'
+                    : _toText(data['nama'] ?? data['name']),
+                kampus: _toText(data['kampus']),
+                jurusan: _toText(data['jurusan']),
+                layanan: _toText(data['layanan']),
+                image: _toText(data['image']),
+                email: _toText(data['email']),
+                bio: _toText(data['bio']),
+                rating: (data['rating'] as num?)?.toDouble() ?? 0,
+                totalSessions: (data['totalSessions'] as num?)?.toInt() ?? 0,
+              );
+            })
+            .toList(growable: false);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Hasil Mentor",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Filter Badges Section (tampil hanya jika ada filter)
-          if ((kampus != null && kampus!.isNotEmpty) ||
-              (jurusan != null && jurusan!.isNotEmpty) ||
-              (layanan != null && layanan!.isNotEmpty))
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.border.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+        if (mentors.isEmpty) {
+          return MentorResultEmptyState(
+            icon: _query.isEmpty
+                ? Icons.person_search_outlined
+                : Icons.search_off_rounded,
+            title: _query.isEmpty
+                ? 'Belum ada mentor yang sesuai'
+                : 'Mentor tidak ditemukan',
+            subtitle: _query.isEmpty
+                ? 'Kembali dan coba kombinasi filter lainnya.'
+                : 'Coba kata kunci nama atau bidang yang berbeda.',
+          );
+        }
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = mentorResultColumnCount(constraints.maxWidth);
+            return GridView.builder(
+              padding: const EdgeInsets.only(bottom: 24),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                mainAxisExtent: 220,
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Text(
-                      "Filter:",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
+              itemCount: mentors.length,
+              itemBuilder: (context, index) => MentorResultCard(
+                mentor: mentors[index],
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DetailMentorView(
+                      mentor: mentors[index],
+                      layananId: widget.layananId,
+                      layananPrice: widget.layananPrice,
+                      layananType: widget.layananType ?? 'paperlink',
                     ),
-                    const SizedBox(width: 12),
-                    if (kampus != null && kampus!.isNotEmpty)
-                      _buildFilterBadge(Icons.account_balance_rounded, kampus!),
-                    if (kampus != null && kampus!.isNotEmpty)
-                      const SizedBox(width: 8),
-                    if (jurusan != null && jurusan!.isNotEmpty)
-                      _buildFilterBadge(Icons.menu_book_rounded, jurusan!),
-                    if (jurusan != null && jurusan!.isNotEmpty)
-                      const SizedBox(width: 8),
-                    if (layanan != null && layanan!.isNotEmpty)
-                      _buildFilterBadge(Icons.school_rounded, layanan!),
-                  ],
+                  ),
                 ),
               ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _SearchAndFilters extends StatelessWidget {
+  const _SearchAndFilters({
+    required this.controller,
+    required this.filters,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final List<(IconData, String)> filters;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: controller,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              hintText: 'Cari nama atau bidang mentor...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              filled: true,
+              fillColor: AppColors.background,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
             ),
-          // Mentor List
-          Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: baseQuery.snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      "Terjadi kesalahan memuat mentor",
-                      style: GoogleFonts.poppins(
-                        color: AppColors.textSecondary,
+          ),
+          if (filters.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: filters
+                    .map(
+                      (filter) => Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.checkoutButtonColor,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              filter.$1,
+                              size: 14,
+                              color: AppColors.primaryColor,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              filter.$2,
+                              style: GoogleFonts.poppins(
+                                color: AppColors.primaryColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }
-                final docs = snapshot.data?.docs ?? [];
-                final mentors = docs
-                    .map((d) {
-                      final data = d.data();
-                      // Filter to show only verified mentors (verificationStatus == 'verified')
-                      final verificationStatus =
-                          data['verificationStatus'] as String?;
-                      if (verificationStatus != 'verified') return null;
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
 
-                      return Mentor(
-                        id: d.id,
-                        name: _toText(data['nama'] ?? data['name'] ?? 'Mentor'),
-                        kampus: _toText(data['kampus']),
-                        jurusan: _toText(data['jurusan']),
-                        layanan: _toText(data['layanan']),
-                        image: _toText(data['image']) == '-'
-                            ? ''
-                            : _toText(data['image']),
-                        email: _toText(data['email']) == '-'
-                            ? ''
-                            : _toText(data['email']),
-                        bio: _toText(data['bio']) == '-'
-                            ? ''
-                            : _toText(data['bio']),
-                        rating: (data['rating'] is num)
-                            ? (data['rating'] as num).toDouble()
-                            : 0.0,
-                        totalSessions: (data['totalSessions'] is num)
-                            ? (data['totalSessions'] as num).toInt()
-                            : 0,
-                      );
-                    })
-                    .whereType<Mentor>()
-                    .toList();
+class MentorResultCard extends StatelessWidget {
+  const MentorResultCard({
+    super.key,
+    required this.mentor,
+    required this.onTap,
+  });
 
-                // Client-side layanan filter (case-insensitive, tolerant to joined strings)
-                List<Mentor> filteredMentors = mentors;
-                if (layananFilter != null && layananFilter.isNotEmpty) {
-                  final String needle = layananFilter.toLowerCase();
-                  filteredMentors = mentors.where((m) {
-                    final String layananText = (m.layanan)
-                        .toString()
-                        .toLowerCase();
-                    return layananText.contains(needle);
-                  }).toList();
-                }
+  final Mentor mentor;
+  final VoidCallback onTap;
 
-                if (filteredMentors.isEmpty) {
-                  return Center(
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.all(17),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundColor: AppColors.checkoutButtonColor,
+                    backgroundImage: mentor.image.isEmpty
+                        ? null
+                        : NetworkImage(mentor.image),
+                    child: mentor.image.isEmpty
+                        ? const Icon(
+                            Icons.person_outline,
+                            color: AppColors.primaryColor,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.person_search_outlined,
-                          size: 80,
-                          color: AppColors.textLight,
-                        ),
-                        const SizedBox(height: 16),
                         Text(
-                          "Tidak ada mentor ditemukan",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Coba ubah filter pencarian Anda",
+                          mentor.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w700,
                           ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 14,
+                              color: AppColors.greenColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Terverifikasi',
+                              style: GoogleFonts.poppins(
+                                color: AppColors.greenColor,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  );
-                }
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.primaryColor,
+                    size: 20,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              _MentorMeta(
+                icon: Icons.account_balance_outlined,
+                value: mentor.kampus.isEmpty
+                    ? 'Kampus belum diisi'
+                    : mentor.kampus,
+              ),
+              const SizedBox(height: 7),
+              _MentorMeta(
+                icon: Icons.menu_book_outlined,
+                value: mentor.jurusan.isEmpty
+                    ? 'Jurusan belum diisi'
+                    : mentor.jurusan,
+              ),
+              const Spacer(),
+              Text(
+                mentor.layanan.isEmpty
+                    ? 'Layanan pendampingan'
+                    : mentor.layanan,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  color: AppColors.primaryColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-                return ListView.builder(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: filteredMentors.length,
-                  itemBuilder: (context, index) {
-                    final mentor = filteredMentors[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      elevation: 2,
-                      shadowColor: AppColors.border.withValues(alpha: 0.1),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        leading: CircleAvatar(
-                          radius: 22,
-                          backgroundColor: AppColors.primaryLight,
-                          backgroundImage: mentor.image.isNotEmpty
-                              ? NetworkImage(mentor.image)
-                              : null,
-                          child: mentor.image.isEmpty
-                              ? const Icon(Icons.person, color: Colors.white)
-                              : null,
-                        ),
-                        title: Text(
-                          mentor.name,
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            "${mentor.layanan} - ${mentor.jurusan}\n${mentor.kampus}",
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                        trailing: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => DetailMentorView(
-                                  mentor: mentor,
-                                  layananId: layananId,
-                                  layananPrice: layananPrice,
-                                  layananType:
-                                      layananType ??
-                                      'paperlink', // Default to paperlink if not provided
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                          ),
-                          child: Text(
-                            "Detail",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
+class _MentorMeta extends StatelessWidget {
+  const _MentorMeta({required this.icon, required this.value});
+
+  final IconData icon;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 15, color: AppColors.textLight),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              color: AppColors.textSecondary,
+              fontSize: 10,
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+class MentorResultEmptyState extends StatelessWidget {
+  const MentorResultEmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 520),
+        padding: const EdgeInsets.all(30),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: AppColors.textLight),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -473,7 +473,8 @@ class ChatConversationCard extends StatelessWidget {
         now.day == local.day;
     if (isToday) return DateFormat('HH:mm').format(local);
     if (now.difference(local).inDays < 7) {
-      return DateFormat('EEE', 'id_ID').format(local);
+      const dayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+      return dayLabels[local.weekday - 1];
     }
     return DateFormat('dd/MM/yy').format(local);
   }

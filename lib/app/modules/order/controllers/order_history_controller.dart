@@ -5,17 +5,62 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 
+bool orderMatchesStatus(Map<String, dynamic> order, String filter) {
+  if (filter == 'all') return true;
+  final status = order['status']?.toString().toLowerCase() ?? '';
+  switch (filter) {
+    case 'waiting':
+      return status == 'waiting verification' || status == 'pending';
+    case 'progress':
+      return status == 'progress' || status == 'approved';
+    case 'completed':
+      return status == 'completed';
+    case 'rejected':
+      return status == 'rejected';
+    default:
+      return true;
+  }
+}
+
 class OrderHistoryController extends GetxController {
+  OrderHistoryController({this.autoLoad = true});
+
+  static const int pageSize = 8;
+  final bool autoLoad;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final orders = <Map<String, dynamic>>[].obs;
   final isLoading = false.obs;
+  final selectedStatus = 'all'.obs;
+  final visibleCount = pageSize.obs;
+
+  List<Map<String, dynamic>> get filteredOrders {
+    if (selectedStatus.value == 'all') return orders;
+    return orders
+        .where((order) => orderMatchesStatus(order, selectedStatus.value))
+        .toList(growable: false);
+  }
+
+  List<Map<String, dynamic>> get visibleOrders =>
+      filteredOrders.take(visibleCount.value).toList(growable: false);
+
+  bool get hasMore => visibleCount.value < filteredOrders.length;
+
+  void setStatusFilter(String value) {
+    selectedStatus.value = value;
+    visibleCount.value = pageSize;
+  }
+
+  void showMore() {
+    visibleCount.value += pageSize;
+  }
 
   @override
   void onInit() {
     super.onInit();
-    fetchOrders();
+    if (autoLoad) fetchOrders();
   }
 
   Future<void> fetchOrders() async {
@@ -68,55 +113,37 @@ class OrderHistoryController extends GetxController {
         });
       }
 
-      // Fetch mentor and layanan names for each order
-      for (var order in ordersList) {
-        final mentorId = order['mentorId']?.toString();
-        final layananId = order['layananId']?.toString();
+      // Hydrate referensi secara batch agar jumlah read tidak bertambah satu per
+      // order (N+1). Firestore membatasi whereIn, sehingga ID dipotong per 30.
+      final mentorIds = ordersList
+          .map((order) => order['mentorId']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
+      final layananIds = ordersList
+          .map((order) => order['layananId']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
 
-        // Fetch mentor name
-        if (mentorId != null && mentorId.isNotEmpty) {
-          try {
-            final mentorDoc = await _firestore
-                .collection('users')
-                .doc(mentorId)
-                .get();
-            if (mentorDoc.exists) {
-              final mentorData = mentorDoc.data();
-              order['mentorName'] =
-                  mentorData?['nama'] ??
-                  mentorData?['name'] ??
-                  'Unknown Mentor';
-            } else {
-              order['mentorName'] = 'Unknown Mentor';
-            }
-          } catch (e) {
-            AppLogger.info('Error fetching mentor name: $e');
-            order['mentorName'] = 'Unknown Mentor';
-          }
-        } else {
-          order['mentorName'] = 'Unknown Mentor';
-        }
+      final results = await Future.wait([
+        _fetchNamesByIds(
+          collection: 'users',
+          ids: mentorIds,
+          nameFields: const ['nama', 'name'],
+        ),
+        _fetchNamesByIds(
+          collection: 'layanan',
+          ids: layananIds,
+          nameFields: const ['name'],
+        ),
+      ]);
+      final mentorNames = results[0];
+      final layananNames = results[1];
 
-        // Fetch layanan name
-        if (layananId != null && layananId.isNotEmpty) {
-          try {
-            final layananDoc = await _firestore
-                .collection('layanan')
-                .doc(layananId)
-                .get();
-            if (layananDoc.exists) {
-              final layananData = layananDoc.data();
-              order['layananName'] = layananData?['name'] ?? 'Unknown Layanan';
-            } else {
-              order['layananName'] = 'Unknown Layanan';
-            }
-          } catch (e) {
-            AppLogger.info('Error fetching layanan name: $e');
-            order['layananName'] = 'Unknown Layanan';
-          }
-        } else {
-          order['layananName'] = 'Unknown Layanan';
-        }
+      for (final order in ordersList) {
+        final mentorId = order['mentorId']?.toString() ?? '';
+        final layananId = order['layananId']?.toString() ?? '';
+        order['mentorName'] = mentorNames[mentorId] ?? 'Mentor Cermatify';
+        order['layananName'] = layananNames[layananId] ?? 'Layanan Cermatify';
       }
 
       // Sort by newest (most recent first) after fetching all data
@@ -133,6 +160,7 @@ class OrderHistoryController extends GetxController {
       });
 
       orders.value = ordersList;
+      visibleCount.value = pageSize;
       AppLogger.info('Fetched ${orders.length} orders'); // Debug
     } catch (e) {
       AppLogger.info('Error fetching orders: $e');
@@ -140,6 +168,41 @@ class OrderHistoryController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<Map<String, String>> _fetchNamesByIds({
+    required String collection,
+    required Set<String> ids,
+    required List<String> nameFields,
+  }) async {
+    if (ids.isEmpty) return {};
+    final values = ids.toList(growable: false);
+    final result = <String, String>{};
+    for (var start = 0; start < values.length; start += 30) {
+      final end = (start + 30).clamp(0, values.length);
+      final chunk = values.sublist(start, end);
+      try {
+        final snapshot = await _firestore
+            .collection(collection)
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+        for (final document in snapshot.docs) {
+          final data = document.data();
+          String? name;
+          for (final field in nameFields) {
+            final value = data[field]?.toString().trim();
+            if (value != null && value.isNotEmpty) {
+              name = value;
+              break;
+            }
+          }
+          if (name != null) result[document.id] = name;
+        }
+      } catch (error) {
+        AppLogger.info('Gagal memuat referensi $collection: $error');
+      }
+    }
+    return result;
   }
 
   // Check if user has order in progress for a mentor with specific layanan type
@@ -262,18 +325,18 @@ class OrderHistoryController extends GetxController {
   String getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'waiting verification':
-        return 'Waiting Verification';
+        return 'Menunggu verifikasi';
       case 'progress':
-        return 'In Progress';
+        return 'Sedang diproses';
       case 'rejected':
-        return 'Rejected';
+        return 'Ditolak';
       case 'completed':
-        return 'Completed';
+        return 'Selesai';
       // Legacy support for old status names
       case 'pending':
-        return 'Waiting Verification';
+        return 'Menunggu verifikasi';
       case 'approved':
-        return 'In Progress';
+        return 'Sedang diproses';
       default:
         return status;
     }

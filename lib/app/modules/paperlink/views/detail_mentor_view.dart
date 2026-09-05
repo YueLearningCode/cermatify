@@ -1,23 +1,22 @@
+import 'package:cermatify/app/data/models/mentor_model.dart';
 import 'package:cermatify/app/data/services/app_logger.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/theme/app_formats.dart';
+import 'package:cermatify/app/data/widgets/responsive_content.dart';
+import 'package:cermatify/app/data/widgets/workspace_page_header.dart';
+import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
+import 'package:cermatify/app/modules/order/controllers/order_history_controller.dart';
+import 'package:cermatify/app/modules/order/views/order_dialog_view.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:cermatify/app/data/models/mentor_model.dart';
-import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
-import 'package:cermatify/app/modules/chat/views/chat_room_view.dart';
-import 'package:cermatify/app/modules/order/views/order_dialog_view.dart';
-import 'package:cermatify/app/modules/order/controllers/order_history_controller.dart';
 
-class DetailMentorView extends StatelessWidget {
-  final Mentor mentor;
-  final String? layananId; // Layanan ID from filter
-  final int?
-  layananPrice; // Layanan price from filter (null means use default 100000)
-  final String? layananType; // Layanan type: 'paperlink' or 'complink'
+int mentorDetailColumnCount(double width) => width >= 880 ? 2 : 1;
 
+class DetailMentorView extends StatefulWidget {
   const DetailMentorView({
     super.key,
     required this.mentor,
@@ -26,162 +25,94 @@ class DetailMentorView extends StatelessWidget {
     this.layananType,
   });
 
-  List<Widget> _buildChips(String csv) {
-    final items = csv
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (items.isEmpty) return [const SizedBox()];
-    return items
-        .map(
-          (e) => Container(
-            margin: const EdgeInsets.only(right: 8, bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.25),
-              ),
-            ),
-            child: Text(
-              e,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        )
-        .toList();
-  }
+  final Mentor mentor;
+  final String? layananId;
+  final int? layananPrice;
+  final String? layananType;
 
-  Widget _infoRow(IconData icon, String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: AppColors.primary, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value.isNotEmpty ? value : '-',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  State<DetailMentorView> createState() => _DetailMentorViewState();
+}
 
-  Widget _linkedInRow(String linkedinUrl) {
-    // Ensure URL has https:// prefix
-    String url = linkedinUrl;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://$url';
-    }
+class _DetailMentorViewState extends State<DetailMentorView> {
+  bool _openingService = false;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: InkWell(
-        onTap: () => _launchURL(url),
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0077B5).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.link, color: Color(0xFF0077B5), size: 18),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'LinkedIn',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          linkedinUrl,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: const Color(0xFF0077B5),
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.open_in_new,
-                        color: Color(0xFF0077B5),
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Mentor get mentor => widget.mentor;
 
-  Future<void> _launchURL(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+  void _goBack() => Navigator.of(context).pop();
+
+  Future<void> _openLinkedIn(String value) async {
+    final normalized =
+        value.startsWith('http://') || value.startsWith('https://')
+        ? value
+        : 'https://$value';
+    final uri = Uri.tryParse(normalized);
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       Get.snackbar(
-        'Error',
-        'Could not launch $url',
-        backgroundColor: AppColors.redColor,
-        colorText: AppColors.surface,
+        'Tautan tidak dapat dibuka',
+        'Periksa kembali alamat LinkedIn mentor.',
       );
+    }
+  }
+
+  Future<void> _handlePrimaryAction() async {
+    if (_openingService) return;
+    setState(() => _openingService = true);
+    try {
+      var serviceType = widget.layananType;
+      if ((serviceType == null || serviceType.isEmpty) &&
+          widget.layananId?.isNotEmpty == true) {
+        try {
+          final document = await FirebaseFirestore.instance
+              .collection('layanan')
+              .doc(widget.layananId)
+              .get();
+          serviceType = document.data()?['type']?.toString();
+        } catch (error) {
+          AppLogger.info('Error fetching layanan type: $error');
+        }
+      }
+
+      final history = Get.isRegistered<OrderHistoryController>()
+          ? Get.find<OrderHistoryController>()
+          : OrderHistoryController(autoLoad: false);
+      final hasProgress = await history.hasProgressOrder(
+        mentor.id,
+        layananType: serviceType,
+      );
+      if (hasProgress) {
+        final orderId = await history.getProgressOrderId(
+          mentor.id,
+          layananType: serviceType,
+        );
+        final chat = Get.isRegistered<ChatController>()
+            ? Get.find<ChatController>()
+            : Get.put(ChatController());
+        await chat.createOrGetChatRoom(mentorId: mentor.id, orderId: orderId);
+        Get.toNamed(
+          Routes.chatRoom(mentor.id),
+          arguments: {'orderId': orderId, 'partnerName': mentor.name},
+        );
+        return;
+      }
+
+      final serviceName = mentor.layanan.trim().isEmpty
+          ? 'Layanan pendampingan'
+          : mentor.layanan.split(',').first.trim();
+      await Get.dialog<void>(
+        OrderDialogView(
+          mentorId: mentor.id,
+          mentorName: mentor.name,
+          layananId: widget.layananId ?? '',
+          layananName: serviceName,
+          price: widget.layananPrice ?? 100000,
+          layananType: serviceType,
+        ),
+        barrierDismissible: false,
+      );
+    } finally {
+      if (mounted) setState(() => _openingService = false);
     }
   }
 
@@ -189,308 +120,473 @@ class DetailMentorView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          mentor.name,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        elevation: 0,
-      ),
       body: SafeArea(
-        child: FutureBuilder<DocumentSnapshot>(
+        child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           future: FirebaseFirestore.instance
               .collection('users')
               .doc(mentor.id)
               .get(),
           builder: (context, snapshot) {
-            final linkedin = snapshot.data?.data() != null
-                ? (snapshot.data!.data() as Map<String, dynamic>)['linkedin']
-                          ?.toString() ??
-                      ''
-                : '';
-
+            final linkedin =
+                snapshot.data?.data()?['linkedin']?.toString() ?? '';
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.border.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+              padding: const EdgeInsets.all(16),
+              child: ResponsiveContent(
+                maxWidth: 1120,
+                child: Column(
+                  children: [
+                    WorkspacePageHeader(
+                      eyebrow: 'Profil pendamping',
+                      title: 'Detail mentor',
+                      subtitle:
+                          'Kenali pengalaman dan layanan mentor sebelum memulai pendampingan.',
+                      onBack: _goBack,
                     ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 34,
-                          backgroundColor: AppColors.primaryLight,
-                          backgroundImage: mentor.image.isNotEmpty
-                              ? NetworkImage(mentor.image)
-                              : null,
-                          child: mentor.image.isEmpty
-                              ? const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 28,
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                mentor.name,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    color: AppColors.yellow2Color,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    mentor.rating.toStringAsFixed(1),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Container(
-                                    width: 4,
-                                    height: 4,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.border,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Icon(
-                                    Icons.schedule_rounded,
-                                    color: AppColors.textSecondary,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    "${mentor.totalSessions} sesi",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 16),
+                    MentorProfileHero(
+                      mentor: mentor,
+                      price: widget.layananPrice,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Info card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.border.withValues(alpha: 0.15),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Informasi",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _infoRow(
-                          Icons.school_rounded,
-                          "Universitas",
-                          mentor.kampus,
-                        ),
-                        _infoRow(
-                          Icons.menu_book_rounded,
-                          "Jurusan",
-                          mentor.jurusan,
-                        ),
-                        _infoRow(Icons.email_rounded, "Email", mentor.email),
-                        if (linkedin.isNotEmpty) _linkedInRow(linkedin),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Services card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.border.withValues(alpha: 0.15),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Layanan",
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(children: _buildChips(mentor.layanan)),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // Get layanan type - use provided or fetch from layananId
-                        String? finalLayananType = layananType;
-                        if (finalLayananType == null ||
-                            finalLayananType.isEmpty) {
-                          final String? currentLayananId = layananId;
-                          if (currentLayananId != null &&
-                              currentLayananId.isNotEmpty) {
-                            try {
-                              final layananDoc = await FirebaseFirestore
-                                  .instance
-                                  .collection('layanan')
-                                  .doc(currentLayananId)
-                                  .get();
-                              if (layananDoc.exists) {
-                                final layananData = layananDoc.data();
-                                finalLayananType = layananData?['type']
-                                    ?.toString();
-                              }
-                            } catch (e) {
-                              AppLogger.info('Error fetching layanan type: $e');
-                            }
-                          }
-                        }
-
-                        // Check if user has order in progress for this mentor with this layanan type
-                        final orderHistoryController = Get.put(
-                          OrderHistoryController(),
+                    const SizedBox(height: 16),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final wide =
+                            mentorDetailColumnCount(constraints.maxWidth) == 2;
+                        final information = _InformationCard(
+                          mentor: mentor,
+                          linkedin: linkedin,
+                          onLinkedIn: _openLinkedIn,
                         );
-                        final hasProgress = await orderHistoryController
-                            .hasProgressOrder(
-                              mentor.id,
-                              layananType: finalLayananType,
-                            );
-
-                        if (hasProgress) {
-                          // User has order in progress, get orderId and proceed to chat
-                          final orderId = await orderHistoryController
-                              .getProgressOrderId(
-                                mentor.id,
-                                layananType: finalLayananType,
-                              );
-                          final ChatController chatController =
-                              Get.isRegistered<ChatController>()
-                              ? Get.find<ChatController>()
-                              : Get.put(ChatController());
-                          await chatController.createOrGetChatRoom(
-                            mentorId: mentor.id,
-                            orderId: orderId,
-                          );
-                          Get.to(
-                            () => ChatRoomView(
-                              mentorId: mentor.id,
-                              mentor: mentor,
-                              orderId: orderId,
-                            ),
-                          );
-                        } else {
-                          // No approved order, show order dialog
-                          final String finalLayananId = layananId ?? '';
-                          final int finalPrice =
-                              layananPrice ??
-                              100000; // Default to 100000 if no filter
-                          final String layananName = mentor.layanan.isNotEmpty
-                              ? mentor.layanan.split(',').first.trim()
-                              : 'Layanan';
-
-                          // Show order dialog
-                          // Navigation to order history is handled inside the dialog
-                          await Get.dialog(
-                            OrderDialogView(
-                              mentorId: mentor.id,
-                              mentorName: mentor.name,
-                              layananId: finalLayananId,
-                              layananName: layananName,
-                              price: finalPrice,
-                              layananType: finalLayananType,
-                            ),
-                            barrierDismissible: false,
+                        final about = _AboutAndServicesCard(mentor: mentor);
+                        if (!wide) {
+                          return Column(
+                            children: [
+                              information,
+                              const SizedBox(height: 14),
+                              about,
+                            ],
                           );
                         }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: information),
+                            const SizedBox(width: 14),
+                            Expanded(child: about),
+                          ],
+                        );
                       },
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(52),
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.surface,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      key: const Key('mentor-primary-action'),
+                      onPressed: _openingService ? null : _handlePrimaryAction,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(54),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        elevation: 2,
-                        shadowColor: AppColors.primary.withValues(alpha: 0.25),
                       ),
-                      child: Text(
-                        "Chat Mentor",
+                      icon: _openingService
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.surface,
+                              ),
+                            )
+                          : const Icon(Icons.chat_bubble_outline_rounded),
+                      label: Text(
+                        _openingService
+                            ? 'Memeriksa layanan...'
+                            : 'Mulai pendampingan',
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 28),
+                  ],
+                ),
               ),
             );
           },
         ),
       ),
     );
+  }
+}
+
+class MentorProfileHero extends StatelessWidget {
+  const MentorProfileHero({
+    super.key,
+    required this.mentor,
+    required this.price,
+  });
+
+  final Mentor mentor;
+  final int? price;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 620;
+        final avatar = CircleAvatar(
+          radius: compact ? 42 : 48,
+          backgroundColor: AppColors.surface.withValues(alpha: 0.8),
+          backgroundImage: mentor.image.isEmpty
+              ? null
+              : NetworkImage(mentor.image),
+          child: mentor.image.isEmpty
+              ? const Icon(
+                  Icons.person_outline_rounded,
+                  size: 40,
+                  color: AppColors.primaryColor,
+                )
+              : null,
+        );
+        final details = Column(
+          crossAxisAlignment: compact
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
+          children: [
+            Text(
+              mentor.name,
+              textAlign: compact ? TextAlign.center : TextAlign.start,
+              style: GoogleFonts.poppins(
+                color: AppColors.textPrimary,
+                fontSize: compact ? 21 : 25,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.verified_rounded,
+                  color: AppColors.greenColor,
+                  size: 17,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'Mentor terverifikasi',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.greenColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              alignment: compact ? WrapAlignment.center : WrapAlignment.start,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _HeroMetric(
+                  icon: Icons.star_rounded,
+                  value: mentor.rating.toStringAsFixed(1),
+                ),
+                _HeroMetric(
+                  icon: Icons.schedule_rounded,
+                  value: '${mentor.totalSessions} sesi',
+                ),
+                if (price != null)
+                  _HeroMetric(
+                    icon: Icons.payments_outlined,
+                    value: AppFormats.hargaPendek(price!),
+                  ),
+              ],
+            ),
+          ],
+        );
+
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 22 : 28),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryColor.withValues(alpha: 0.1),
+                AppColors.lightPrimaryColor.withValues(alpha: 0.32),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(
+              color: AppColors.lightPrimaryColor.withValues(alpha: 0.32),
+            ),
+          ),
+          child: compact
+              ? Column(children: [avatar, const SizedBox(height: 15), details])
+              : Row(
+                  children: [
+                    avatar,
+                    const SizedBox(width: 20),
+                    Expanded(child: details),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  const _HeroMetric({required this.icon, required this.value});
+
+  final IconData icon;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.84),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AppColors.primaryColor),
+          const SizedBox(width: 5),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InformationCard extends StatelessWidget {
+  const _InformationCard({
+    required this.mentor,
+    required this.linkedin,
+    required this.onLinkedIn,
+  });
+
+  final Mentor mentor;
+  final String linkedin;
+  final ValueChanged<String> onLinkedIn;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DetailCard(
+      title: 'Informasi akademik',
+      icon: Icons.school_outlined,
+      child: Column(
+        children: [
+          _InfoTile(
+            icon: Icons.account_balance_outlined,
+            label: 'Kampus',
+            value: mentor.kampus,
+          ),
+          _InfoTile(
+            icon: Icons.menu_book_outlined,
+            label: 'Jurusan',
+            value: mentor.jurusan,
+          ),
+          _InfoTile(
+            icon: Icons.mail_outline_rounded,
+            label: 'Email',
+            value: mentor.email,
+          ),
+          if (linkedin.isNotEmpty)
+            _InfoTile(
+              icon: Icons.link_rounded,
+              label: 'LinkedIn',
+              value: linkedin,
+              onTap: () => onLinkedIn(linkedin),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AboutAndServicesCard extends StatelessWidget {
+  const _AboutAndServicesCard({required this.mentor});
+
+  final Mentor mentor;
+
+  @override
+  Widget build(BuildContext context) {
+    final services = mentor.layanan
+        .split(',')
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+    return _DetailCard(
+      title: 'Tentang dan layanan',
+      icon: Icons.design_services_outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            mentor.bio.trim().isEmpty
+                ? 'Mentor ini siap mendampingi kebutuhan akademik Anda.'
+                : mentor.bio,
+            style: GoogleFonts.poppins(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+              height: 1.55,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: (services.isEmpty ? ['Layanan pendampingan'] : services)
+                .map(
+                  (service) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.checkoutButtonColor,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      service,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.primaryColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailCard extends StatelessWidget {
+  const _DetailCard({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppColors.primaryColor, size: 20),
+              const SizedBox(width: 9),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.checkoutButtonColor,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(icon, color: AppColors.primaryColor, size: 18),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    color: AppColors.textSecondary,
+                    fontSize: 9,
+                  ),
+                ),
+                Text(
+                  value.trim().isEmpty ? '-' : value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    color: onTap == null
+                        ? AppColors.textPrimary
+                        : AppColors.primaryColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            const Icon(
+              Icons.open_in_new_rounded,
+              size: 17,
+              color: AppColors.primaryColor,
+            ),
+        ],
+      ),
+    );
+    return onTap == null
+        ? content
+        : InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: content,
+          );
   }
 }
