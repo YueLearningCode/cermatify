@@ -8,6 +8,7 @@ import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
+import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import '../controllers/profile_controller.dart';
 import 'withdraw_dialog_view.dart';
 import '../../../routes/app_pages.dart';
@@ -219,708 +220,849 @@ class ProfileView extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Obx(
-        () => controller.isLoading.value
-            ? const Center(child: CircularProgressIndicator())
-            : controller.userRole.value == 'admin'
-            ? _buildAdminProfile(context)
-            : controller.userRole.value == 'mentor'
-            ? _buildMentorProfile(context)
-            : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 24,
-                ),
-                child: ResponsiveContent(
-                  maxWidth: 900,
-                  child: Column(
-                    children: [
-                      // Header Profile dengan Gradient
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColors.primary.withValues(alpha: 0.8),
-                              AppColors.primaryDark,
+    return Obx(() {
+      if (!controller.isLoading.value &&
+          controller.userRole.value != 'admin' &&
+          controller.userRole.value != 'mentor') {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: _buildMemberProfile(context),
+        );
+      }
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Obx(
+          () => controller.isLoading.value
+              ? const Center(child: CircularProgressIndicator())
+              : controller.userRole.value == 'admin'
+              ? _buildAdminProfile(context)
+              : controller.userRole.value == 'mentor'
+              ? _buildMentorProfile(context)
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
+                  child: ResponsiveContent(
+                    maxWidth: 900,
+                    child: Column(
+                      children: [
+                        // Header Profile dengan Gradient
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.primary.withValues(alpha: 0.8),
+                                AppColors.primaryDark,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 4),
+                              ),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // Foto Profil
-                            Stack(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        AppColors.surface.withValues(
-                                          alpha: 0.8,
-                                        ),
-                                        AppColors.primaryLight,
-                                      ],
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: 50,
-                                    backgroundColor: AppColors.surface,
-                                    backgroundImage:
-                                        controller.userImage.value.isNotEmpty
-                                        ? NetworkImage(
-                                                controller.userImage.value,
-                                              )
-                                              as ImageProvider
-                                        : const AssetImage(
-                                            'assets/images/profile_dummy.jpg',
+                          child: Column(
+                            children: [
+                              // Foto Profil
+                              Stack(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppColors.surface.withValues(
+                                            alpha: 0.8,
                                           ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Obx(
-                                    () => IconButton(
-                                      tooltip: 'Ubah foto profil',
-                                      onPressed: controller.isLoading.value
-                                          ? null
-                                          : () =>
-                                                _showImageSourceDialog(context),
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: AppColors.primary,
-                                        foregroundColor: AppColors.surface,
-                                        disabledBackgroundColor:
-                                            AppColors.primary,
-                                        padding: const EdgeInsets.all(8),
+                                          AppColors.primaryLight,
+                                        ],
                                       ),
-                                      icon: controller.isLoading.value
-                                          ? const SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                      Color
-                                                    >(AppColors.surface),
-                                              ),
-                                            )
-                                          : const Icon(
-                                              Icons.camera_alt_rounded,
-                                              color: AppColors.surface,
-                                              size: 18,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 50,
+                                      backgroundColor: AppColors.surface,
+                                      backgroundImage:
+                                          controller.userImage.value.isNotEmpty
+                                          ? NetworkImage(
+                                                  controller.userImage.value,
+                                                )
+                                                as ImageProvider
+                                          : const AssetImage(
+                                              'assets/images/profile_dummy.jpg',
                                             ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Obx(
+                                      () => IconButton(
+                                        tooltip: 'Ubah foto profil',
+                                        onPressed: controller.isLoading.value
+                                            ? null
+                                            : () => _showImageSourceDialog(
+                                                context,
+                                              ),
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          foregroundColor: AppColors.surface,
+                                          disabledBackgroundColor:
+                                              AppColors.primary,
+                                          padding: const EdgeInsets.all(8),
+                                        ),
+                                        icon: controller.isLoading.value
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(AppColors.surface),
+                                                ),
+                                              )
+                                            : const Icon(
+                                                Icons.camera_alt_rounded,
+                                                color: AppColors.surface,
+                                                size: 18,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                controller.userName.value,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.surface,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                controller.userEmail.value,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: AppColors.surface.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              if (controller.userKampus.value.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    controller.userKampus.value,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: AppColors.surface,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              controller.userName.value,
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.surface,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              controller.userEmail.value,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: AppColors.surface.withValues(alpha: 0.8),
-                                fontWeight: FontWeight.w400,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            if (controller.userKampus.value.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  controller.userKampus.value,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: AppColors.surface,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // Informasi detail dalam card
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.border.withValues(alpha: 0.5),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
                               ),
                             ],
-                          ],
+                          ),
+                          child: Column(
+                            children: [
+                              if (controller.userJurusan.value.isNotEmpty)
+                                _buildInfoItem(
+                                  icon: Icons.school_rounded,
+                                  iconColor: AppColors.primary,
+                                  title: "Program Studi",
+                                  value: controller.userJurusan.value,
+                                ),
+                              if (controller.userJurusan.value.isNotEmpty &&
+                                  controller.userSemester.value.isNotEmpty)
+                                const SizedBox(height: 16),
+                              if (controller.userSemester.value.isNotEmpty)
+                                _buildInfoItem(
+                                  icon: Icons.library_books_rounded,
+                                  iconColor: AppColors.primaryLight,
+                                  title: "Semester",
+                                  value: controller.userSemester.value,
+                                ),
+                              if (controller.userSemester.value.isNotEmpty)
+                                const SizedBox(height: 16),
+                              _buildInfoItem(
+                                icon: Icons.assignment_turned_in_rounded,
+                                iconColor: AppColors.greenColor,
+                                title: "Status",
+                                value: "Aktif",
+                                valueColor: AppColors.greenColor,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Informasi detail dalam card
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.border.withValues(alpha: 0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
+                        const SizedBox(height: 30),
+                        // Tombol Aksi
+                        Row(
                           children: [
-                            if (controller.userJurusan.value.isNotEmpty)
-                              _buildInfoItem(
-                                icon: Icons.school_rounded,
-                                iconColor: AppColors.primary,
-                                title: "Program Studi",
-                                value: controller.userJurusan.value,
+                            Expanded(
+                              child: _buildActionButton(
+                                onPressed: () {
+                                  Get.toNamed(Routes.EDIT_PROFILE);
+                                },
+                                icon: Icons.edit_rounded,
+                                label: "Edit Profil",
+                                backgroundColor: AppColors.primary,
+                                textColor: AppColors.surface,
                               ),
-                            if (controller.userJurusan.value.isNotEmpty &&
-                                controller.userSemester.value.isNotEmpty)
-                              const SizedBox(height: 16),
-                            if (controller.userSemester.value.isNotEmpty)
-                              _buildInfoItem(
-                                icon: Icons.library_books_rounded,
-                                iconColor: AppColors.primaryLight,
-                                title: "Semester",
-                                value: controller.userSemester.value,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildActionButton(
+                                onPressed: _showLogoutDialog,
+                                icon: Icons.logout_rounded,
+                                label: "Logout",
+                                backgroundColor: AppColors.surface,
+                                textColor: AppColors.redColor,
+                                isOutlined: true,
                               ),
-                            if (controller.userSemester.value.isNotEmpty)
-                              const SizedBox(height: 16),
-                            _buildInfoItem(
-                              icon: Icons.assignment_turned_in_rounded,
-                              iconColor: AppColors.greenColor,
-                              title: "Status",
-                              value: "Aktif",
-                              valueColor: AppColors.greenColor,
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 30),
-                      // Tombol Aksi
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildActionButton(
-                              onPressed: () {
-                                Get.toNamed(Routes.EDIT_PROFILE);
-                              },
-                              icon: Icons.edit_rounded,
-                              label: "Edit Profil",
-                              backgroundColor: AppColors.primary,
-                              textColor: AppColors.surface,
-                            ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: _buildActionButton(
+                            onPressed: () =>
+                                Get.toNamed(Routes.CHANGE_PASSWORD),
+                            icon: Icons.lock_reset_rounded,
+                            label: "Ubah Kata Sandi",
+                            backgroundColor: AppColors.surface,
+                            textColor: AppColors.primary,
+                            isOutlined: true,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildActionButton(
-                              onPressed: _showLogoutDialog,
-                              icon: Icons.logout_rounded,
-                              label: "Logout",
-                              backgroundColor: AppColors.surface,
-                              textColor: AppColors.redColor,
-                              isOutlined: true,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: _buildActionButton(
-                          onPressed: () => Get.toNamed(Routes.CHANGE_PASSWORD),
-                          icon: Icons.lock_reset_rounded,
-                          label: "Ubah Kata Sandi",
-                          backgroundColor: AppColors.surface,
-                          textColor: AppColors.primary,
-                          isOutlined: true,
                         ),
-                      ),
-                      // Saldo for mentor and customer only
-                      Obx(
-                        () => controller.userRole.value != 'admin'
-                            ? Column(
-                                children: [
-                                  const SizedBox(height: 30),
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          AppColors.primary.withValues(
-                                            alpha: 0.1,
+                        // Saldo for mentor and customer only
+                        Obx(
+                          () => controller.userRole.value != 'admin'
+                              ? Column(
+                                  children: [
+                                    const SizedBox(height: 30),
+                                    Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            AppColors.primary.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            AppColors.primaryLight.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.2,
                                           ),
-                                          AppColors.primaryLight.withValues(
-                                            alpha: 0.1,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 2),
                                           ),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: AppColors.primary.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(12),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.primary
-                                                    .withValues(alpha: 0.2),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                Icons
-                                                    .account_balance_wallet_rounded,
-                                                color: AppColors.primary,
-                                                size: 24,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Saldo',
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 14,
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Obx(
-                                                    () => Text(
-                                                      _formatPrice(
-                                                        controller.saldo.value,
-                                                      ),
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                            fontSize: 24,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: AppColors
-                                                                .primary,
-                                                          ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 6,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.greenColor
-                                                    .withValues(alpha: 0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    Icons.trending_up_rounded,
-                                                    color: AppColors.greenColor,
-                                                    size: 16,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Flexible(
-                                                    child: Text(
-                                                      'Aktif',
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                            fontSize: 11,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: AppColors
-                                                                .greenColor,
-                                                          ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.surface,
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Row(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
                                             children: [
-                                              Icon(
-                                                Icons.info_outline_rounded,
-                                                color: AppColors.textSecondary,
-                                                size: 16,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  'Saldo yang tersedia di akun Anda',
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 11,
-                                                    color:
-                                                        AppColors.textSecondary,
-                                                    fontWeight: FontWeight.w400,
-                                                  ),
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  12,
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        // Withdraw and Chat Admin Buttons
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: ElevatedButton.icon(
-                                                onPressed: () {
-                                                  Get.dialog(
-                                                    WithdrawDialogView(
-                                                      currentSaldo: controller
-                                                          .saldo
-                                                          .value,
-                                                    ),
-                                                    barrierDismissible: false,
-                                                  );
-                                                },
-                                                icon: const Icon(
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary
+                                                      .withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Icon(
                                                   Icons
                                                       .account_balance_wallet_rounded,
-                                                  size: 18,
-                                                ),
-                                                label: Text(
-                                                  'Withdraw',
-                                                  style: GoogleFonts.poppins(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      AppColors.primary,
-                                                  foregroundColor:
-                                                      AppColors.surface,
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 14,
-                                                      ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
+                                                  color: AppColors.primary,
+                                                  size: 24,
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: OutlinedButton.icon(
-                                                onPressed: () async {
-                                                  try {
-                                                    final adminQuery =
-                                                        await FirebaseFirestore
-                                                            .instance
-                                                            .collection('users')
-                                                            .where(
-                                                              'role',
-                                                              isEqualTo:
-                                                                  'admin',
-                                                            )
-                                                            .limit(1)
-                                                            .get();
-
-                                                    if (adminQuery
-                                                        .docs
-                                                        .isEmpty) {
-                                                      CustomSnackbar.show(
-                                                        title: 'Error',
-                                                        message:
-                                                            'Admin tidak ditemukan',
-                                                        backgroundColor:
-                                                            AppColors.redColor,
-                                                        isNav: false,
-                                                      );
-                                                      return;
-                                                    }
-
-                                                    final adminId = adminQuery
-                                                        .docs
-                                                        .first
-                                                        .id;
-                                                    final adminData = adminQuery
-                                                        .docs
-                                                        .first
-                                                        .data();
-                                                    final adminName =
-                                                        adminData['nama'] ??
-                                                        'Admin';
-
-                                                    final ChatController
-                                                    chatController =
-                                                        Get.isRegistered<
-                                                          ChatController
-                                                        >()
-                                                        ? Get.find<
-                                                            ChatController
-                                                          >()
-                                                        : Get.put(
-                                                            ChatController(),
-                                                          );
-
-                                                    await chatController
-                                                        .createOrGetChatRoom(
-                                                          mentorId: adminId,
-                                                        );
-
-                                                    Get.toNamed(
-                                                      Routes.chatRoom(adminId),
-                                                      arguments:
-                                                          <String, dynamic>{
-                                                            'partnerName':
-                                                                adminName,
-                                                          },
-                                                    );
-                                                  } catch (e) {
-                                                    CustomSnackbar.show(
-                                                      title: 'Error',
-                                                      message:
-                                                          'Gagal membuka chat admin: ${e.toString()}',
-                                                      backgroundColor:
-                                                          AppColors.redColor,
-                                                      isNav: false,
-                                                    );
-                                                  }
-                                                },
-                                                icon: const Icon(
-                                                  Icons
-                                                      .chat_bubble_outline_rounded,
-                                                  size: 18,
-                                                ),
-                                                label: Text(
-                                                  'Chat Admin',
-                                                  style: GoogleFonts.poppins(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor:
-                                                      AppColors.primary,
-                                                  side: const BorderSide(
-                                                    color: AppColors.primary,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 14,
-                                                      ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      // Orders Section for Mentors
-                      Obx(
-                        () => controller.userRole.value == 'mentor'
-                            ? Column(
-                                children: [
-                                  const SizedBox(height: 30),
-                                  Container(
-                                    padding: const EdgeInsets.all(20),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surface,
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.border.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "Orders in Progress",
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w700,
-                                                color: AppColors.textPrimary,
-                                              ),
-                                            ),
-                                            Obx(
-                                              () =>
-                                                  controller
-                                                      .isLoadingOrders
-                                                      .value
-                                                  ? const SizedBox(
-                                                      width: 20,
-                                                      height: 20,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                          ),
-                                                    )
-                                                  : IconButton(
-                                                      icon: const Icon(
-                                                        Icons.refresh_rounded,
-                                                      ),
-                                                      onPressed: () => controller
-                                                          .fetchMentorOrders(),
-                                                      tooltip: 'Refresh',
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Obx(() {
-                                          if (controller
-                                              .isLoadingOrders
-                                              .value) {
-                                            return const Center(
-                                              child: Padding(
-                                                padding: EdgeInsets.all(20),
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                            );
-                                          }
-                                          if (controller.mentorOrders.isEmpty) {
-                                            return Center(
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(
-                                                  20,
-                                                ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
                                                 child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
-                                                    Icon(
-                                                      Icons
-                                                          .shopping_bag_outlined,
-                                                      size: 60,
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    ),
-                                                    const SizedBox(height: 12),
                                                     Text(
-                                                      'Belum ada order',
+                                                      'Saldo',
                                                       style:
                                                           GoogleFonts.poppins(
                                                             fontSize: 14,
                                                             color: AppColors
                                                                 .textSecondary,
+                                                            fontWeight:
+                                                                FontWeight.w500,
                                                           ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Obx(
+                                                      () => Text(
+                                                        _formatPrice(
+                                                          controller
+                                                              .saldo
+                                                              .value,
+                                                        ),
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                              fontSize: 24,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              color: AppColors
+                                                                  .primary,
+                                                            ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                            );
-                                          }
-                                          return Column(
-                                            children: controller.mentorOrders
-                                                .map(
-                                                  (order) =>
-                                                      _buildOrderCard(order),
-                                                )
-                                                .toList(),
-                                          );
-                                        }),
-                                      ],
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 6,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.greenColor
+                                                      .withValues(alpha: 0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.trending_up_rounded,
+                                                      color:
+                                                          AppColors.greenColor,
+                                                      size: 16,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Flexible(
+                                                      child: Text(
+                                                        'Aktif',
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                              fontSize: 11,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: AppColors
+                                                                  .greenColor,
+                                                            ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.surface,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.info_outline_rounded,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  size: 16,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Saldo yang tersedia di akun Anda',
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 11,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          // Withdraw and Chat Admin Buttons
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: ElevatedButton.icon(
+                                                  onPressed: () {
+                                                    Get.dialog(
+                                                      WithdrawDialogView(
+                                                        currentSaldo: controller
+                                                            .saldo
+                                                            .value,
+                                                      ),
+                                                      barrierDismissible: false,
+                                                    );
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons
+                                                        .account_balance_wallet_rounded,
+                                                    size: 18,
+                                                  ),
+                                                  label: Text(
+                                                    'Withdraw',
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        AppColors.primary,
+                                                    foregroundColor:
+                                                        AppColors.surface,
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 14,
+                                                        ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: OutlinedButton.icon(
+                                                  onPressed: () async {
+                                                    try {
+                                                      final adminQuery =
+                                                          await FirebaseFirestore
+                                                              .instance
+                                                              .collection(
+                                                                'users',
+                                                              )
+                                                              .where(
+                                                                'role',
+                                                                isEqualTo:
+                                                                    'admin',
+                                                              )
+                                                              .limit(1)
+                                                              .get();
+
+                                                      if (adminQuery
+                                                          .docs
+                                                          .isEmpty) {
+                                                        CustomSnackbar.show(
+                                                          title: 'Error',
+                                                          message:
+                                                              'Admin tidak ditemukan',
+                                                          backgroundColor:
+                                                              AppColors
+                                                                  .redColor,
+                                                          isNav: false,
+                                                        );
+                                                        return;
+                                                      }
+
+                                                      final adminId = adminQuery
+                                                          .docs
+                                                          .first
+                                                          .id;
+                                                      final adminData =
+                                                          adminQuery.docs.first
+                                                              .data();
+                                                      final adminName =
+                                                          adminData['nama'] ??
+                                                          'Admin';
+
+                                                      final ChatController
+                                                      chatController =
+                                                          Get.isRegistered<
+                                                            ChatController
+                                                          >()
+                                                          ? Get.find<
+                                                              ChatController
+                                                            >()
+                                                          : Get.put(
+                                                              ChatController(),
+                                                            );
+
+                                                      await chatController
+                                                          .createOrGetChatRoom(
+                                                            mentorId: adminId,
+                                                          );
+
+                                                      Get.toNamed(
+                                                        Routes.chatRoom(
+                                                          adminId,
+                                                        ),
+                                                        arguments:
+                                                            <String, dynamic>{
+                                                              'partnerName':
+                                                                  adminName,
+                                                            },
+                                                      );
+                                                    } catch (e) {
+                                                      CustomSnackbar.show(
+                                                        title: 'Error',
+                                                        message:
+                                                            'Gagal membuka chat admin: ${e.toString()}',
+                                                        backgroundColor:
+                                                            AppColors.redColor,
+                                                        isNav: false,
+                                                      );
+                                                    }
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons
+                                                        .chat_bubble_outline_rounded,
+                                                    size: 18,
+                                                  ),
+                                                  label: Text(
+                                                    'Chat Admin',
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  style: OutlinedButton.styleFrom(
+                                                    foregroundColor:
+                                                        AppColors.primary,
+                                                    side: const BorderSide(
+                                                      color: AppColors.primary,
+                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 14,
+                                                        ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
+                                  ],
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        // Orders Section for Mentors
+                        Obx(
+                          () => controller.userRole.value == 'mentor'
+                              ? Column(
+                                  children: [
+                                    const SizedBox(height: 30),
+                                    Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surface,
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.border.withValues(
+                                              alpha: 0.5,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "Orders in Progress",
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                              Obx(
+                                                () =>
+                                                    controller
+                                                        .isLoadingOrders
+                                                        .value
+                                                    ? const SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            ),
+                                                      )
+                                                    : IconButton(
+                                                        icon: const Icon(
+                                                          Icons.refresh_rounded,
+                                                        ),
+                                                        onPressed: () => controller
+                                                            .fetchMentorOrders(),
+                                                        tooltip: 'Refresh',
+                                                      ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Obx(() {
+                                            if (controller
+                                                .isLoadingOrders
+                                                .value) {
+                                              return const Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(20),
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                              );
+                                            }
+                                            if (controller
+                                                .mentorOrders
+                                                .isEmpty) {
+                                              return Center(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    20,
+                                                  ),
+                                                  child: Column(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .shopping_bag_outlined,
+                                                        size: 60,
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 12,
+                                                      ),
+                                                      Text(
+                                                        'Belum ada order',
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                              fontSize: 14,
+                                                              color: AppColors
+                                                                  .textSecondary,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                            return Column(
+                                              children: controller.mentorOrders
+                                                  .map(
+                                                    (order) =>
+                                                        _buildOrderCard(order),
+                                                  )
+                                                  .toList(),
+                                            );
+                                          }),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-      ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildMemberProfile(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, viewport) {
+        final compact = viewport.maxWidth < 600;
+        final padding = compact ? 16.0 : 28.0;
+        final gutter = viewport.maxWidth > 1156
+            ? (viewport.maxWidth - 1156) / 2
+            : 0.0;
+        return RefreshIndicator(
+          onRefresh: controller.fetchUserData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
+              padding + gutter,
+              compact ? 18 : 28,
+              padding + gutter,
+              compact ? 112 : 44,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AdminProfileHero(
+                  name: controller.userName.value,
+                  email: controller.userEmail.value,
+                  imageUrl: controller.userImage.value,
+                  campus: controller.userKampus.value,
+                  profileLabel: 'PROFIL PENGGUNA',
+                  statusLabel: 'Akun pengguna aktif',
+                  onChangePhoto: () => _showImageSourceDialog(context),
+                ),
+                const SizedBox(height: 26),
+                const _ProfileSectionHeading(
+                  title: 'Informasi akademik',
+                  subtitle:
+                      'Data utama yang digunakan dalam layanan Cermatify.',
+                ),
+                const SizedBox(height: 14),
+                AdminProfileInfoGrid(
+                  items: [
+                    AdminProfileInfo(
+                      icon: Icons.account_balance_outlined,
+                      label: 'Kampus',
+                      value: controller.userKampus.value.isEmpty
+                          ? 'Belum dilengkapi'
+                          : controller.userKampus.value,
+                      color: AppColors.primaryColor,
+                    ),
+                    AdminProfileInfo(
+                      icon: Icons.menu_book_outlined,
+                      label: 'Program studi',
+                      value: controller.userJurusan.value.isEmpty
+                          ? 'Belum dilengkapi'
+                          : controller.userJurusan.value,
+                      color: AppColors.primaryColor,
+                    ),
+                    AdminProfileInfo(
+                      icon: Icons.calendar_month_outlined,
+                      label: 'Semester',
+                      value: controller.userSemester.value.isEmpty
+                          ? 'Belum dilengkapi'
+                          : controller.userSemester.value,
+                      color: AppColors.primaryLight,
+                    ),
+                    const AdminProfileInfo(
+                      icon: Icons.verified_user_outlined,
+                      label: 'Status akun',
+                      value: 'Aktif',
+                      color: AppColors.greenColor,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 26),
+                _MemberWalletCard(
+                  balance: controller.saldo.value,
+                  onWithdraw: () => Get.dialog(
+                    WithdrawDialogView(currentSaldo: controller.saldo.value),
+                    barrierDismissible: false,
+                  ),
+                  onChat: _openMemberChat,
+                ),
+                const SizedBox(height: 26),
+                const _ProfileSectionHeading(
+                  title: 'Pengaturan akun',
+                  subtitle: 'Kelola identitas, keamanan, dan sesi akun Anda.',
+                ),
+                const SizedBox(height: 14),
+                AdminProfileActions(
+                  onEdit: () => Get.toNamed(Routes.EDIT_PROFILE),
+                  onChangePassword: () => Get.toNamed(Routes.CHANGE_PASSWORD),
+                  onLogout: _showLogoutDialog,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  void _openMemberChat() {
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().changeTab(1);
+      return;
+    }
+    Get.offAllNamed(Routes.DASHBOARD, arguments: const {'initialTab': 1});
   }
 
   Widget _buildMentorProfile(BuildContext context) {
@@ -1264,6 +1406,169 @@ class ProfileView extends GetView<ProfileController> {
       return 'Rp ${(price / 1000).toStringAsFixed(0)}k';
     }
     return 'Rp $price';
+  }
+}
+
+class _MemberWalletCard extends StatelessWidget {
+  const _MemberWalletCard({
+    required this.balance,
+    required this.onWithdraw,
+    required this.onChat,
+  });
+
+  final int balance;
+  final VoidCallback onWithdraw;
+  final VoidCallback onChat;
+
+  String get formattedBalance =>
+      'Rp ${balance.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryColor.withValues(alpha: .08),
+            AppColors.lightPrimaryColor.withValues(alpha: .2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: AppColors.primaryColor.withValues(alpha: .18),
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 620;
+          final balanceInfo = Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: AppColors.primaryColor,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saldo akun',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    Text(
+                      formattedBalance,
+                      style: GoogleFonts.poppins(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+          final actions = compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _walletButton(
+                      onWithdraw,
+                      Icons.payments_outlined,
+                      'Ajukan withdraw',
+                      true,
+                    ),
+                    const SizedBox(height: 10),
+                    _walletButton(
+                      onChat,
+                      Icons.support_agent_outlined,
+                      'Chat admin',
+                      false,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: _walletButton(
+                        onWithdraw,
+                        Icons.payments_outlined,
+                        'Ajukan withdraw',
+                        true,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _walletButton(
+                        onChat,
+                        Icons.support_agent_outlined,
+                        'Chat admin',
+                        false,
+                      ),
+                    ),
+                  ],
+                );
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              balanceInfo,
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(11),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: .88),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Text(
+                  'Saldo akan diperbarui otomatis setelah transaksi diverifikasi.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              actions,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _walletButton(
+    VoidCallback onPressed,
+    IconData icon,
+    String label,
+    bool primary,
+  ) {
+    if (primary) {
+      return FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+      );
+    }
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+    );
   }
 }
 
