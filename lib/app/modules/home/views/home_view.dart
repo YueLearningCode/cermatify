@@ -1,5 +1,6 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
+import 'package:cermatify/app/data/widgets/workspace_quick_action_grid.dart';
 import 'package:cermatify/app/modules/home/controllers/home_controller.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -167,134 +168,38 @@ class _WelcomeHeader extends StatelessWidget {
 
 class _ActionGrid extends StatelessWidget {
   const _ActionGrid();
-  static const actions = [
-    _Action(
-      'Cermat Paper',
-      'Bimbingan penyusunan paper',
-      Icons.description_outlined,
-      Routes.PAPERLINK,
-    ),
-    _Action(
-      'Cermat Competition',
-      'Kompetisi dan beasiswa',
-      Icons.school_outlined,
-      Routes.COMPLINK,
-    ),
-    _Action(
-      'Cermat Kuesioner',
-      'Publikasi kebutuhan responden',
-      Icons.assignment_outlined,
-      Routes.SOURCELINK,
-    ),
-    _Action(
-      'Riwayat pesanan',
-      'Pantau seluruh transaksimu',
-      Icons.shopping_bag_outlined,
-      Routes.ORDER_HISTORY,
-    ),
-  ];
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final columns = constraints.maxWidth >= 960
-          ? 4
-          : constraints.maxWidth >= 600
-          ? 2
-          : 1;
-      const gap = 14.0;
-      final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
-        children: actions
-            .map(
-              (action) => SizedBox(
-                width: width,
-                height: 154,
-                child: _ActionCard(action: action),
-              ),
-            )
-            .toList(),
-      );
-    },
-  );
-}
-
-class _Action {
-  const _Action(this.title, this.subtitle, this.icon, this.route);
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final String route;
-}
-
-class _ActionCard extends StatelessWidget {
-  const _ActionCard({required this.action});
-  final _Action action;
-  @override
-  Widget build(BuildContext context) => Material(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(20),
-    child: InkWell(
-      onTap: () => Get.toNamed(action.route),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor.withValues(alpha: .09),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(action.icon, color: AppColors.primaryColor),
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        action.title,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        action.subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: AppColors.primaryColor,
-                  size: 20,
-                ),
-              ],
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => WorkspaceQuickActionGrid(
+    actions: [
+      WorkspaceQuickActionData(
+        title: 'Cermat Paper',
+        subtitle: 'Bimbingan penyusunan paper.',
+        icon: Icons.description_outlined,
+        color: AppColors.primaryColor,
+        onTap: () => Get.toNamed(Routes.PAPERLINK),
       ),
-    ),
+      WorkspaceQuickActionData(
+        title: 'Cermat Competition',
+        subtitle: 'Persiapan kompetisi dan beasiswa.',
+        icon: Icons.school_outlined,
+        color: AppColors.greenColor,
+        onTap: () => Get.toNamed(Routes.COMPLINK),
+      ),
+      WorkspaceQuickActionData(
+        title: 'Cermat Kuesioner',
+        subtitle: 'Publikasi kebutuhan responden.',
+        icon: Icons.assignment_outlined,
+        color: AppColors.yellow2Color,
+        onTap: () => Get.toNamed(Routes.SOURCELINK),
+      ),
+      WorkspaceQuickActionData(
+        title: 'Riwayat pesanan',
+        subtitle: 'Pantau seluruh transaksi dan statusnya.',
+        icon: Icons.shopping_bag_outlined,
+        color: AppColors.orangeColor,
+        onTap: () => Get.toNamed(Routes.ORDER_HISTORY),
+      ),
+    ],
   );
 }
 

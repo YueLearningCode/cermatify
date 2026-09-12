@@ -1,4 +1,5 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/workspace_quick_action_grid.dart';
 import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
 import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:cermatify/app/modules/profile/controllers/profile_controller.dart';
@@ -115,11 +116,9 @@ class MentorHomeView extends GetView<ProfileController> {
                     SliverPadding(
                       padding: EdgeInsets.fromLTRB(gutter, 14, gutter, 0),
                       sliver: SliverToBoxAdapter(
-                        child: Wrap(
-                          spacing: 14,
-                          runSpacing: 14,
-                          children: [
-                            _QuickAction(
+                        child: WorkspaceQuickActionGrid(
+                          actions: [
+                            WorkspaceQuickActionData(
                               title: 'Buka percakapan',
                               subtitle:
                                   'Tanggapi pengguna yang sedang dibimbing.',
@@ -127,15 +126,15 @@ class MentorHomeView extends GetView<ProfileController> {
                               color: AppColors.primary,
                               onTap: () => dashboard.changeTab(1),
                             ),
-                            _QuickAction(
+                            WorkspaceQuickActionData(
                               title: 'Kuesioner',
                               subtitle:
                                   'Pantau aktivitas dan feedback kuesioner.',
                               icon: Icons.assignment_outlined,
-                              color: AppColors.greenColor,
+                              color: AppColors.yellow2Color,
                               onTap: () => dashboard.changeTab(2),
                             ),
-                            _QuickAction(
+                            WorkspaceQuickActionData(
                               title: 'Profil mentor',
                               subtitle:
                                   'Kelola layanan, saldo, dan informasi akun.',
@@ -396,81 +395,6 @@ class MentorMetricCard extends StatelessWidget {
             style: _style(10, FontWeight.w500, AppColors.textSecondary),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    return SizedBox(
-      width: width >= 1100
-          ? 360
-          : width >= 700
-          ? 320
-          : double.infinity,
-      child: Material(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.border),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.11),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(icon, color: color),
-                ),
-                const SizedBox(width: 13),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: _style(13, FontWeight.w700)),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: _style(
-                          10,
-                          FontWeight.w400,
-                          AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward_rounded, color: color, size: 20),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

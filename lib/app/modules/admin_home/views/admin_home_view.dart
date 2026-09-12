@@ -1,5 +1,6 @@
 import 'package:cermatify/app/data/layout/app_breakpoints.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/workspace_quick_action_grid.dart';
 import 'package:cermatify/app/modules/admin_dashboard/controllers/admin_dashboard_controller.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
@@ -267,7 +268,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
 
   Widget _buildQuickActions() {
     final actions = [
-      _AdminAction(
+      WorkspaceQuickActionData(
         title: 'Kelola pengguna',
         subtitle: 'Lihat, verifikasi, dan perbarui akun.',
         icon: Icons.manage_accounts_outlined,
@@ -278,7 +279,7 @@ class AdminHomeView extends GetView<AdminHomeController> {
           }
         },
       ),
-      _AdminAction(
+      WorkspaceQuickActionData(
         title: 'Master data',
         subtitle: 'Kelola kategori dan data referensi.',
         icon: Icons.storage_outlined,
@@ -289,28 +290,28 @@ class AdminHomeView extends GetView<AdminHomeController> {
           }
         },
       ),
-      _AdminAction(
+      WorkspaceQuickActionData(
         title: 'Orders',
         subtitle: 'Periksa dan kelola seluruh pesanan.',
         icon: Icons.shopping_bag_outlined,
         color: AppColors.orangeColor,
         onTap: () => Get.toNamed(Routes.ADMIN_ORDERS),
       ),
-      _AdminAction(
+      WorkspaceQuickActionData(
         title: 'Withdraw',
         subtitle: 'Tinjau permintaan pencairan dana.',
         icon: Icons.account_balance_wallet_outlined,
         color: AppColors.primaryDark,
         onTap: () => Get.toNamed(Routes.ADMIN_WITHDRAW),
       ),
-      _AdminAction(
+      WorkspaceQuickActionData(
         title: 'Kuesioner',
         subtitle: 'Pantau dan kelola layanan kuesioner.',
         icon: Icons.assignment_outlined,
         color: AppColors.yellow2Color,
         onTap: () => Get.toNamed(Routes.ADMIN_KUESIONER),
       ),
-      _AdminAction(
+      WorkspaceQuickActionData(
         title: 'Chat',
         subtitle: 'Buka percakapan dan bantu pengguna.',
         icon: Icons.chat_bubble_outline_rounded,
@@ -332,7 +333,8 @@ class AdminHomeView extends GetView<AdminHomeController> {
             mainAxisSpacing: 14,
             mainAxisExtent: adminActionCardExtent(constraints.maxWidth),
           ),
-          itemBuilder: (context, index) => actions[index],
+          itemBuilder: (context, index) =>
+              WorkspaceQuickActionCard(action: actions[index]),
         );
       },
     );
@@ -449,89 +451,6 @@ class AdminDashboardStatCard extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _AdminAction extends StatelessWidget {
-  const _AdminAction({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: title,
-      child: Material(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: AppColors.border.withValues(alpha: 0.8)),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          hoverColor: color.withValues(alpha: 0.06),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.11),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          height: 1.45,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Icon(Icons.arrow_forward_rounded, size: 20, color: color),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
