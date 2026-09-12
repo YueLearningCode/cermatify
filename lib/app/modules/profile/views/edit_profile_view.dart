@@ -1,6 +1,7 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/modules/profile/controllers/profile_controller.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,6 +17,14 @@ class _EditProfileViewState extends State<EditProfileView> {
   late final ProfileController controller;
   late final TextEditingController nameController;
   late final TextEditingController emailController;
+
+  void _goBack() {
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offAllNamed(Routes.PROFILE);
+  }
 
   @override
   void initState() {
@@ -55,7 +64,7 @@ class _EditProfileViewState extends State<EditProfileView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                EditProfileHeader(onBack: Get.back),
+                EditProfileHeader(onBack: _goBack),
                 const SizedBox(height: 22),
                 Text(
                   'Data diri dan akademik',

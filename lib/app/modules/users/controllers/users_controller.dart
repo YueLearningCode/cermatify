@@ -11,6 +11,7 @@ class UserData {
   final String? image;
   final String role;
   final String? verificationStatus; // For mentors only
+  final String accountStatus;
 
   UserData({
     required this.id,
@@ -19,6 +20,7 @@ class UserData {
     this.image,
     required this.role,
     this.verificationStatus,
+    this.accountStatus = 'active',
   });
 
   factory UserData.fromFirestore(DocumentSnapshot doc) {
@@ -32,6 +34,7 @@ class UserData {
       verificationStatus:
           data['verificationStatus']
               as String?, // null or 'pending' or 'verified'
+      accountStatus: data['accountStatus']?.toString() ?? 'active',
     );
   }
 }
@@ -118,6 +121,7 @@ class UsersController extends GetxController {
           image: mentorsList[index].image,
           role: mentorsList[index].role,
           verificationStatus: newStatus,
+          accountStatus: mentorsList[index].accountStatus,
         );
         mentorsList.refresh();
       }
@@ -135,6 +139,51 @@ class UsersController extends GetxController {
       CustomSnackbar.show(
         title: 'Error',
         message: 'Failed to update mentor verification status: $e',
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
+    } finally {
+      isUpdating.value = false;
+    }
+  }
+
+  Future<void> toggleAccountAccess(UserData account) async {
+    if (isUpdating.value) return;
+    final disabled = account.accountStatus == 'disabled';
+    final nextStatus = disabled ? 'active' : 'disabled';
+    isUpdating.value = true;
+    try {
+      await _firestore.collection('users').doc(account.id).update({
+        'accountStatus': nextStatus,
+        'accountStatusUpdatedAt': FieldValue.serverTimestamp(),
+      });
+      final list = account.role == 'mentor' ? mentorsList : usersList;
+      final index = list.indexWhere((item) => item.id == account.id);
+      if (index >= 0) {
+        list[index] = UserData(
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          image: account.image,
+          role: account.role,
+          verificationStatus: account.verificationStatus,
+          accountStatus: nextStatus,
+        );
+        list.refresh();
+      }
+      CustomSnackbar.show(
+        title: disabled ? 'Akses dipulihkan' : 'Akses dinonaktifkan',
+        message: disabled
+            ? '${account.name} dapat masuk kembali.'
+            : '${account.name} tidak dapat masuk hingga akses dipulihkan.',
+        backgroundColor: disabled ? AppColors.greenColor : AppColors.redColor,
+        isNav: false,
+      );
+    } catch (error) {
+      AppLogger.info('Error updating account access: $error');
+      CustomSnackbar.show(
+        title: 'Perubahan gagal',
+        message: 'Status akses akun belum dapat diperbarui.',
         backgroundColor: AppColors.redColor,
         isNav: false,
       );

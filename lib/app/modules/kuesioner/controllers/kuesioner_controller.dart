@@ -4,6 +4,8 @@ import 'package:cermatify/app/data/models/kuesioner_model.dart';
 import 'package:cermatify/app/data/dummy_kuesioner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cermatify/app/data/theme/app_colors.dart';
+import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 
 class KuesionerController extends GetxController {
   final kuesionerList = <Kuesioner>[].obs;
@@ -15,6 +17,9 @@ class KuesionerController extends GetxController {
   final selectedTab = 0.obs; // 0=rekomendasi, 1=dibuatSaya, 2=sayaIkuti
   final createdByMeList = <Kuesioner>[].obs;
   final signedByMeList = <Kuesioner>[].obs;
+  final deletingIds = <String>{}.obs;
+
+  String get currentUserId => _auth.currentUser?.uid ?? '';
 
   Future<void> _ensureSignedIn() async {
     if (_auth.currentUser == null) {
@@ -263,6 +268,38 @@ class KuesionerController extends GetxController {
       signedByMeList.value = items;
     } catch (_) {
       signedByMeList.clear();
+    }
+  }
+
+  Future<bool> deleteOwnKuesioner(Kuesioner item) async {
+    final uid = currentUserId;
+    if (uid.isEmpty || item.userId != uid || deletingIds.contains(item.id)) {
+      return false;
+    }
+    deletingIds.add(item.id);
+    try {
+      await _firestore.collection('kuesioners').doc(item.id).delete();
+      createdByMeList.removeWhere((entry) => entry.id == item.id);
+      kuesionerList.removeWhere((entry) => entry.id == item.id);
+      signedByMeList.removeWhere((entry) => entry.id == item.id);
+      CustomSnackbar.show(
+        title: 'Kuesioner dihapus',
+        message: 'Data kuesioner berhasil dihapus dari daftar Anda.',
+        backgroundColor: AppColors.greenColor,
+        isNav: false,
+      );
+      return true;
+    } catch (error) {
+      AppLogger.info('Error deleting questionnaire: $error');
+      CustomSnackbar.show(
+        title: 'Gagal menghapus',
+        message: 'Kuesioner belum dapat dihapus. Coba kembali.',
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
+      return false;
+    } finally {
+      deletingIds.remove(item.id);
     }
   }
 }

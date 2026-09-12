@@ -50,6 +50,14 @@ class _SourcelinkSubmitViewStatefulState
   final isLoading = false.obs;
   final paymentProofImage = Rxn<SelectedImageData>();
 
+  void _goBack() {
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offNamed(Routes.SOURCELINK);
+  }
+
   Future<void> _createOrderAndKuesioner() async {
     try {
       // Validate link
@@ -124,9 +132,12 @@ class _SourcelinkSubmitViewStatefulState
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      final DocumentReference orderRef = await _firestore
+      // Reserve both ids first, then write the order and questionnaire in one
+      // atomic batch. This prevents a paid order from being left without its
+      // questionnaire when the second write fails.
+      final DocumentReference<Map<String, dynamic>> orderRef = _firestore
           .collection('orders')
-          .add(orderData);
+          .doc();
       final String orderId = orderRef.id;
 
       // Map criteria from sourcelink format to kuesioner format
@@ -216,7 +227,11 @@ class _SourcelinkSubmitViewStatefulState
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore.collection('kuesioners').add(kuesionerData);
+      final kuesionerRef = _firestore.collection('kuesioners').doc();
+      final batch = _firestore.batch();
+      batch.set(orderRef, orderData);
+      batch.set(kuesionerRef, kuesionerData);
+      await batch.commit();
 
       // Clear saved criteria after successful creation
       await widget.controller.clearSavedCriteria();
@@ -229,8 +244,15 @@ class _SourcelinkSubmitViewStatefulState
         isNav: false,
       );
 
-      // Navigate to dashboard and clear navigation stack
-      Get.offAllNamed(Routes.DASHBOARD);
+      widget.controller.linkController.clear();
+      paymentProofImage.value = null;
+
+      // Open the questionnaire tab so users immediately see the submitted
+      // item instead of being returned to an unrelated home tab.
+      Get.offAllNamed(
+        Routes.DASHBOARD,
+        arguments: const <String, dynamic>{'initialTab': 2},
+      );
     } catch (e) {
       CustomSnackbar.show(
         title: 'Error',
@@ -284,7 +306,7 @@ class _SourcelinkSubmitViewStatefulState
                   title: 'Sebarkan kuesioner',
                   subtitle:
                       'Tambahkan tautan formulir dan bukti pembayaran untuk menjangkau responden yang sesuai.',
-                  onBack: () => Get.back(),
+                  onBack: _goBack,
                 ),
               ),
             ),

@@ -7,12 +7,24 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 
 int kuesionerDetailColumnCount(double width) => width >= 920 ? 2 : 1;
 
 class KuesionerDetailView extends StatelessWidget {
   const KuesionerDetailView({super.key, required this.kuesioner});
   final Kuesioner kuesioner;
+
+  void _goBack() {
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offAllNamed(
+      Routes.DASHBOARD,
+      arguments: const <String, dynamic>{'initialTab': 2},
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +47,7 @@ class KuesionerDetailView extends StatelessWidget {
                   sliver: SliverToBoxAdapter(
                     child: KuesionerDetailHeader(
                       item: kuesioner,
-                      onBack: Get.back,
+                      onBack: _goBack,
                     ),
                   ),
                 ),

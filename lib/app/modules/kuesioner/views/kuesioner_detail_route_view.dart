@@ -4,11 +4,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 
 import 'kuesioner_detail_view.dart';
 
 class KuesionerDetailRouteView extends StatelessWidget {
   const KuesionerDetailRouteView({super.key});
+
+  void _goBack() {
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offAllNamed(
+      Routes.DASHBOARD,
+      arguments: const <String, dynamic>{'initialTab': 2},
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +57,7 @@ class KuesionerDetailRouteView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: Get.back,
+                    onPressed: _goBack,
                     icon: const Icon(Icons.arrow_back_rounded),
                     label: const Text('Kembali'),
                   ),

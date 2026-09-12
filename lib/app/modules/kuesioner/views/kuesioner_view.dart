@@ -40,6 +40,7 @@ class KuesionerView extends GetView<KuesionerController> {
                           itemCount: items.length,
                           hasProfileData: controller.hasRespondenData.value,
                           onRefresh: controller.refreshAll,
+                          onCreate: _openCreate,
                         ),
                       ),
                     ),
@@ -84,6 +85,7 @@ class KuesionerView extends GetView<KuesionerController> {
                                 index: first,
                                 item: items[first],
                                 onTap: () => _openDetail(items[first]),
+                                onDelete: _deleteActionFor(items[first]),
                               );
                             }
                             final second = first + 1;
@@ -95,6 +97,7 @@ class KuesionerView extends GetView<KuesionerController> {
                                     index: first,
                                     item: items[first],
                                     onTap: () => _openDetail(items[first]),
+                                    onDelete: _deleteActionFor(items[first]),
                                   ),
                                 ),
                                 const SizedBox(width: 14),
@@ -105,6 +108,9 @@ class KuesionerView extends GetView<KuesionerController> {
                                           item: items[second],
                                           onTap: () =>
                                               _openDetail(items[second]),
+                                          onDelete: _deleteActionFor(
+                                            items[second],
+                                          ),
                                         )
                                       : const SizedBox.shrink(),
                                 ),
@@ -215,6 +221,52 @@ class KuesionerView extends GetView<KuesionerController> {
     Get.toNamed(Routes.kuesionerDetail(item.id), arguments: item);
   }
 
+  void _openCreate() => Get.toNamed(Routes.SOURCELINK);
+
+  VoidCallback? _deleteActionFor(Kuesioner item) {
+    if (item.userId != controller.currentUserId) return null;
+    return () => _confirmDelete(item);
+  }
+
+  Future<void> _confirmDelete(Kuesioner item) async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        icon: const Icon(
+          Icons.delete_outline_rounded,
+          color: AppColors.redColor,
+          size: 32,
+        ),
+        title: Text(
+          'Hapus kuesioner?',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Data dan daftar responden kuesioner ini akan dihapus permanen. Catatan order tetap disimpan sebagai riwayat transaksi.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.redColor),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await controller.deleteOwnKuesioner(item);
+  }
+
   void _openRespondentData() {
     final data = controller.respondenData;
     Get.toNamed(
@@ -235,10 +287,12 @@ class KuesionerHeader extends StatelessWidget {
     required this.itemCount,
     required this.hasProfileData,
     required this.onRefresh,
+    this.onCreate,
   });
   final int itemCount;
   final bool hasProfileData;
   final VoidCallback onRefresh;
+  final VoidCallback? onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -295,6 +349,18 @@ class KuesionerHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (onCreate != null) ...[
+            IconButton.filled(
+              tooltip: 'Buat kuesioner',
+              onPressed: onCreate,
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.surface,
+              ),
+              icon: const Icon(Icons.add_rounded),
+            ),
+            const SizedBox(width: 8),
+          ],
           IconButton.filled(
             tooltip: 'Muat ulang',
             onPressed: onRefresh,
@@ -316,10 +382,12 @@ class KuesionerUserCard extends StatelessWidget {
     required this.index,
     required this.item,
     required this.onTap,
+    this.onDelete,
   });
   final int index;
   final Kuesioner item;
   final VoidCallback onTap;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -359,6 +427,16 @@ class KuesionerUserCard extends StatelessWidget {
                       size: 21,
                     ),
                   ),
+                  if (onDelete != null) ...[
+                    const SizedBox(width: 5),
+                    IconButton(
+                      tooltip: 'Hapus kuesioner',
+                      onPressed: onDelete,
+                      visualDensity: VisualDensity.compact,
+                      color: AppColors.redColor,
+                      icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                    ),
+                  ],
                   const SizedBox(width: 11),
                   Expanded(
                     child: Column(

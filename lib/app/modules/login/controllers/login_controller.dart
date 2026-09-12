@@ -86,6 +86,18 @@ class LoginController extends GetxController {
         return;
       }
 
+      if (userData['accountStatus']?.toString() == 'disabled') {
+        await _auth.signOut();
+        await _clearLoginData();
+        CustomSnackbar.show(
+          title: 'Akses akun dinonaktifkan',
+          message: 'Hubungi admin Cermatify untuk memulihkan akses akun Anda.',
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return;
+      }
+
       // Only check verification status for mentors
       if (userRole == 'mentor') {
         String? verificationStatus = userData['verificationStatus']?.toString();
@@ -180,6 +192,12 @@ class LoginController extends GetxController {
             String? userRole = userData['role']?.toString() ?? 'customer';
             if (userRole.isEmpty) {
               userRole = 'customer';
+            }
+
+            if (userData['accountStatus']?.toString() == 'disabled') {
+              await _auth.signOut();
+              await _clearLoginData();
+              return;
             }
 
             // Only check verification status for mentors

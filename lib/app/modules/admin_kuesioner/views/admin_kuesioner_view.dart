@@ -201,6 +201,7 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
       statusText: controller.getStatusText(status),
       isUpdating: controller.isUpdating.value,
       onViewDetail: () => _showDetails(context, item),
+      onDelete: () => _confirmDelete(context, item),
       onStatusChanged: (newStatus) =>
           _confirmStatusChange(context, item, newStatus),
     );
@@ -264,6 +265,49 @@ class AdminKuesionerView extends GetView<AdminKuesionerController> {
       context: context,
       builder: (_) => AdminKuesionerDetailDialog(item: item),
     );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    AdminKuesionerItem item,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        icon: const Icon(
+          Icons.delete_outline_rounded,
+          color: AppColors.redColor,
+          size: 32,
+        ),
+        title: Text(
+          'Hapus kuesioner?',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Admin akan menghapus data kuesioner milik ${item.userName}. Order pembayaran tetap disimpan untuk audit.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.redColor),
+            child: const Text('Hapus permanen'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await controller.deleteKuesioner(item);
   }
 }
 
@@ -373,6 +417,7 @@ class AdminKuesionerCard extends StatelessWidget {
     required this.statusText,
     required this.isUpdating,
     required this.onViewDetail,
+    this.onDelete,
     required this.onStatusChanged,
   });
 
@@ -381,6 +426,7 @@ class AdminKuesionerCard extends StatelessWidget {
   final String statusText;
   final bool isUpdating;
   final VoidCallback onViewDetail;
+  final VoidCallback? onDelete;
   final ValueChanged<String> onStatusChanged;
 
   @override
@@ -504,10 +550,26 @@ class AdminKuesionerCard extends StatelessWidget {
                   .toList(),
             ),
           const SizedBox(height: 18),
-          OutlinedButton.icon(
-            onPressed: onViewDetail,
-            icon: const Icon(Icons.visibility_outlined, size: 17),
-            label: const Text('Lihat detail'),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onViewDetail,
+                  icon: const Icon(Icons.visibility_outlined, size: 17),
+                  label: const Text('Lihat detail'),
+                ),
+              ),
+              const SizedBox(width: 9),
+              IconButton.outlined(
+                tooltip: 'Hapus kuesioner',
+                onPressed: isUpdating ? null : onDelete,
+                style: IconButton.styleFrom(
+                  foregroundColor: AppColors.redColor,
+                  side: const BorderSide(color: AppColors.redColor),
+                ),
+                icon: const Icon(Icons.delete_outline_rounded),
+              ),
+            ],
           ),
           if (isWaiting) ...[
             const SizedBox(height: 9),

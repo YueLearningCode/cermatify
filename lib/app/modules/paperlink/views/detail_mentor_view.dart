@@ -100,7 +100,7 @@ class _DetailMentorViewState extends State<DetailMentorView> {
       final serviceName = mentor.layanan.trim().isEmpty
           ? 'Layanan pendampingan'
           : mentor.layanan.split(',').first.trim();
-      await Get.dialog<void>(
+      final orderId = await Get.dialog<String>(
         OrderDialogView(
           mentorId: mentor.id,
           mentorName: mentor.name,
@@ -111,6 +111,18 @@ class _DetailMentorViewState extends State<DetailMentorView> {
         ),
         barrierDismissible: false,
       );
+      if (orderId != null && orderId.isNotEmpty) {
+        Get.snackbar(
+          'Order berhasil dibuat',
+          'Pembayaran Anda sedang menunggu verifikasi admin.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.greenColor,
+          colorText: AppColors.surface,
+          margin: const EdgeInsets.all(16),
+        );
+        await Future<void>.delayed(Duration.zero);
+        Get.offNamed(Routes.ORDER_HISTORY);
+      }
     } finally {
       if (mounted) setState(() => _openingService = false);
     }

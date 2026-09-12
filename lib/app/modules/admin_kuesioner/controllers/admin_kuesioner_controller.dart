@@ -242,6 +242,36 @@ class AdminKuesionerController extends GetxController {
     }
   }
 
+  Future<bool> deleteKuesioner(AdminKuesionerItem item) async {
+    if (isUpdating.value) return false;
+    isUpdating.value = true;
+    try {
+      await _firestore.collection('kuesioners').doc(item.kuesioner.id).delete();
+      kuesioners.removeWhere(
+        (entry) => entry.kuesioner.id == item.kuesioner.id,
+      );
+      CustomSnackbar.show(
+        title: 'Kuesioner dihapus',
+        message:
+            'Data kuesioner dihapus. Order terkait tetap disimpan sebagai catatan transaksi.',
+        backgroundColor: AppColors.greenColor,
+        isNav: false,
+      );
+      return true;
+    } catch (error) {
+      AppLogger.info('Error deleting questionnaire: $error');
+      CustomSnackbar.show(
+        title: 'Gagal menghapus',
+        message: 'Kuesioner belum dapat dihapus.',
+        backgroundColor: AppColors.redColor,
+        isNav: false,
+      );
+      return false;
+    } finally {
+      isUpdating.value = false;
+    }
+  }
+
   Kuesioner _copyWithStatus(Kuesioner source, String status) {
     return Kuesioner(
       id: source.id,

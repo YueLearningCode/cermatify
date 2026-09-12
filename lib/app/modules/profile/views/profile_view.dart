@@ -963,17 +963,17 @@ class ProfileView extends GetView<ProfileController> {
       builder: (context, viewport) {
         final compact = viewport.maxWidth < 600;
         final padding = compact ? 16.0 : 28.0;
-        final gutter = viewport.maxWidth > 1156
-            ? (viewport.maxWidth - 1156) / 2
-            : 0.0;
+        final gutter = viewport.maxWidth > 1256
+            ? (viewport.maxWidth - 1200) / 2
+            : padding;
         return RefreshIndicator(
           onRefresh: controller.fetchUserData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(
-              padding + gutter,
+              gutter,
               compact ? 18 : 28,
-              padding + gutter,
+              gutter,
               compact ? 112 : 44,
             ),
             child: Column(

@@ -151,12 +151,15 @@ service cloud.firestore {
           request.resource.data.status == 'waiting verification' &&
           request.resource.data.signedBy.size() == 0 &&
           request.resource.data.answers.size() == 0 &&
-          exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
-          get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId ==
+          existsAfter(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+          getAfter(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId ==
               request.auth.uid;
       // Respondent enrollment and rewards must be handled by a trusted
       // transaction (Cloud Function/backend), never by the browser client.
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (
+        signedIn() && resource.data.userId == request.auth.uid
+      );
     }
 
     match /withdraws/{withdrawId} {

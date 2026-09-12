@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 
 import '../controllers/users_controller.dart';
 
@@ -95,6 +96,8 @@ class AdminAccountDetailView extends GetView<UsersController> {
                                 userId,
                                 account.verificationStatus,
                               ),
+                          onToggleAccountAccess: () =>
+                              controller.toggleAccountAccess(account),
                           onOpenLinkedin: _launchUrl,
                         ),
                       ],
@@ -118,6 +121,7 @@ class AdminAccountDetailContent extends StatelessWidget {
     required this.isMentor,
     required this.isUpdating,
     required this.onToggleVerification,
+    this.onToggleAccountAccess,
     required this.onOpenLinkedin,
   });
 
@@ -126,6 +130,7 @@ class AdminAccountDetailContent extends StatelessWidget {
   final bool isMentor;
   final bool isUpdating;
   final VoidCallback onToggleVerification;
+  final VoidCallback? onToggleAccountAccess;
   final ValueChanged<String> onOpenLinkedin;
 
   String _text(String key) => data[key]?.toString().trim() ?? '';
@@ -238,7 +243,87 @@ class AdminAccountDetailContent extends StatelessWidget {
             onToggle: onToggleVerification,
           ),
         ],
+        const SizedBox(height: 30),
+        _AccountAccessPanel(
+          isDisabled: account.accountStatus == 'disabled',
+          isUpdating: isUpdating,
+          onToggle: onToggleAccountAccess,
+        ),
       ],
+    );
+  }
+}
+
+class _AccountAccessPanel extends StatelessWidget {
+  const _AccountAccessPanel({
+    required this.isDisabled,
+    required this.isUpdating,
+    required this.onToggle,
+  });
+
+  final bool isDisabled;
+  final bool isUpdating;
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDisabled ? AppColors.redColor : AppColors.greenColor;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final description = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Kontrol akses akun',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                isDisabled
+                    ? 'Akun ini dinonaktifkan dan tidak dapat masuk ke Cermatify.'
+                    : 'Akun aktif. Admin dapat mencabut akses tanpa menghapus riwayat transaksi.',
+                style: GoogleFonts.poppins(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          );
+          final button = FilledButton.icon(
+            onPressed: isUpdating ? null : onToggle,
+            style: FilledButton.styleFrom(backgroundColor: color),
+            icon: Icon(
+              isDisabled ? Icons.lock_open_rounded : Icons.block_rounded,
+              size: 18,
+            ),
+            label: Text(isDisabled ? 'Pulihkan akses' : 'Nonaktifkan akun'),
+          );
+          if (constraints.maxWidth < 680) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [description, const SizedBox(height: 18), button],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: description),
+              const SizedBox(width: 24),
+              button,
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -248,6 +333,17 @@ class _DetailToolbar extends StatelessWidget {
 
   final String title;
 
+  void _goBack() {
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offAllNamed(
+      Routes.ADMIN_DASHBOARD,
+      arguments: const <String, dynamic>{'initialTab': 1},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -256,7 +352,7 @@ class _DetailToolbar extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
-            onTap: Get.back,
+            onTap: _goBack,
             borderRadius: BorderRadius.circular(12),
             child: const SizedBox(
               width: 44,

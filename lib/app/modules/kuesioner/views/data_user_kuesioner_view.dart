@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cermatify/app/routes/app_pages.dart';
 
 int respondentFormColumnCount(double width) => width >= 900 ? 2 : 1;
 
@@ -26,6 +27,17 @@ class DataUserKuesionerView extends StatefulWidget {
 }
 
 class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
+  void _goBack() {
+    if (Get.key.currentState?.canPop() ?? false) {
+      Get.back();
+      return;
+    }
+    Get.offAllNamed(
+      Routes.DASHBOARD,
+      arguments: const <String, dynamic>{'initialTab': 2},
+    );
+  }
+
   static const _ages = [
     '18-25 tahun',
     '26-35 tahun',
@@ -116,7 +128,7 @@ class _DataUserKuesionerViewState extends State<DataUserKuesionerView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  RespondentFormHeader(onBack: Get.back),
+                  RespondentFormHeader(onBack: _goBack),
                   const SizedBox(height: 20),
                   if (_loading)
                     const Center(

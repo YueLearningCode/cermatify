@@ -2,7 +2,6 @@ import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/payment_checkout_widgets.dart';
 import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
-import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -68,17 +67,10 @@ class _OrderDialogViewState extends State<OrderDialogView> {
       AppLogger.info('Error creating chat room: $error');
     }
     if (!mounted) return;
-    Navigator.of(context).pop(true);
-    Get.snackbar(
-      'Order berhasil dibuat',
-      'Pembayaran Anda sedang menunggu verifikasi admin.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.greenColor,
-      colorText: AppColors.surface,
-      margin: const EdgeInsets.all(16),
-    );
-    await Future<void>.delayed(const Duration(milliseconds: 350));
-    Get.offNamed(Routes.ORDER_HISTORY);
+    // Let the page that opened this dialog perform navigation. Navigating while
+    // this overlay is being popped is unreliable on Flutter web and can leave
+    // the user on the mentor detail page.
+    Navigator.of(context).pop(orderId);
   }
 
   @override
