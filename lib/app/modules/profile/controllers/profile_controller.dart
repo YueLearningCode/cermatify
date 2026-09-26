@@ -29,7 +29,65 @@ class ProfileController extends GetxController {
   final isLoading = false.obs;
   final mentorOrders = <Map<String, dynamic>>[].obs;
   final isLoadingOrders = false.obs;
-  final saldo = 0.obs;
+  final saldo = 0.obs; 
+  final isOpeningAdminChat = false.obs;
+
+  Future<void> openAdminChat() async {
+    if (isOpeningAdminChat.value) return;
+    isOpeningAdminChat.value = true;
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        CustomSnackbar.show(
+          title: 'Sesi berakhir',
+          message: 'Silakan login kembali untuk menghubungi admin.',
+        );
+        return;
+      }
+      final admins = await _firestore
+          .collection('users')
+          .where('role', isEqualTo: 'admin')
+          .get();
+      final admin = admins.docs.firstWhereOrNull(
+        (doc) => doc.id != userId && doc.data()['status'] == 'active',
+      );
+      if (admin == null) {
+        CustomSnackbar.show(
+          title: 'Admin belum tersedia',
+          message: 'Belum ada admin aktif yang dapat dihubungi.',
+        );
+        return;
+      }
+
+      final participants = [userId, admin.id]..sort();
+      final roomId = participants.join('_');
+      // Merge participants without resetting existing messages. Creating first
+      // also avoids reading a missing room, which member-only rules deny.
+      await _firestore.collection('chatRooms').doc(roomId).set({
+        'roomId': roomId,
+        'users': participants,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      if (isClosed || _auth.currentUser?.uid != userId) return;
+      final name = (admin.data()['nama'] ?? admin.data()['namaLengkap'])
+          ?.toString()
+          .trim();
+      await Get.toNamed(
+        Routes.chatRoom(admin.id),
+        arguments: <String, dynamic>{
+          'partnerName': name == null || name.isEmpty ? 'Admin' : name,
+        },
+      );
+    } catch (error) {
+      AppLogger.info('Error opening admin chat: $error');
+      CustomSnackbar.show(
+        title: 'Chat belum dapat dibuka',
+        message: 'Periksa koneksi Anda lalu coba kembali.',
+      );
+    } finally {
+      isOpeningAdminChat.value = false;
+    }
+  }
 
   // Dropdown lists for edit profile - fetched from Firebase
   final listKampus = <Map<String, String>>[].obs; // [{id: '...', name: '...'}]

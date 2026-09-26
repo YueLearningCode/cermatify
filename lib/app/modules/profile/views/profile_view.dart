@@ -3,12 +3,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:cermatify/app/data/theme/app_colors.dart';
-import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
-import 'package:cermatify/app/modules/chat/controllers/chat_controller.dart';
-import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import '../controllers/profile_controller.dart';
 import 'withdraw_dialog_view.dart';
 import '../../../routes/app_pages.dart';
@@ -704,86 +701,8 @@ class ProfileView extends GetView<ProfileController> {
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: OutlinedButton.icon(
-                                                  onPressed: () async {
-                                                    try {
-                                                      final adminQuery =
-                                                          await FirebaseFirestore
-                                                              .instance
-                                                              .collection(
-                                                                'users',
-                                                              )
-                                                              .where(
-                                                                'role',
-                                                                isEqualTo:
-                                                                    'admin',
-                                                              )
-                                                              .limit(1)
-                                                              .get();
-
-                                                      if (adminQuery
-                                                          .docs
-                                                          .isEmpty) {
-                                                        CustomSnackbar.show(
-                                                          title: 'Error',
-                                                          message:
-                                                              'Admin tidak ditemukan',
-                                                          backgroundColor:
-                                                              AppColors
-                                                                  .redColor,
-                                                          isNav: false,
-                                                        );
-                                                        return;
-                                                      }
-
-                                                      final adminId = adminQuery
-                                                          .docs
-                                                          .first
-                                                          .id;
-                                                      final adminData =
-                                                          adminQuery.docs.first
-                                                              .data();
-                                                      final adminName =
-                                                          adminData['nama'] ??
-                                                          'Admin';
-
-                                                      final ChatController
-                                                      chatController =
-                                                          Get.isRegistered<
-                                                            ChatController
-                                                          >()
-                                                          ? Get.find<
-                                                              ChatController
-                                                            >()
-                                                          : Get.put(
-                                                              ChatController(),
-                                                            );
-
-                                                      await chatController
-                                                          .createOrGetChatRoom(
-                                                            mentorId: adminId,
-                                                          );
-
-                                                      Get.toNamed(
-                                                        Routes.chatRoom(
-                                                          adminId,
-                                                        ),
-                                                        arguments:
-                                                            <String, dynamic>{
-                                                              'partnerName':
-                                                                  adminName,
-                                                            },
-                                                      );
-                                                    } catch (e) {
-                                                      CustomSnackbar.show(
-                                                        title: 'Error',
-                                                        message:
-                                                            'Gagal membuka chat admin: ${e.toString()}',
-                                                        backgroundColor:
-                                                            AppColors.redColor,
-                                                        isNav: false,
-                                                      );
-                                                    }
-                                                  },
+                                                  onPressed:
+                                                      controller.openAdminChat,
                                                   icon: const Icon(
                                                     Icons
                                                         .chat_bubble_outline_rounded,
@@ -1036,7 +955,7 @@ class ProfileView extends GetView<ProfileController> {
                     WithdrawDialogView(currentSaldo: controller.saldo.value),
                     barrierDismissible: false,
                   ),
-                  onChat: _openMemberChat,
+                  onChat: controller.openAdminChat,
                 ),
                 const SizedBox(height: 26),
                 const _ProfileSectionHeading(
@@ -1055,14 +974,6 @@ class ProfileView extends GetView<ProfileController> {
         );
       },
     );
-  }
-
-  void _openMemberChat() {
-    if (Get.isRegistered<DashboardController>()) {
-      Get.find<DashboardController>().changeTab(1);
-      return;
-    }
-    Get.offAllNamed(Routes.DASHBOARD, arguments: const {'initialTab': 1});
   }
 
   Widget _buildMentorProfile(BuildContext context) {
@@ -1143,6 +1054,7 @@ class ProfileView extends GetView<ProfileController> {
                 const SizedBox(height: 26),
                 MentorBalanceCard(
                   balance: controller.saldo.value,
+                  onChat: controller.openAdminChat,
                   onWithdraw: () => Get.dialog(
                     WithdrawDialogView(currentSaldo: controller.saldo.value),
                     barrierDismissible: false,
@@ -1577,10 +1489,12 @@ class MentorBalanceCard extends StatelessWidget {
     super.key,
     required this.balance,
     required this.onWithdraw,
+    this.onChat,
   });
 
   final int balance;
   final VoidCallback onWithdraw;
+  final VoidCallback? onChat;
 
   String get formattedBalance =>
       'Rp ${balance.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
@@ -1649,7 +1563,7 @@ class MentorBalanceCard extends StatelessWidget {
               ),
             ],
           );
-          final action = FilledButton.icon(
+          final withdrawButton = FilledButton.icon(
             onPressed: onWithdraw,
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.surface,
@@ -1658,6 +1572,25 @@ class MentorBalanceCard extends StatelessWidget {
             ),
             icon: const Icon(Icons.payments_outlined, size: 18),
             label: const Text('Ajukan withdraw'),
+          );
+          final action = Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              withdrawButton,
+              if (onChat != null) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: onChat,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.surface,
+                    side: const BorderSide(color: AppColors.surface),
+                  ),
+                  icon: const Icon(Icons.support_agent_outlined),
+                  label: const Text('Chat admin'),
+                ),
+              ],
+            ],
           );
           if (compact) {
             return Column(
@@ -1668,7 +1601,7 @@ class MentorBalanceCard extends StatelessWidget {
             children: [
               Expanded(child: information),
               const SizedBox(width: 20),
-              action,
+              SizedBox(width: 190, child: action),
             ],
           );
         },

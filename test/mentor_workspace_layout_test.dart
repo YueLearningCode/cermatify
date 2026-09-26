@@ -12,6 +12,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  for (final width in <double>[320, 1100]) {
+    testWidgets('mentor wallet opens admin chat at $width px', (tester) async {
+      tester.view.physicalSize = Size(width, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var chatOpened = 0;
+      var withdrawOpened = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MentorBalanceCard(
+              balance: 250000,
+              onWithdraw: () => withdrawOpened++,
+              onChat: () => chatOpened++,
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Chat admin'));
+      await tester.pump();
+      expect(chatOpened, 1);
+      expect(withdrawOpened, 0);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   test('dashboard mentor dapat dikembalikan ke tab Home', () {
     final controller = DashboardController();
     controller.changeTab(1);
