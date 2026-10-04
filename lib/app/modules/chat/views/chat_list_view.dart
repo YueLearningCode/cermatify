@@ -2,7 +2,6 @@ import 'package:cermatify/app/data/models/chat_model.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
-import 'package:cermatify/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,22 +13,6 @@ class ChatListView extends GetView<ChatController> {
   const ChatListView({super.key, this.embed = true});
 
   final bool embed;
-
-  void _goBack() {
-    if (controller.isAdmin) {
-      Get.offAllNamed(Routes.ADMIN_DASHBOARD);
-      return;
-    }
-    if (controller.isMentor && Get.isRegistered<DashboardController>()) {
-      Get.find<DashboardController>().changeTab(0);
-      return;
-    }
-    if (Get.key.currentState?.canPop() ?? false) {
-      Get.back();
-      return;
-    }
-    Get.offAllNamed(Routes.DASHBOARD);
-  }
 
   Future<void> _startAdminConversation(BuildContext context) async {
     await controller.loadAdminContacts();
@@ -81,7 +64,6 @@ class ChatListView extends GetView<ChatController> {
               isMentor: controller.isMentor,
               conversationCount: controller.chatRoomCount.value,
               searchController: controller.searchController,
-              onBack: _goBack,
               onRefresh: controller.loadChats,
               onStartConversation: controller.isAdmin
                   ? () => _startAdminConversation(Get.context!)
@@ -204,7 +186,6 @@ class ChatPageHeader extends StatelessWidget {
     this.isMentor = false,
     required this.conversationCount,
     required this.searchController,
-    required this.onBack,
     required this.onRefresh,
     this.onStartConversation,
   });
@@ -213,7 +194,6 @@ class ChatPageHeader extends StatelessWidget {
   final bool isMentor;
   final int conversationCount;
   final TextEditingController searchController;
-  final VoidCallback onBack;
   final VoidCallback onRefresh;
   final VoidCallback? onStartConversation;
 
@@ -329,12 +309,6 @@ class ChatPageHeader extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _HeaderIconButton(
-                    tooltip: 'Kembali',
-                    icon: Icons.arrow_back_rounded,
-                    onPressed: onBack,
-                  ),
-                  SizedBox(width: compact ? 12 : 16),
                   Expanded(child: copy),
                   if (!compact) actions,
                 ],

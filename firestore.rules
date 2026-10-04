@@ -135,7 +135,7 @@ service cloud.firestore {
           ]) &&
           request.resource.data.paymentProofUrl is string &&
           request.resource.data.paymentProofUrl.matches(
-            'https://res.cloudinary.com/dvxsmpz3m/.*'
+            'https://res.cloudinary.com/(dvxsmpz3m|rgovyuw1)/.*'
           );
       allow update, delete: if isAdmin();
     }

@@ -162,6 +162,14 @@ test('order price must match the trusted service price', async () => {
   };
 
   await assertSucceeds(setDoc(doc(db, 'orders/order-valid'), baseOrder));
+  await assertSucceeds(setDoc(doc(db, 'orders/order-new-cloud'), {
+    ...baseOrder,
+    paymentProofUrl: 'https://res.cloudinary.com/rgovyuw1/image/upload/payment.jpg',
+  }));
+  await assertFails(setDoc(doc(db, 'orders/order-untrusted-cloud'), {
+    ...baseOrder,
+    paymentProofUrl: 'https://res.cloudinary.com/other-cloud/image/upload/payment.jpg',
+  }));
   await assertFails(
     setDoc(doc(db, 'orders/order-tampered'), {
       ...baseOrder,

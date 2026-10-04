@@ -23,7 +23,6 @@ void main() {
                   isAdmin: true,
                   conversationCount: 12,
                   searchController: searchController,
-                  onBack: () {},
                   onRefresh: () {},
                 ),
               ),
@@ -96,12 +95,11 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('admin chat header exposes working back and new chat actions', (
+  testWidgets('chat list header omits back and keeps new chat action', (
     tester,
   ) async {
     final searchController = TextEditingController();
     addTearDown(searchController.dispose);
-    var backCalls = 0;
     var newChatCalls = 0;
     await tester.pumpWidget(
       MaterialApp(
@@ -112,7 +110,6 @@ void main() {
               isAdmin: true,
               conversationCount: 0,
               searchController: searchController,
-              onBack: () => backCalls++,
               onRefresh: () {},
               onStartConversation: () => newChatCalls++,
             ),
@@ -121,9 +118,8 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byTooltip('Kembali'));
+    expect(find.byTooltip('Kembali'), findsNothing);
     await tester.tap(find.byKey(const Key('start-admin-chat-button')));
-    expect(backCalls, 1);
     expect(newChatCalls, 1);
     expect(tester.takeException(), isNull);
   });

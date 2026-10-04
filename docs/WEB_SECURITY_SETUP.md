@@ -8,8 +8,9 @@ does not invalidate copies in Git history or previously built applications.
 
 1. Rotate the exposed Cloudinary API secret.
 2. Create a dedicated unsigned upload preset for Cermatify.
-3. Restrict the preset to images, the smallest practical maximum file size,
-   controlled transformations, and a dedicated asset folder.
+3. Restrict the preset to image formats, controlled transformations, and a
+   dedicated asset folder. Validate file size in the upload client; upload
+   presets do not support a per-preset file size limit.
 4. Disable overwrite and unauthenticated destructive operations.
 
 Do not put the new API secret in Flutter, `.env`, GitHub Actions build
@@ -17,8 +18,66 @@ arguments, or `--dart-define`. Browser bundles are public.
 
 ## Local run
 
-The Cloudinary cloud name is public and currently has a non-secret default.
-Provide the restricted preset when running the app:
+### Membuat preset untuk upload foto
+
+Default aplikasi sekarang memakai cloud `rgovyuw1` dan preset `flutter_upload`,
+sesuai environment Cloudinary yang dikonfirmasi melalui screenshot. Kedua nilai
+ini bersifat publik. Preset tersebut sudah tersedia; langkah pembuatan berikut
+hanya diperlukan saat menyiapkan environment baru.
+
+Jika muncul `CLOUDINARY_UPLOAD_PRESET belum dikonfigurasi`, aplikasi belum
+menerima nama preset saat dijalankan. Menambahkan flag saja belum cukup bila
+preset tersebut belum dibuat pada akun Cloudinary.
+
+1. Buka Cloudinary Console untuk cloud `rgovyuw1` (cloud name default proyek).
+2. Buka Settings > Upload > Upload presets, lalu tambahkan preset.
+3. Isi nama `flutter_upload` dan pilih signing mode **Unsigned**.
+4. Batasi allowed formats ke `jpg`, `jpeg`, `png`, dan `webp`, serta gunakan
+   folder asset khusus aplikasi. Batas ukuran file perlu divalidasi di client,
+   bukan melalui upload preset.
+5. Simpan preset sebelum menjalankan ulang aplikasi.
+
+Untuk VS Code, pilih konfigurasi **Cermatify (Cloudinary)** di Run and Debug.
+Konfigurasi tersedia baik saat membuka folder workspace induk maupun folder
+Flutter `cermatify`. Konfigurasi ini mengirim nama preset lewat `toolArgs`.
+Jika nama preset berbeda, ubah nilai `CLOUDINARY_UPLOAD_PRESET` pada `launch.json`.
+
+Untuk Android Studio, buka Run > Edit Configurations > konfigurasi Flutter,
+lalu isi Additional run args dengan:
+
+```text
+--dart-define=CLOUDINARY_UPLOAD_PRESET=flutter_upload
+```
+
+Hentikan sesi run sebelumnya dan jalankan kembali. Nilai `String.fromEnvironment`
+dibaca saat kompilasi; hot reload tidak mengganti konfigurasi build.
+
+Konfigurasi IDE tidak membuat preset di Cloudinary. Keberhasilan upload nyata
+baru dapat diverifikasi setelah preset tersimpan dan aplikasi dijalankan ulang.
+
+### Upload ditolak dengan HTTP 400
+
+Service upload membaca alasan penolakan dari JSON `error.message` atau header
+`X-Cld-Error` dan menampilkannya sebagai `Upload ditolak Cloudinary: ...`.
+Alasan yang sama dicatat melalui `AppLogger` saat debug. Status HTTP 400 saja
+tidak cukup untuk menentukan apakah masalah berada pada preset, cloud, atau file.
+
+Pastikan nilai **Cloud name** di Cloudinary sesuai dengan cloud tujuan upload.
+Jangan menyalin **Product Environment ID** sebagai penggantinya. Bila cloud name
+berbeda dari default proyek, jalankan dengan kedua flag berikut:
+
+```text
+--dart-define=CLOUDINARY_CLOUD_NAME=<cloud-name-aktual>
+--dart-define=CLOUDINARY_UPLOAD_PRESET=flutter_upload
+```
+
+Periksa respons penolakan saat mencoba upload kembali. Tidak ada API secret yang
+dibutuhkan untuk request unsigned. Rules lokal untuk bukti pembayaran menerima
+cloud `rgovyuw1` dan cloud lama `dvxsmpz3m`. Perubahan rules ini belum dideploy;
+penyimpanan order dengan URL cloud baru membutuhkan rules yang sudah diperbarui.
+
+The Cloudinary cloud name and unsigned preset have public project defaults.
+You can explicitly supply the preset when running the app:
 
 Windows PowerShell, jalankan dari root project Flutter:
 
