@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 import '../controllers/chat_controller.dart';
 import '../../dashboard/controllers/dashboard_controller.dart';
 
-class ChatRoomView extends GetView<ChatController> {
+class ChatRoomView extends StatefulWidget {
   const ChatRoomView({
     super.key,
     required this.mentorId,
@@ -25,6 +25,39 @@ class ChatRoomView extends GetView<ChatController> {
   final Mentor? mentor;
   final String? orderId;
   final String? partnerName;
+
+  @override
+  State<ChatRoomView> createState() => _ChatRoomViewState();
+}
+
+class _ChatRoomViewState extends State<ChatRoomView>
+    with WidgetsBindingObserver {
+  ChatController get controller => Get.find<ChatController>();
+  String get mentorId => widget.mentorId;
+  Mentor? get mentor => widget.mentor;
+  String? get orderId => widget.orderId;
+  String? get partnerName => widget.partnerName;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) controller.loadMessages(mentorId, orderId: orderId);
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    controller.setRoomVisible(state == AppLifecycleState.resumed);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    if (Get.isRegistered<ChatController>()) controller.closeMessages();
+    super.dispose();
+  }
 
   String get _displayName {
     if (partnerName?.trim().isNotEmpty == true) return partnerName!.trim();
@@ -51,11 +84,11 @@ class ChatRoomView extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    controller.loadMessages(mentorId, orderId: orderId);
     final compact = MediaQuery.sizeOf(context).width < 600;
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: ResponsiveContent(
           maxWidth: 1160,
@@ -87,6 +120,14 @@ class ChatRoomView extends GetView<ChatController> {
                     onBack: _goBack,
                   ),
                   Expanded(child: _buildMessages()),
+                  Obx(
+                    () => controller.readStatusError.value.isEmpty
+                        ? const SizedBox.shrink()
+                        : TextButton(
+                            onPressed: controller.markMessagesRead,
+                            child: Text(controller.readStatusError.value),
+                          ),
+                  ),
                   _buildMessageComposer(compact),
                 ],
               ),
@@ -124,19 +165,28 @@ class ChatRoomView extends GetView<ChatController> {
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
           itemCount:
               controller.chatMessages.length +
-              (controller.isTyping.value ? 1 : 0) +
-              1,
+              (controller.isTyping.value ? 1 : 0),
           itemBuilder: (context, index) {
-            if (index == 0) return const _TodaySeparator();
-            final messageIndex = index - 1;
+            final messageIndex = index;
             if (messageIndex == controller.chatMessages.length) {
               return _TypingIndicator(isAdmin: controller.isAdmin);
             }
             final message = controller.chatMessages[messageIndex];
-            return ChatMessageBubble(
-              message: message,
-              isMine: message.senderId == controller.currentUserId,
-              partnerName: _displayName,
+            final showDate =
+                index == 0 ||
+                DateUtils.dateOnly(
+                      controller.chatMessages[index - 1].timestamp.toLocal(),
+                    ) !=
+                    DateUtils.dateOnly(message.timestamp.toLocal());
+            return Column(
+              children: [
+                if (showDate) _TodaySeparator(date: message.timestamp),
+                ChatMessageBubble(
+                  message: message,
+                  isMine: message.senderId == controller.currentUserId,
+                  partnerName: _displayName,
+                ),
+              ],
             );
           },
         );
@@ -144,7 +194,34 @@ class ChatRoomView extends GetView<ChatController> {
     );
   }
 
-  Widget _buildMessageComposer(bool compact) {
+  Widget _buildMessageComposer(bool compact) => Obx(
+    () => ChatMessageComposer(
+      textController: controller.messageController,
+      focusNode: controller.focusNode,
+      compact: compact,
+      isSending: controller.isSending.value,
+      onSend: () => controller.sendMessage(mentorId, orderId: orderId),
+    ),
+  );
+}
+
+class ChatMessageComposer extends StatelessWidget {
+  const ChatMessageComposer({
+    super.key,
+    required this.textController,
+    required this.focusNode,
+    required this.compact,
+    required this.isSending,
+    required this.onSend,
+  });
+  final TextEditingController textController;
+  final FocusNode focusNode;
+  final bool compact;
+  final bool isSending;
+  final VoidCallback onSend;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
         compact ? 12 : 18,
@@ -174,13 +251,12 @@ class ChatRoomView extends GetView<ChatController> {
           Expanded(
             child: TextField(
               key: const Key('chat-message-field'),
-              controller: controller.messageController,
-              focusNode: controller.focusNode,
+              controller: textController,
+              focusNode: focusNode,
               minLines: 1,
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
-              onSubmitted: (_) =>
-                  controller.sendMessage(mentorId, orderId: orderId),
+              onSubmitted: (_) => onSend(),
               style: GoogleFonts.poppins(fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Tulis pesan...',
@@ -202,32 +278,28 @@ class ChatRoomView extends GetView<ChatController> {
             ),
           ),
           const SizedBox(width: 10),
-          Obx(
-            () => SizedBox(
-              width: 48,
-              height: 48,
-              child: FilledButton(
-                key: const Key('send-chat-button'),
-                onPressed: controller.isSending.value
-                    ? null
-                    : () => controller.sendMessage(mentorId, orderId: orderId),
-                style: FilledButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: FilledButton(
+              key: const Key('send-chat-button'),
+              onPressed: isSending ? null : () => onSend(),
+              style: FilledButton.styleFrom(
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: controller.isSending.value
-                    ? const SizedBox(
-                        width: 19,
-                        height: 19,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.surface,
-                        ),
-                      )
-                    : const Icon(Icons.send_rounded, size: 21),
               ),
+              child: isSending
+                  ? const SizedBox(
+                      width: 19,
+                      height: 19,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.surface,
+                      ),
+                    )
+                  : const Icon(Icons.send_rounded, size: 21),
             ),
           ),
         ],
@@ -389,7 +461,9 @@ class ChatMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxBubbleWidth = (constraints.maxWidth * 0.72).clamp(180, 620);
+        final maxBubbleWidth =
+            (constraints.maxWidth * (constraints.maxWidth < 600 ? 0.85 : 0.72))
+                .clamp(0, 620);
         return Align(
           alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
@@ -437,7 +511,8 @@ class ChatMessageBubble extends StatelessWidget {
 }
 
 class _TodaySeparator extends StatelessWidget {
-  const _TodaySeparator();
+  const _TodaySeparator({required this.date});
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -451,7 +526,9 @@ class _TodaySeparator extends StatelessWidget {
           border: Border.all(color: AppColors.border),
         ),
         child: Text(
-          'Hari ini',
+          DateUtils.isSameDay(date.toLocal(), DateTime.now())
+              ? 'Hari ini'
+              : DateFormat('dd/MM/yyyy').format(date.toLocal()),
           style: GoogleFonts.poppins(
             color: AppColors.textSecondary,
             fontSize: 10,

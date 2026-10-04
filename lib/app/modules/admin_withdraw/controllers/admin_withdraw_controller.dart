@@ -120,6 +120,15 @@ class AdminWithdrawController extends GetxController {
         final oldStatus = data['status']?.toString() ?? 'pending';
         final mentorId = data['mentorId']?.toString() ?? '';
         final nominal = (data['nominal'] as num?)?.toInt() ?? 0;
+        if (oldStatus != 'pending' ||
+            !['approved', 'rejected'].contains(newStatus)) {
+          throw StateError(
+            'Hanya withdraw pending yang dapat disetujui atau ditolak.',
+          );
+        }
+        if (mentorId.isEmpty || nominal <= 0) {
+          throw StateError('Data withdraw tidak valid.');
+        }
 
         DocumentReference<Map<String, dynamic>>? mentorReference;
         DocumentSnapshot<Map<String, dynamic>>? mentorDocument;
@@ -135,9 +144,7 @@ class AdminWithdrawController extends GetxController {
           final currentBalance =
               (mentorDocument.data()?['saldo'] as num?)?.toInt() ?? 0;
           var newBalance = currentBalance;
-          if (oldStatus == 'approved' && newStatus == 'rejected') {
-            newBalance += nominal;
-          } else if (newStatus == 'approved' && oldStatus != 'approved') {
+          if (newStatus == 'approved') {
             newBalance -= nominal;
             if (newBalance < 0) {
               throw StateError('Saldo mentor tidak mencukupi');

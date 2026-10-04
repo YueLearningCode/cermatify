@@ -27,7 +27,7 @@ class WithdrawController extends GetxController {
   }
 
   Future<void> submitWithdraw() async {
-    if (!formKey.currentState!.validate()) {
+    if (isLoading.value || !(formKey.currentState?.validate() ?? false)) {
       return;
     }
 
@@ -58,8 +58,15 @@ class WithdrawController extends GetxController {
       }
 
       final userData = userDoc.data() as Map<String, dynamic>;
+      if (userData['role'] != 'mentor' || userData['status'] != 'active') {
+        throw StateError('Withdraw hanya tersedia untuk mentor aktif.');
+      }
       final mentorName = userData['nama'] ?? user.displayName ?? 'Mentor';
       final currentSaldo = (userData['saldo'] as int?) ?? 0;
+      if (namaRekeningController.text.trim().isEmpty ||
+          !RegExp(r'^\d+$').hasMatch(nomorRekeningController.text.trim())) {
+        throw StateError('Isi nama pemilik dan nomor rekening yang valid.');
+      }
 
       // Parse nominal
       final nominal =

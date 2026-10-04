@@ -42,9 +42,11 @@ class ChatController extends GetxController {
   final chatLoadError = ''.obs;
   final messageLoadError = ''.obs;
   final RxInt chatRoomCount = 0.obs;
+  final unreadMessageCount = 0.obs;
+  final readStatusError = ''.obs;
   final adminContacts = <ChatContact>[].obs;
 
-  String get currentUserId => _auth.currentUser?.uid ?? 'u1';
+  String get currentUserId => _auth.currentUser?.uid ?? '';
 
   // Cache of userId -> display name
   final RxMap<String, String> userNames = <String, String>{}.obs;
@@ -53,7 +55,7 @@ class ChatController extends GetxController {
 
   Future<void> ensureSignedIn() async {
     if (_auth.currentUser == null) {
-      await _auth.signInAnonymously();
+      throw StateError('Silakan login kembali.');
     }
   }
 
@@ -72,15 +74,43 @@ class ChatController extends GetxController {
   void onInit() {
     super.onInit();
     searchController.addListener(_filterChats);
+    _chatUserId = currentUserId;
+    _authSubscription = _auth.authStateChanges().listen((user) {
+      final userId = user?.uid ?? '';
+      if (_chatUserId == userId) return;
+      _chatUserId = userId;
+      _roomsSubscription?.cancel();
+      _ordersSubscription?.cancel();
+      _badgeRoomsSubscription?.cancel();
+      for (final subscription in _unreadSubscriptions.values) {
+        subscription.cancel();
+      }
+      _unreadSubscriptions.clear();
+      _unreadCounts.clear();
+      unreadMessageCount.value = 0;
+      chatRoomCount.value = 0;
+      allChats.clear();
+      filteredChats.clear();
+      _roomChats.clear();
+      _mentorOrderChats.clear();
+      userNames.clear();
+      adminContacts.clear();
+      closeMessages();
+      if (user != null) unawaited(_initializeChats());
+    });
     unawaited(_initializeChats());
   }
 
   Future<void> _initializeChats() async {
+    final userId = currentUserId;
     isLoadingChats.value = true;
     chatLoadError.value = '';
     try {
       await ensureSignedIn();
+      if (isClosed || currentUserId != userId) return;
+      _watchUnreadMessages();
       if (isAdmin) await loadAdminContacts();
+      if (isClosed || currentUserId != userId) return;
       loadChats();
     } catch (_) {
       isLoadingChats.value = false;
@@ -98,6 +128,11 @@ class ChatController extends GetxController {
     _roomsSubscription?.cancel();
     _ordersSubscription?.cancel();
     _messagesSubscription?.cancel();
+    _badgeRoomsSubscription?.cancel();
+    _authSubscription?.cancel();
+    for (final subscription in _unreadSubscriptions.values) {
+      subscription.cancel();
+    }
     super.onClose();
   }
 
@@ -106,6 +141,141 @@ class ChatController extends GetxController {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
   _messagesSubscription;
   String? _activeRoomId;
+  String _chatUserId = '';
+  StreamSubscription<User?>? _authSubscription;
+  bool _roomVisible = false;
+  bool _markingRead = false;
+  final _readMessageIds = <String>{};
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>?
+  _badgeRoomsSubscription;
+  final _unreadSubscriptions =
+      <String, StreamSubscription<QuerySnapshot<Map<String, dynamic>>>>{};
+  final _unreadCounts = <String, int>{};
+
+  // Query each participant room, including legacy messages without readAt.
+  // This uses existing member permissions and needs no collection-group index.
+  void _watchUnreadMessages() {
+    final userId = currentUserId;
+    _badgeRoomsSubscription = _firestore
+        .collection('chatRooms')
+        .where('users', arrayContains: userId)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            if (currentUserId != userId || isClosed) return;
+            final roomIds = snapshot.docs.map((doc) => doc.id).toSet();
+            for (final id in _unreadSubscriptions.keys.toList()) {
+              if (!roomIds.contains(id)) {
+                _unreadSubscriptions.remove(id)?.cancel();
+                _unreadCounts.remove(id);
+              }
+            }
+            for (final id in roomIds) {
+              if (_unreadSubscriptions.containsKey(id)) continue;
+              _unreadSubscriptions[id] = _firestore
+                  .collection('chatRooms')
+                  .doc(id)
+                  .collection('messages')
+                  .where('receiverId', isEqualTo: userId)
+                  .snapshots()
+                  .listen(
+                    (messages) {
+                      if (currentUserId != userId || isClosed) return;
+                      _unreadCounts[id] = messages.docs.where((doc) {
+                        final data = doc.data();
+                        return data['senderId'] != userId &&
+                            data['readAt'] == null;
+                      }).length;
+                      unreadMessageCount.value = _unreadCounts.values.fold(
+                        0,
+                        (total, unread) => total + unread,
+                      );
+                    },
+                    onError: (_) {
+                      chatLoadError.value = 'Status pesan belum dapat dimuat.';
+                    },
+                  );
+            }
+            unreadMessageCount.value = _unreadCounts.values.fold(
+              0,
+              (total, unread) => total + unread,
+            );
+          },
+          onError: (_) {
+            chatLoadError.value = 'Status pesan belum dapat dimuat.';
+          },
+        );
+  }
+
+  void closeMessages() {
+    _roomVisible = false;
+    _activeRoomId = null;
+    _messagesSubscription?.cancel();
+    _messagesSubscription = null;
+    chatMessages.clear();
+    _readMessageIds.clear();
+  }
+
+  void setRoomVisible(bool visible) {
+    _roomVisible = visible;
+    if (visible) unawaited(markMessagesRead());
+  }
+
+  Future<void> markMessagesRead() async {
+    final roomId = _activeRoomId;
+    if (!_roomVisible || roomId == null || _markingRead) return;
+    final incoming = chatMessages
+        .where(
+          (message) =>
+              message.isUnreadFor(currentUserId) &&
+              !_readMessageIds.contains(message.id),
+        )
+        .toList();
+    if (incoming.isEmpty) return;
+    _markingRead = true;
+    readStatusError.value = '';
+    try {
+      // Stay below Firestore's batch limit; never update outgoing messages.
+      for (var start = 0; start < incoming.length; start += 400) {
+        final references = incoming
+            .skip(start)
+            .take(400)
+            .map(
+              (message) => _firestore
+                  .collection('chatRooms')
+                  .doc(roomId)
+                  .collection('messages')
+                  .doc(message.id),
+            )
+            .toList();
+        await _firestore.runTransaction((transaction) async {
+          final snapshots = await Future.wait(references.map(transaction.get));
+          for (final snapshot in snapshots) {
+            final data = snapshot.data();
+            if (data != null &&
+                data['receiverId'] == currentUserId &&
+                data['senderId'] != currentUserId &&
+                data['readAt'] == null) {
+              transaction.update(snapshot.reference, {
+                'readAt': FieldValue.serverTimestamp(),
+              });
+            }
+          }
+        });
+        if (_activeRoomId == roomId) {
+          _readMessageIds.addAll(
+            incoming.skip(start).take(400).map((message) => message.id),
+          );
+        }
+      }
+    } catch (_) {
+      readStatusError.value =
+          'Status baca gagal disimpan. Ketuk untuk mencoba lagi.';
+    } finally {
+      _markingRead = false;
+      if (readStatusError.value.isEmpty) unawaited(markMessagesRead());
+    }
+  }
 
   bool get isAdmin => SessionState.role == 'admin';
 
@@ -125,6 +295,7 @@ class ChatController extends GetxController {
     chatLoadError.value = '';
     if (isMentor) {
       // Mentors serve customers from orders in progress.
+      _loadCustomerChats(includeEmptyRooms: true);
       _loadMentorChats();
     } else if (isAdmin) {
       // Admin support rooms are rooms where the admin is a participant.
@@ -190,11 +361,11 @@ class ChatController extends GetxController {
               (first, second) => second.timestamp.compareTo(first.timestamp),
             );
 
-            allChats.value = chats;
-            chatRoomCount.value = chats.length;
+            _roomChats
+              ..clear()
+              ..addAll(chats);
+            _publishChats();
             isLoadingChats.value = false;
-            _hydratePartnerNames(chats);
-            _applySearchFilter();
           },
           onError: (_) {
             isLoadingChats.value = false;
@@ -239,91 +410,57 @@ class ChatController extends GetxController {
     }
   }
 
+  final _mentorOrderChats = <ChatMessage>[];
+  final _roomChats = <ChatMessage>[];
+
+  void _publishChats() {
+    final byRoom = {for (final chat in _mentorOrderChats) chat.id: chat};
+    // Existing rooms win over order placeholders, including finished orders.
+    for (final chat in _roomChats) {
+      byRoom[chat.id] = chat;
+    }
+    final chats = byRoom.values.toList()
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    allChats.assignAll(chats);
+    chatRoomCount.value = chats.length;
+    _hydratePartnerNames(chats);
+    _applySearchFilter();
+  }
+
   void _loadMentorChats() {
     _ordersSubscription?.cancel();
-    // Load orders for this mentor (filter status client-side to avoid composite index)
     _ordersSubscription = _firestore
         .collection('orders')
         .where('mentorId', isEqualTo: currentUserId)
         .snapshots()
         .listen(
-          (snapshot) async {
-            final Set<String> customerIds = {};
-            final Map<String, DateTime> customerLastUpdate = {};
-            final Map<String, String> customerOrderIds = {};
-
-            // Get unique customer IDs from orders with status 'progress'
-            for (var doc in snapshot.docs) {
+          (snapshot) {
+            _mentorOrderChats.clear();
+            for (final doc in snapshot.docs) {
               final data = doc.data();
-              final String status = data['status']?.toString() ?? '';
-              // Filter for 'progress' status client-side
-              if (status.toLowerCase() != 'progress' &&
-                  status.toLowerCase() != 'approved') {
+              if (![
+                'progress',
+                'approved',
+              ].contains(data['status']?.toString().toLowerCase())) {
                 continue;
               }
-              final String customerId = data['userId']?.toString() ?? '';
-              if (customerId.isNotEmpty && customerId != currentUserId) {
-                customerIds.add(customerId);
-                final updatedAt =
-                    (data['updatedAt'] as Timestamp?)?.toDate() ??
-                    DateTime.now();
-                if (!customerLastUpdate.containsKey(customerId) ||
-                    updatedAt.isAfter(customerLastUpdate[customerId]!)) {
-                  customerLastUpdate[customerId] = updatedAt;
-                  customerOrderIds[customerId] = doc.id;
-                }
-              }
-            }
-
-            // Create ChatMessage objects for each customer
-            final List<ChatMessage> chats = [];
-            for (var customerId in customerIds) {
-              // Try to get last message from chat room
-              final orderId = customerOrderIds[customerId];
-              final String roomId = buildRoomId(customerId, orderId: orderId);
-              final roomDoc = await _firestore
-                  .collection('chatRooms')
-                  .doc(roomId)
-                  .get();
-
-              String lastMessage = '';
-              String lastSenderId = '';
-              DateTime timestamp =
-                  customerLastUpdate[customerId] ?? DateTime.now();
-
-              if (roomDoc.exists) {
-                final roomData = roomDoc.data();
-                lastMessage = roomData?['lastMessage']?.toString() ?? '';
-                lastSenderId = roomData?['lastSenderId']?.toString() ?? '';
-                final roomUpdatedAt = (roomData?['updatedAt'] as Timestamp?)
-                    ?.toDate();
-                if (roomUpdatedAt != null && roomUpdatedAt.isAfter(timestamp)) {
-                  timestamp = roomUpdatedAt;
-                }
-              }
-
-              // If no message yet, show default message
-              if (lastMessage.isEmpty) {
-                lastMessage = 'Order sedang berlangsung';
-              }
-
-              chats.add(
+              final customerId = data['userId']?.toString() ?? '';
+              if (customerId.isEmpty || customerId == currentUserId) continue;
+              _mentorOrderChats.add(
                 ChatMessage(
-                  id: customerOrderIds[customerId] ?? roomId,
-                  senderId: lastSenderId.isNotEmpty ? lastSenderId : customerId,
-                  receiverId: customerId,
-                  message: lastMessage,
-                  timestamp: timestamp,
-                  orderId: orderId,
+                  id: buildRoomId(customerId, orderId: doc.id),
+                  senderId: customerId,
+                  receiverId: currentUserId,
+                  message: 'Order sedang berlangsung',
+                  timestamp:
+                      (data['updatedAt'] as Timestamp?)?.toDate() ??
+                      DateTime.now(),
+                  orderId: doc.id,
                 ),
               );
             }
-
-            allChats.value = chats;
-            chatRoomCount.value = chats.length;
+            _publishChats();
             isLoadingChats.value = false;
-            _hydratePartnerNames(chats);
-            _applySearchFilter();
           },
           onError: (_) {
             isLoadingChats.value = false;
@@ -381,6 +518,8 @@ class ChatController extends GetxController {
   }
 
   void loadMessages(String mentorId, {String? orderId}) {
+    _roomVisible = true;
+    final userId = currentUserId;
     final String roomId = buildRoomId(mentorId, orderId: orderId);
     if (_activeRoomId == roomId &&
         _messagesSubscription != null &&
@@ -388,6 +527,7 @@ class ChatController extends GetxController {
       return;
     }
     _activeRoomId = roomId;
+    _readMessageIds.clear();
     isLoadingMessages.value = true;
     messageLoadError.value = '';
     chatMessages.clear();
@@ -401,6 +541,9 @@ class ChatController extends GetxController {
         .snapshots()
         .listen(
           (snapshot) {
+            if (isClosed || _activeRoomId != roomId || currentUserId != userId) {
+              return;
+            }
             final msgs = snapshot.docs.map((d) {
               final data = d.data();
               return ChatMessage(
@@ -411,11 +554,13 @@ class ChatController extends GetxController {
                 timestamp:
                     (data['timestamp'] as Timestamp?)?.toDate() ??
                     DateTime.now(),
+                readAt: (data['readAt'] as Timestamp?)?.toDate(),
               );
             }).toList();
             chatMessages.value = msgs;
             isLoadingMessages.value = false;
             scrollToBottom();
+            unawaited(markMessagesRead());
           },
           onError: (_) {
             isLoadingMessages.value = false;
@@ -425,13 +570,15 @@ class ChatController extends GetxController {
   }
 
   void scrollToBottom() {
-    if (scrollController.hasClients) {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed && scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void simulateTypingIndicator() {
@@ -444,7 +591,12 @@ class ChatController extends GetxController {
   }
 
   Future<void> sendMessage(String mentorId, {String? orderId}) async {
-    if (messageController.text.trim().isEmpty) return;
+    if (isSending.value || messageController.text.trim().isEmpty) return;
+    if (mentorId.isEmpty ||
+        mentorId == currentUserId ||
+        currentUserId.isEmpty) {
+      return;
+    }
 
     final messageText = messageController.text.trim();
     messageController.clear();
@@ -456,7 +608,8 @@ class ChatController extends GetxController {
         orderId: orderId,
       );
       final roomRef = _firestore.collection('chatRooms').doc(roomId);
-      await roomRef.set({
+      final batch = _firestore.batch();
+      batch.set(roomRef, {
         'updatedAt': FieldValue.serverTimestamp(),
         'lastMessage': messageText,
         'lastSenderId': currentUserId,
@@ -464,13 +617,15 @@ class ChatController extends GetxController {
 
       final msgRef = roomRef.collection('messages').doc();
       final now = DateTime.now();
-      await msgRef.set({
+      batch.set(msgRef, {
         'senderId': currentUserId,
         'receiverId': mentorId,
         'message': messageText,
         'timestamp': FieldValue.serverTimestamp(),
         'localTime': now.toIso8601String(),
+        'readAt': null,
       });
+      await batch.commit();
 
       Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
     } catch (_) {
@@ -503,6 +658,9 @@ class ChatController extends GetxController {
     String? orderId,
   }) async {
     await ensureSignedIn();
+    if (mentorId.isEmpty || mentorId == currentUserId) {
+      throw StateError('Penerima chat tidak valid.');
+    }
     final String userId = currentUserId;
     final String roomId = buildRoomId(mentorId, orderId: orderId);
 
@@ -510,16 +668,12 @@ class ChatController extends GetxController {
         .collection('chatRooms')
         .doc(roomId);
 
-    final DocumentSnapshot<Map<String, dynamic>> snapshot = await roomRef.get();
     final List<String> ids = [userId, mentorId]..sort();
 
     final roomData = {
       'roomId': roomId,
       'users': ids,
-      'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
-      'lastMessage': '',
-      'lastSenderId': '',
     };
 
     // Add orderId to room data if provided
@@ -527,19 +681,9 @@ class ChatController extends GetxController {
       roomData['orderId'] = orderId;
     }
 
-    if (!snapshot.exists) {
-      await roomRef.set(roomData, SetOptions(merge: true));
-    } else {
-      // Update orderId if it wasn't set before
-      if (orderId != null && orderId.isNotEmpty) {
-        await roomRef.update({
-          'orderId': orderId,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-      } else {
-        await roomRef.update({'updatedAt': FieldValue.serverTimestamp()});
-      }
-    }
+    // Reading an absent room is denied by member-only rules. Merge identity
+    // first, without resetting any existing messages or preview metadata.
+    await roomRef.set(roomData, SetOptions(merge: true));
 
     return roomId;
   }

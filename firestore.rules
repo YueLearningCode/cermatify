@@ -169,10 +169,15 @@ service cloud.firestore {
       allow create: if signedIn() &&
           request.resource.data.mentorId == request.auth.uid &&
           currentUser().data.role == 'mentor' &&
+          currentUser().data.status == 'active' &&
           request.resource.data.status == 'pending' &&
           request.resource.data.nominal is int &&
-          request.resource.data.nominal > 0 &&
+          request.resource.data.nominal >= 50000 &&
           request.resource.data.nominal <= currentUser().data.get('saldo', 0) &&
+          request.resource.data.namaRekening is string &&
+          request.resource.data.namaRekening.matches('.*[^ ].*') &&
+          request.resource.data.nomorRekening is string &&
+          request.resource.data.nomorRekening.matches('[0-9]+') &&
           request.resource.data.keys().hasOnly([
             'mentorId',
             'mentorName',
@@ -216,10 +221,18 @@ service cloud.firestore {
         allow create: if isParentRoomMember() &&
             request.resource.data.senderId == request.auth.uid &&
             request.resource.data.receiverId in parentRoom().data.users &&
+            request.resource.data.receiverId != request.auth.uid &&
+            request.resource.data.get('readAt', null) == null &&
             request.resource.data.message is string &&
             request.resource.data.message.size() > 0 &&
             request.resource.data.message.size() <= 4000;
-        allow update, delete: if false;
+        allow update: if isParentRoomMember() &&
+            resource.data.receiverId == request.auth.uid &&
+            resource.data.senderId != request.auth.uid &&
+            resource.data.get('readAt', null) == null &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']) &&
+            request.resource.data.readAt == request.time;
+        allow delete: if false;
       }
     }
 

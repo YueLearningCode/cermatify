@@ -222,31 +222,39 @@ class AdminOrdersController extends GetxController {
     try {
       isUpdating.value = true;
       final orderReference = _firestore.collection('orders').doc(orderId);
-      final orderDocument = await orderReference.get();
-      if (!orderDocument.exists) throw Exception('Order tidak ditemukan');
+      await _firestore.runTransaction((transaction) async {
+        final orderDocument = await transaction.get(orderReference);
+        if (!orderDocument.exists) throw Exception('Order tidak ditemukan');
 
-      final data = orderDocument.data()!;
-      final currentStatus = data['status']?.toString().toLowerCase() ?? '';
-      final mentorId = data['mentorId']?.toString() ?? '';
-      final price = (data['price'] as num?)?.toInt() ?? 0;
-      final isFirstApproval =
-          (newStatus == 'progress' || newStatus == 'approved') &&
-          currentStatus != 'progress' &&
-          currentStatus != 'approved' &&
-          mentorId.isNotEmpty &&
-          price > 0;
+        final data = orderDocument.data()!;
+        final currentStatus = data['status']?.toString().toLowerCase() ?? '';
+        final mentorId = data['mentorId']?.toString() ?? '';
+        final price = (data['price'] as num?)?.toInt() ?? 0;
+        final validTransition =
+            (['waiting verification', 'pending'].contains(currentStatus) &&
+                ['progress', 'approved', 'rejected'].contains(newStatus)) ||
+            (['progress', 'approved'].contains(currentStatus) &&
+                newStatus == 'completed');
+        if (!validTransition) {
+          throw StateError('Perubahan status order tidak valid');
+        }
+        final isFirstApproval =
+            (newStatus == 'progress' || newStatus == 'approved') &&
+            currentStatus != 'progress' &&
+            currentStatus != 'approved' &&
+            mentorId.isNotEmpty &&
+            price > 0;
 
-      final batch = _firestore.batch();
-      batch.update(orderReference, {
-        'status': newStatus,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      if (isFirstApproval) {
-        batch.update(_firestore.collection('users').doc(mentorId), {
-          'saldo': FieldValue.increment(price),
+        transaction.update(orderReference, {
+          'status': newStatus,
+          'updatedAt': FieldValue.serverTimestamp(),
         });
-      }
-      await batch.commit();
+        if (isFirstApproval) {
+          transaction.update(_firestore.collection('users').doc(mentorId), {
+            'saldo': FieldValue.increment(price),
+          });
+        }
+      });
 
       final index = orders.indexWhere((order) => order['id'] == orderId);
       if (index >= 0) {

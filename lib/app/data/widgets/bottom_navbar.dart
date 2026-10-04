@@ -160,7 +160,7 @@ class BottomNavbar extends StatelessWidget {
                 key: ValueKey<bool>(isSelected),
               ),
             ),
-            if (showBadge && !isSelected)
+            if (showBadge)
               Positioned(
                 right: -6,
                 top: -6,

@@ -21,7 +21,7 @@ class DashboardView extends GetView<DashboardController> {
     return Obx(() {
       final bool isMentor = SessionState.role == 'mentor';
       final int chatCount = Get.isRegistered<ChatController>()
-          ? Get.find<ChatController>().chatRoomCount.value
+          ? Get.find<ChatController>().unreadMessageCount.value
           : 0;
       final int currentIndex = controller.currentIndex.value;
       return ResponsiveNavigationScaffold(

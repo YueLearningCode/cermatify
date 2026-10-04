@@ -4,6 +4,12 @@ class ChatMessage {
   final String receiverId;
   final String message;
   final DateTime timestamp;
+  final DateTime? readAt;
+  bool isUnreadFor(String userId) =>
+      userId.isNotEmpty &&
+      receiverId == userId &&
+      senderId != userId &&
+      readAt == null;
   final String? orderId; // Order ID for chat room identification
 
   ChatMessage({
@@ -12,6 +18,7 @@ class ChatMessage {
     required this.receiverId,
     required this.message,
     required this.timestamp,
+    this.readAt,
     this.orderId,
   });
 
@@ -24,6 +31,9 @@ class ChatMessage {
       timestamp: json['timestamp'] is DateTime
           ? json['timestamp'] as DateTime
           : DateTime.parse(json['timestamp'] as String),
+      readAt: json['readAt'] == null
+          ? null
+          : DateTime.parse(json['readAt'] as String),
     );
   }
 
@@ -34,6 +44,7 @@ class ChatMessage {
       'receiverId': receiverId,
       'message': message,
       'timestamp': timestamp.toIso8601String(),
+      'readAt': readAt?.toIso8601String(),
     };
   }
 }
