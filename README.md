@@ -601,3 +601,63 @@ Beberapa file/folder terlihat berasal dari macOS atau hasil ekstrak ZIP:
 - file dengan awalan `._` di folder `__MACOSX`
 
 File tersebut tidak diperlukan untuk menjalankan Flutter. Untuk repository yang rapi, file-file itu biasanya dihapus dan dimasukkan ke `.gitignore`.
+
+**Cermatify punya peluang sebagai platform pendampingan akademik mahasiswa, tetapi menurut penilaian saya belum siap untuk rilis publik yang menerima transaksi uang.** Prioritasnya sekarang adalah keamanan data, kepastian layanan, dan pencairan saldo.
+
+Analisis ini menggabungkan sumber internet, ulasan pengguna layanan sejenis, dan pemeriksaan kode proyek. Validasi terbaru: **`flutter analyze` tanpa masalah dan 158 tes lulus.** Upload, pembayaran, serta pencairan di lingkungan produksi belum terverifikasi. Ulasan kompetitor juga merupakan sampel pengalaman pengguna, bukan bukti bahwa seluruh pengguna mengalami hal yang sama.
+
+**Pembanding dan pelajaran untuk Cermatify**
+
+Cermatify menggabungkan dua pasar: pendampingan mentor dan pencarian responden. Karena itu, pembandingnya tidak semuanya pesaing langsung.
+
+| Layanan | Kemiripan | Pelajaran untuk Cermatify |
+|---|---|---|
+| **Superprof** | Mempertemukan pengguna dengan pengajar | Profil mentor, kecocokan kebutuhan, dan kepastian ketersediaan sangat penting. Ulasan memuat pengalaman positif mendapatkan murid, sekaligus keluhan tentang biaya sebelum mengetahui ketersediaan dan pengembalian dana. [Ulasan pengguna](https://www.trustpilot.com/review/superprof.co.id) |
+| **Schoters** | Pendampingan personal untuk tujuan pendidikan | Jual hasil pendampingan yang jelas: jenis bantuan, jumlah sesi, dan pengalaman mentor. Schoters menawarkan pendampingan personal untuk persiapan studi dan beasiswa. [Layanan resmi](https://www.schoters.com/p/saa-via-konsultan) |
+| **JAKPAT** | Menghubungkan survei dengan responden berinsentif | Pengguna mengapresiasi survei dan hadiah, tetapi ada keluhan tentang ketersediaan penukaran. Mengumpulkan saldo harus diikuti jalur pencairan yang dapat dipercaya. [Produk dan ulasan pengguna](https://play.google.com/store/apps/details?hl=id&id=com.git.jakpat.jajakpendapat) |
+| **Prolific** | Rekrutmen responden penelitian | Pendanaan penelitian dan imbalan perlu dirancang sejak awal. Prolific mengalokasikan dana untuk studi dan menetapkan standar pembayaran; prinsipnya relevan, meskipun nominalnya tidak dapat langsung diterapkan di Indonesia. [Model pembayaran resmi](https://researcher-help.prolific.com/en/articles/445230-prolific-s-payment-model) |
+
+Menurut saya, posisi yang paling menjanjikan adalah **“pendamping akademik mahasiswa dengan mentor terverifikasi”**. Fokus ini lebih mudah dijelaskan dibanding menawarkan banyak layanan sekaligus. Itu masih hipotesis bisnis yang perlu diuji dengan mahasiswa dan mentor nyata.
+
+**Kelebihan aplikasi Anda**
+
+- **Kebutuhannya saling berkaitan.** Pendampingan paper, lomba, chat mentor, dan riset bisa melayani mahasiswa yang sama.
+- **Alur dasar sudah tersedia.** Ada peran customer, mentor, admin, order, percakapan, dan withdraw—cukup untuk membentuk pengalaman layanan yang utuh.
+- **Komunikasi terhubung dengan aplikasi.** Pengguna dapat melanjutkan pendampingan tanpa selalu berpindah ke kanal lain.
+- **Ada fondasi verifikasi teknis.** Analyzer dan tes yang lulus memudahkan pengembangan selanjutnya, walaupun belum membuktikan kualitas mentor atau keberhasilan transaksi nyata.
+
+Keunggulan tersebut akan terasa bagi pengguna jika mentor tersedia, layanan sesuai janji, dan masalah dapat diselesaikan dengan jelas.
+
+**Kekurangan yang paling penting dari kode saat ini**
+
+| Temuan | Dampak bagi pengguna | Perbaikan utama |
+|---|---|---|
+| Semua akun yang login dapat membaca dokumen `users`. [Rules](/E:/laragon/www/cermatify/cermatify/firestore.rules:59) | Data kontak dan saldo dalam dokumen itu berpotensi terbaca oleh akun lain | Pisahkan profil publik dari data pribadi dan keuangan; batasi akses |
+| Pendaftaran responden mencoba menambah saldo Rp100 dari aplikasi, sedangkan rules melarang perubahan tersebut. [Kode](/E:/laragon/www/cermatify/cermatify/lib/app/modules/kuesioner/views/kuesioner_detail_view.dart:180) | Alur insentif dapat gagal | Berikan reward melalui backend setelah penyelesaian respons yang valid |
+| Harga penuh order masuk ke saldo mentor ketika disetujui, sebelum layanan selesai. [Kode](/E:/laragon/www/cermatify/cermatify/lib/app/modules/admin_orders/controllers/admin_orders_controller.dart:220) | Belum ada pemisahan dana tertahan, pendapatan tersedia, komisi, dan refund | Tetapkan aturan penyelesaian layanan dan pencatatan keuangan |
+| Withdraw mengurangi saldo saat admin menyetujui, tanpa reservasi ketika diajukan atau konfirmasi transfer. [Kode](/E:/laragon/www/cermatify/cermatify/lib/app/modules/admin_withdraw/controllers/admin_withdraw_controller.dart:110) | Beberapa permintaan dapat memakai saldo yang sama; “approved” belum membuktikan uang diterima | Reservasi saldo, riwayat mutasi, bukti transfer, dan status pencairan |
+| Riwayat pesan belum dibatasi dengan pagination | Percakapan panjang dapat meningkatkan waktu muat dan pembacaan Firestore | Muat pesan terbaru terlebih dahulu dan ambil pesan lama bertahap |
+
+Model reward juga perlu diperjelas: aplikasi menawarkan Rp100 kepada responden, tetapi withdraw saat ini khusus mentor. **Pengguna harus mengetahui sejak awal siapa yang bisa mencairkan saldo dan bagaimana caranya.**
+
+**Improvement yang paling bernilai**
+
+1. **Perjelas layanan sebelum pembayaran.** Tampilkan harga total, hasil yang diterima, jumlah sesi/revisi, ketersediaan mentor, waktu respons, dan ketentuan pembatalan. Gunakan nama menu yang langsung dipahami mahasiswa.
+2. **Bangun kepercayaan terhadap mentor.** Tambahkan portofolio, bidang keahlian, identitas/verifikasi yang jelas, serta ulasan dari transaksi selesai.
+3. **Lengkapi pengalaman setelah membeli.** Pengguna perlu notifikasi pesan, progres layanan, konfirmasi selesai, bantuan admin, dan prosedur komplain/refund.
+4. **Jaga kualitas responden.** Jika fitur kuesioner dipertahankan, gunakan kecocokan profil, pencegahan respons ganda, dan validasi penyelesaian. Pendaftaran saja belum membuktikan jawaban penelitian berkualitas.
+5. **Siapkan penemuan lewat Google.** Landing page berisi manfaat, layanan, harga, dan profil mentor dapat dibuat dengan HTML yang mudah diindeks, sementara aplikasi tetap Flutter. Pendekatan ini juga direkomendasikan dalam [dokumentasi Flutter](https://docs.flutter.dev/platform-integration/web/faq).
+
+Untuk tahap awal, saya menyarankan menyempurnakan **satu alur pendampingan mentor** terlebih dahulu. Fitur kuesioner berinsentif membutuhkan aturan kualitas dan keuangan tersendiri.
+
+**Yang perlu disiapkan sebelum deploy**
+
+- **Keamanan:** perbaiki akses data pengguna, rotasi API secret yang sebelumnya dibagikan, pastikan secret tidak masuk aplikasi, batasi upload Cloudinary, dan verifikasi App Check serta rules di proyek Firebase tujuan.
+- **Transaksi:** tetapkan pembagian pendapatan, dana tertahan, refund, pencairan, dan riwayat mutasi. Uji pengajuan ganda serta persetujuan bersamaan.
+- **Privasi dan dukungan:** siapkan kebijakan privasi, ketentuan layanan, retensi data, kontak bantuan, serta permintaan penghapusan akun. Untuk Google Play, aplikasi yang menyediakan pembuatan akun harus menyediakan jalur penghapusan di aplikasi dan melalui web. [Ketentuan resmi](https://support.google.com/googleplay/android-developer/answer/13327111?hl=en)
+- **Pengujian layanan nyata:** gunakan akun customer, mentor, dan admin untuk menjalankan registrasi → order → verifikasi → chat → selesai → withdraw. Uji juga penolakan, jaringan putus, dan upload gagal.
+- **Rilis dan operasi:** pisahkan staging dan produksi; siapkan monitoring error, batas biaya, backup, rollback, serta petugas yang menangani verifikasi dan pencairan.
+- **Pipeline:** workflow web saat ini menjalankan analyzer dan tes rules, tetapi belum menjalankan `flutter test`. Konfigurasi reCAPTCHA kosong hanya menghasilkan peringatan. Perketat pemeriksaan sebelum rilis produksi. [Workflow](/E:/laragon/www/cermatify/cermatify/.github/workflows/deploy-web.yml:53)
+- **Jika masuk Play Store:** finalkan application ID—saat ini masih `com.example.cermatify`—lalu siapkan signing key, AAB release, Data Safety, materi listing, dan pengujian perangkat. [Konfigurasi Android](/E:/laragon/www/cermatify/cermatify/android/app/build.gradle.kts:34)
+
+**Langkah berikutnya yang paling masuk akal adalah memperbaiki penghambat keamanan dan keuangan, lalu menjalankan beta terbatas.** Uji dengan sekitar 10–20 mahasiswa dan beberapa mentor: apakah mereka memahami layanan, menemukan mentor yang cocok, mendapatkan respons, dan menyelesaikan layanan. Ukur transaksi selesai, keluhan, serta penggunaan ulang sebelum memperluas promosi.
