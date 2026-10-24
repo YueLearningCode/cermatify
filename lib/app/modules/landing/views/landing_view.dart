@@ -1,19 +1,60 @@
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_layout.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:cermatify/app/modules/landing/widgets/review_preview_section.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 const double _landingMaxWidth = 1180;
 const double _compactBreakpoint = 360;
+const String _heroHeadline =
+    'Karya ilmiah, kompetisi, dan riset lebih terarah.';
+const String _heroDescription =
+    'Temukan pendampingan karya ilmiah dan persiapan kompetisi, serta ajukan kebutuhan responden penelitian melalui Cermatify. Pilih layanan yang sesuai dengan kebutuhanmu dan pahami prosesnya sebelum memulai.';
 
 bool _isCompact(BuildContext context) {
   return MediaQuery.sizeOf(context).width < _compactBreakpoint;
 }
 
-class LandingView extends StatelessWidget {
+class LandingView extends StatefulWidget {
   const LandingView({super.key});
+
+  @override
+  State<LandingView> createState() => _LandingViewState();
+}
+
+class _LandingViewState extends State<LandingView> {
+  final _scrollController = ScrollController();
+  final _servicesKey = GlobalKey();
+
+  void _showServices() {
+    final target = _servicesKey.currentContext?.findRenderObject();
+    if (target == null || !_scrollController.hasClients) return;
+
+    final offset =
+        RenderAbstractViewport.of(target).getOffsetToReveal(target, 0).offset -
+        88;
+    final destination = offset
+        .clamp(0.0, _scrollController.position.maxScrollExtent)
+        .toDouble();
+    if (MediaQuery.of(context).disableAnimations) {
+      _scrollController.jumpTo(destination);
+    } else {
+      _scrollController.animateTo(
+        destination,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +62,7 @@ class LandingView extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: CustomScrollView(
+          controller: _scrollController,
           slivers: [
             SliverPersistentHeader(
               pinned: true,
@@ -35,12 +77,13 @@ class LandingView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _LandingIntro(),
+                        _LandingIntro(onShowServices: _showServices),
                         const SizedBox(height: 72),
                         _SectionHeader(
-                          title: 'Solusi Cermat untuk Kebutuhan Akademik',
+                          key: _servicesKey,
+                          title: 'Pilih layanan sesuai kebutuhanmu',
                           subtitle:
-                              'Mulai dari konsultasi mentor, kuesioner, sampai bantuan riset dalam satu aplikasi.',
+                              'Pendampingan karya ilmiah, persiapan kompetisi, dan kebutuhan responden penelitian dalam satu aplikasi.',
                         ),
                         const SizedBox(height: 16),
                         const _FeatureGrid(),
@@ -52,14 +95,7 @@ class LandingView extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         const _HowItWorks(),
-                        const SizedBox(height: 72),
-                        _SectionHeader(
-                          title: 'Cerita Pengguna',
-                          subtitle:
-                              'Beberapa alasan Cermatify jadi teman belajar yang praktis.',
-                        ),
-                        const SizedBox(height: 16),
-                        const _Testimonials(),
+                        const ReviewPreviewSection(),
                         const SizedBox(height: 72),
                         const _FinalCta(),
                       ],
@@ -158,7 +194,9 @@ class _LandingHeaderDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection();
+  const _HeroSection({required this.onShowServices});
+
+  final VoidCallback onShowServices;
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +232,7 @@ class _HeroSection extends StatelessWidget {
                       'assets/images/banner1.jpg',
                       fit: BoxFit.contain,
                       alignment: Alignment.bottomCenter,
+                      semanticLabel: 'Ilustrasi pendampingan akademik',
                     ),
                   ),
                   DecoratedBox(
@@ -217,20 +256,10 @@ class _HeroSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Belajar, riset, dan konsultasi jadi lebih terarah.',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.black414,
-                    fontSize: compact ? 18 : 20,
-                    fontWeight: FontWeight.w900,
-                    height: 1.25,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _Pill(label: 'Platform pendamping akademik'),
+                const _Pill(label: 'Pendampingan akademik untuk mahasiswa'),
                 const SizedBox(height: 14),
                 Text(
-                  'Selamat Datang di Cermatify',
+                  _heroHeadline,
                   style: GoogleFonts.poppins(
                     fontSize: compact ? 24 : 28,
                     fontWeight: FontWeight.w900,
@@ -240,7 +269,7 @@ class _HeroSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Temukan mentor, kelola kebutuhan kuesioner, dan akses layanan pendukung akademik dengan pengalaman yang nyaman dari ponsel.',
+                  _heroDescription,
                   style: GoogleFonts.poppins(
                     fontSize: compact ? 13 : 14,
                     height: 1.65,
@@ -251,7 +280,7 @@ class _HeroSection extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => Get.toNamed(Routes.REGISTER),
+                    onPressed: onShowServices,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: AppColors.whiteColor,
@@ -262,7 +291,7 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Mulai Sekarang',
+                      'Lihat Layanan',
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -281,7 +310,7 @@ class _HeroSection extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Saya Sudah Punya Akun',
+                      'Masuk',
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -296,29 +325,37 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _LandingIntro extends StatelessWidget {
-  const _LandingIntro();
+  const _LandingIntro({required this.onShowServices});
+
+  final VoidCallback onShowServices;
 
   @override
   Widget build(BuildContext context) {
     return ResponsiveLayout(
-      mobile: (context, constraints) => const Column(
+      mobile: (context, constraints) => Column(
         children: [
-          _HeroSection(),
-          SizedBox(height: 24),
-          _TrustBar(),
-          SizedBox(height: 28),
-          _VisualShowcase(),
+          _HeroSection(onShowServices: onShowServices),
+          const SizedBox(height: 24),
+          const _TrustBar(),
+          const SizedBox(height: 28),
+          const _VisualShowcase(),
         ],
       ),
-      desktop: (context, constraints) => const Column(
-        children: [_DesktopHeroSection(), SizedBox(height: 28), _TrustBar()],
+      desktop: (context, constraints) => Column(
+        children: [
+          _DesktopHeroSection(onShowServices: onShowServices),
+          const SizedBox(height: 28),
+          const _TrustBar(),
+        ],
       ),
     );
   }
 }
 
 class _DesktopHeroSection extends StatelessWidget {
-  const _DesktopHeroSection();
+  const _DesktopHeroSection({required this.onShowServices});
+
+  final VoidCallback onShowServices;
 
   @override
   Widget build(BuildContext context) {
@@ -352,10 +389,10 @@ class _DesktopHeroSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _Pill(label: 'Platform pendamping akademik'),
+                  const _Pill(label: 'Pendampingan akademik untuk mahasiswa'),
                   const SizedBox(height: 24),
                   Text(
-                    'Belajar lebih terarah,\nbertumbuh lebih percaya diri.',
+                    _heroHeadline,
                     style: GoogleFonts.poppins(
                       fontSize: 44,
                       height: 1.12,
@@ -365,7 +402,7 @@ class _DesktopHeroSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Temukan mentor, kelola kebutuhan kuesioner, dan akses layanan pendukung akademik dalam satu pengalaman yang sederhana.',
+                    _heroDescription,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       height: 1.7,
@@ -378,9 +415,9 @@ class _DesktopHeroSection extends StatelessWidget {
                     runSpacing: 12,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () => Get.toNamed(Routes.REGISTER),
+                        onPressed: onShowServices,
                         icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                        label: const Text('Mulai Sekarang'),
+                        label: const Text('Lihat Layanan'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryColor,
                           foregroundColor: AppColors.whiteColor,
@@ -407,7 +444,7 @@ class _DesktopHeroSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text('Saya Sudah Punya Akun'),
+                        child: const Text('Masuk'),
                       ),
                     ],
                   ),
@@ -471,12 +508,12 @@ class _DesktopHeroSection extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.verified_rounded,
+                              Icons.school_outlined,
                               color: AppColors.primaryColor,
                               size: 21,
                             ),
                             SizedBox(width: 8),
-                            Text('Pendamping terverifikasi'),
+                            Text('Pendampingan akademik'),
                           ],
                         ),
                       ),
@@ -512,7 +549,7 @@ class _TrustBar extends StatelessWidget {
             SizedBox(
               width: itemWidth,
               child: _StatCard(
-                value: '3+',
+                value: '3',
                 label: 'Layanan inti',
                 compact: compact,
               ),
@@ -618,32 +655,36 @@ class _FeatureGrid extends StatelessWidget {
     const items = [
       _FeatureTile(
         icon: Icons.school_outlined,
-        title: 'Paperlink',
-        description: 'Cari mentor dan dukungan untuk kebutuhan akademik.',
+        title: 'Cermat Paper',
+        benefit: 'Temukan arah untuk karya ilmiahmu',
+        description:
+            'Konsultasikan kebutuhan penelitian dan penulisan dengan mentor sesuai bidang. Dapatkan arahan serta masukan untuk mengembangkan karyamu sendiri.',
         color: AppColors.primaryLight,
       ),
       _FeatureTile(
-        icon: Icons.assignment_outlined,
-        title: 'Kuesioner',
+        icon: Icons.emoji_events_outlined,
+        title: 'Cermat Competition',
+        benefit: 'Siapkan ide dan strategi kompetisimu',
         description:
-            'Buat dan kelola kebutuhan data responden dengan lebih rapi.',
+            'Pilih pendampingan sesuai kategori kompetisi untuk mendiskusikan ide, pengembangan karya, dan persiapan partisipasimu.',
         color: AppColors.primary,
       ),
       _FeatureTile(
         icon: Icons.groups_2_outlined,
-        title: 'Sourcelink',
+        title: 'Cermat Kuesioner',
+        benefit: 'Ajukan kebutuhan responden penelitian',
         description:
-            'Temukan sumber dan komunitas pendukung dalam satu tempat.',
+            'Masukkan tautan kuesioner dan kriteria responden untuk ditinjau tim Cermatify sebelum ditampilkan pada layanan kuesioner.',
         color: AppColors.primaryDark,
       ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900 ? 3 : 1;
         const spacing = 12.0;
+        final columns = constraints.maxWidth >= 900 ? 3 : 1;
         final width =
-            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
         return Wrap(
           spacing: spacing,
           runSpacing: spacing,
@@ -681,43 +722,6 @@ class _HowItWorks extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 900 ? 3 : 1;
-        const spacing = 12.0;
-        final width =
-            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            for (final item in items) SizedBox(width: width, child: item),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _Testimonials extends StatelessWidget {
-  const _Testimonials();
-
-  @override
-  Widget build(BuildContext context) {
-    const items = [
-      _QuoteCard(
-        quote:
-            'Cermatify membantu saya menemukan arahan riset tanpa harus bolak-balik tanya secara manual.',
-        name: 'Mahasiswa',
-        role: 'Pengguna Cermatify',
-      ),
-      _QuoteCard(
-        quote:
-            'Alur layanan terasa praktis dan cocok dibuka dari ponsel saat sedang mengerjakan tugas.',
-        name: 'Mentor',
-        role: 'Pendamping Akademik',
-      ),
-    ];
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 700 ? 2 : 1;
         const spacing = 12.0;
         final width =
             (constraints.maxWidth - (spacing * (columns - 1))) / columns;
@@ -809,7 +813,11 @@ class _FinalCta extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
+  const _SectionHeader({
+    super.key,
+    required this.title,
+    required this.subtitle,
+  });
 
   final String title;
   final String subtitle;
@@ -915,10 +923,10 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 86,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 86),
       child: Container(
+        width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -926,6 +934,7 @@ class _StatCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
@@ -961,69 +970,71 @@ class _FeatureTile extends StatelessWidget {
   const _FeatureTile({
     required this.icon,
     required this.title,
+    required this.benefit,
     required this.description,
     required this.color,
   });
 
   final IconData icon;
   final String title;
+  final String benefit;
   final String description;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.9), color],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.22),
+            color: color.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.2),
+              color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppColors.surface),
+            child: Icon(icon, color: AppColors.primaryDark),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.surface,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  description,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    height: 1.5,
-                    color: AppColors.surface.withValues(alpha: 0.82),
-                  ),
-                ),
-              ],
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            benefit,
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              height: 1.3,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            description,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              height: 1.65,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -1096,92 +1107,6 @@ class _StepTile extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuoteCard extends StatelessWidget {
-  const _QuoteCard({
-    required this.quote,
-    required this.name,
-    required this.role,
-  });
-
-  final String quote;
-  final String name;
-  final String role;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            quote,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              height: 1.62,
-              color: AppColors.blackF45,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.checkoutButtonColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  name.isNotEmpty ? name[0] : '?',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.primaryColor,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.black414,
-                      ),
-                    ),
-                    Text(
-                      role,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: AppColors.greyTextSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
       ),

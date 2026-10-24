@@ -1,7 +1,11 @@
 import 'package:cermatify/app/routes/app_pages.dart';
+import 'package:cermatify/app/modules/landing/views/landing_view.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 
 void main() {
+  tearDown(Get.reset);
+
   test('all named routes are unique and use absolute paths', () {
     final names = AppPages.routes.map((page) => page.name).toList();
 
@@ -27,6 +31,7 @@ void main() {
   test('all private routes declare middleware', () {
     const publicRoutes = {
       Routes.LANDING,
+      Routes.LEGACY_LANDING,
       Routes.LOGIN,
       Routes.REGISTER,
       Routes.SPLASH,
@@ -44,4 +49,25 @@ void main() {
       );
     }
   });
+
+  for (final initialRoute in [Routes.LANDING, Routes.LEGACY_LANDING]) {
+    testWidgets('opens the public landing at root from $initialRoute', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        GetMaterialApp(
+          initialRoute: initialRoute,
+          getPages: AppPages.routes,
+          unknownRoute: AppPages.unknownRoute,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(Get.currentRoute, '/');
+      expect(find.byType(LandingView), findsOneWidget);
+      expect(find.text('Lihat Layanan'), findsOneWidget);
+      expect(AppPages.INITIAL, '/');
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

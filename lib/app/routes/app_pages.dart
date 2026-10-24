@@ -63,6 +63,11 @@ class AppPages {
   static final routes = [
     GetPage(name: _Paths.LANDING, page: () => const LandingView()),
     GetPage(
+      name: _Paths.LEGACY_LANDING,
+      page: () => const LandingView(),
+      middlewares: [LegacyLandingMiddleware()],
+    ),
+    GetPage(
       name: _Paths.LOGIN,
       page: () => const LoginView(),
       binding: LoginBinding(),

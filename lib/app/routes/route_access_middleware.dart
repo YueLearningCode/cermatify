@@ -3,6 +3,11 @@ import 'package:get/get.dart';
 
 import '../data/services/session_state.dart';
 
+class LegacyLandingMiddleware extends GetMiddleware {
+  @override
+  RouteSettings? redirect(String? route) => const RouteSettings(name: '/');
+}
+
 class GuestOnlyMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
