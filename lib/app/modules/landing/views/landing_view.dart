@@ -2,6 +2,8 @@ import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_layout.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cermatify/app/modules/landing/widgets/review_preview_section.dart';
+import 'package:cermatify/app/modules/landing/widgets/landing_navigation.dart';
+import 'package:cermatify/app/modules/landing/widgets/landing_faq.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
@@ -9,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 const double _landingMaxWidth = 1180;
 const double _compactBreakpoint = 360;
+const double _landingHeaderHeight = 72;
 const String _heroHeadline =
     'Karya ilmiah, kompetisi, dan riset lebih terarah.';
 const String _heroDescription =
@@ -28,14 +31,95 @@ class LandingView extends StatefulWidget {
 class _LandingViewState extends State<LandingView> {
   final _scrollController = ScrollController();
   final _servicesKey = GlobalKey();
+  final _howItWorksKey = GlobalKey();
+  final _faqKey = GlobalKey();
+  LandingNavTarget _activeTarget = LandingNavTarget.home;
+  bool _activeUpdateScheduled = false;
 
-  void _showServices() {
-    final target = _servicesKey.currentContext?.findRenderObject();
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_scheduleActiveTargetUpdate);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scheduleActiveTargetUpdate();
+  }
+
+  void _scheduleActiveTargetUpdate() {
+    if (_activeUpdateScheduled) return;
+    _activeUpdateScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _activeUpdateScheduled = false;
+      if (mounted) _updateActiveTarget();
+    });
+  }
+
+  void _updateActiveTarget() {
+    if (!mounted || !_scrollController.hasClients) return;
+    var active = LandingNavTarget.home;
+    final top = MediaQuery.paddingOf(context).top + _landingHeaderHeight + 24;
+    final anchors = {
+      LandingNavTarget.services: _servicesKey,
+      LandingNavTarget.howItWorks: _howItWorksKey,
+      LandingNavTarget.faq: _faqKey,
+    };
+    for (final anchor in anchors.entries) {
+      final box = anchor.value.currentContext?.findRenderObject();
+      if (box is RenderBox &&
+          box.hasSize &&
+          box.localToGlobal(Offset.zero).dy <= top) {
+        active = anchor.key;
+      }
+    }
+    final position = _scrollController.position;
+    final faq = _faqKey.currentContext?.findRenderObject();
+    if (position.pixels > 0 &&
+        position.extentAfter < 1 &&
+        faq is RenderBox &&
+        faq.hasSize &&
+        faq.localToGlobal(Offset.zero).dy < MediaQuery.sizeOf(context).height) {
+      active = LandingNavTarget.faq;
+    }
+    if (active != _activeTarget) setState(() => _activeTarget = active);
+  }
+
+  void _navigate(LandingNavTarget target) {
+    switch (target) {
+      case LandingNavTarget.home:
+        _scrollToOffset(0);
+      case LandingNavTarget.services:
+        _showServices();
+      case LandingNavTarget.howItWorks:
+        _showSection(_howItWorksKey);
+      case LandingNavTarget.faq:
+        _showSection(_faqKey);
+      case LandingNavTarget.mentor:
+        Get.toNamed(Routes.REGISTER, arguments: 'mentor');
+      case LandingNavTarget.login:
+        Get.toNamed(Routes.LOGIN);
+      case LandingNavTarget.register:
+        Get.toNamed(Routes.REGISTER);
+    }
+  }
+
+  void _showServices() => _showSection(_servicesKey);
+
+  void _showSection(GlobalKey key) {
+    final target = key.currentContext?.findRenderObject();
     if (target == null || !_scrollController.hasClients) return;
 
+    // The viewport already accounts for the pinned header when revealing a box.
     final offset =
         RenderAbstractViewport.of(target).getOffsetToReveal(target, 0).offset -
-        88;
+        16;
+    _scrollToOffset(offset);
+  }
+
+  void _scrollToOffset(double offset) {
+    if (!_scrollController.hasClients) return;
     final destination = offset
         .clamp(0.0, _scrollController.position.maxScrollExtent)
         .toDouble();
@@ -52,6 +136,7 @@ class _LandingViewState extends State<LandingView> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_scheduleActiveTargetUpdate);
     _scrollController.dispose();
     super.dispose();
   }
@@ -66,7 +151,10 @@ class _LandingViewState extends State<LandingView> {
           slivers: [
             SliverPersistentHeader(
               pinned: true,
-              delegate: _LandingHeaderDelegate(),
+              delegate: _LandingHeaderDelegate(
+                activeTarget: _activeTarget,
+                onSelected: _navigate,
+              ),
             ),
             SliverToBoxAdapter(
               child: Center(
@@ -89,6 +177,7 @@ class _LandingViewState extends State<LandingView> {
                         const _FeatureGrid(),
                         const SizedBox(height: 72),
                         _SectionHeader(
+                          key: _howItWorksKey,
                           title: 'Cara Kerja Cermatify',
                           subtitle:
                               'Alurnya dibuat sederhana agar pengguna bisa langsung mulai tanpa kebingungan.',
@@ -96,6 +185,15 @@ class _LandingViewState extends State<LandingView> {
                         const SizedBox(height: 16),
                         const _HowItWorks(),
                         const ReviewPreviewSection(),
+                        const SizedBox(height: 72),
+                        _SectionHeader(
+                          key: _faqKey,
+                          title: 'Pertanyaan yang sering diajukan',
+                          subtitle:
+                              'Kenali layanan dan langkah awal menggunakan Cermatify.',
+                        ),
+                        const SizedBox(height: 16),
+                        const LandingFaq(),
                         const SizedBox(height: 72),
                         const _FinalCta(),
                       ],
@@ -112,11 +210,19 @@ class _LandingViewState extends State<LandingView> {
 }
 
 class _LandingHeaderDelegate extends SliverPersistentHeaderDelegate {
-  @override
-  double get minExtent => 72;
+  _LandingHeaderDelegate({
+    required this.activeTarget,
+    required this.onSelected,
+  });
+
+  final LandingNavTarget activeTarget;
+  final ValueChanged<LandingNavTarget> onSelected;
 
   @override
-  double get maxExtent => 72;
+  double get minExtent => _landingHeaderHeight;
+
+  @override
+  double get maxExtent => _landingHeaderHeight;
 
   @override
   Widget build(
@@ -124,73 +230,16 @@ class _LandingHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    final compact = _isCompact(context);
-    final logoSize = compact ? 38.0 : 42.0;
-
-    return SizedBox.expand(
-      child: ColoredBox(
-        color: AppColors.background.withValues(alpha: 0.96),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _landingMaxWidth),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Container(
-                    width: logoSize,
-                    height: logoSize,
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Image.asset(
-                      'assets/images/logo.jpeg',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Cermatify',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: compact ? 16 : 18,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.black414,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => Get.toNamed(Routes.LOGIN),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: compact ? 8 : 12,
-                        vertical: 8,
-                      ),
-                      minimumSize: const Size(0, 36),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Masuk',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    return LandingNavigation(
+      activeTarget: activeTarget,
+      onSelected: onSelected,
     );
   }
 
   @override
-  bool shouldRebuild(covariant _LandingHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant _LandingHeaderDelegate oldDelegate) =>
+      activeTarget != oldDelegate.activeTarget ||
+      onSelected != oldDelegate.onSelected;
 }
 
 class _HeroSection extends StatelessWidget {
@@ -896,12 +945,14 @@ class _MiniBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 15, color: AppColors.primaryColor),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primaryColor,
+          Flexible(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primaryColor,
+              ),
             ),
           ),
         ],

@@ -1,6 +1,6 @@
 # Cermatify — kajian proposal dan usulan landing page
 
-Tanggal: 24 Oktober 2026. Status: **copy dan urutan bagian disetujui pemilik; Tahap 7 dimulai pada pembuka dan tiga kartu layanan**. Persetujuan ini tidak menetapkan harga/paket baru atau membuktikan materi ulasan sudah diterima.
+Tanggal: 24 Oktober 2026. Status: **seluruh arahan saat ini dikonfirmasi pemilik; Tahap 7 dilanjutkan pada navigasi**. Paket Rp75.000/Rp250.000 dan komisi mentoring 15% menjadi arah yang disetujui. Implementasi layanan/operasional serta bukti ulasan asli tetap dilacak tersendiri; kutipan fiktif hanya untuk pratinjau development.
 
 Sumber utama: [Proposal KMP UNRI 2026 — Cermatify](<C:/Users/Author RY/Downloads/PROPOSAL KMP UNRI 2026_ CERMATIFY_.pdf>), 57 halaman PDF. Rujukan di bawah memakai nomor halaman tercetak; halaman PDF = halaman cetak + 4 untuk isi utama. Seluruh halaman diekstrak secara lokal; diagram, tabel bisnis dan contoh tampilan relevan juga ditinjau sebagai gambar. Bagian biodata pribadi tidak disalin sebagai konten publik.
 
@@ -46,7 +46,7 @@ Tujuan utama: pengunjung dapat mengenali kebutuhannya, memahami cara penggunaan 
 
 | Urutan | Bagian dan isi utama | Aksi / syarat tampil |
 | --- | --- | --- |
-| 1 | Navigasi: Layanan, Cara Kerja, Jadi Mentor, FAQ; logo dan Masuk. | Tautan bagian menggulir halaman; menu ringkas pada mobile. Jangan membuat tautan ke bagian yang belum ditampilkan. |
+| 1 | Navigasi: Layanan, Cara Kerja, Jadi Mentor, FAQ; logo, Masuk dan Daftar. | Sudah diterapkan: Layanan/Cara Kerja/FAQ menggulir ke bagian publik, Jadi Mentor membuka register dengan argumen mentor, logo kembali ke awal. Menu ringkas pada HP/tablet dan saat teks diperbesar; menu desktop menandai bagian aktif. |
 | 2 | Hero: kebutuhan karya ilmiah, kompetisi dan responden dalam satu pesan; screenshot aplikasi atau ilustrasi brand. | Lihat Layanan menggulir ke kartu; Masuk menuju login. Ini memberi kesempatan menjelajah sampai CTA akhir sesuai arahan pemilik. |
 | 3 | Tiga kartu layanan: Cermat Paper, Cermat Competition, Cermat Kuesioner. Masing-masing menjelaskan kebutuhan, bentuk bantuan dan batas singkat. | Tombol Pelajari Alurnya menggulir ke penjelasan terkait. Tiga nama publik sudah diterapkan pada kartu; tombol/alur detail layanan ditangani pada bagian Cara Kerja berikutnya. |
 | 4 | Empat manfaat konkret: filter mentor, profil yang dapat ditinjau, chat pendampingan, pengajuan link/kriteria responden. | Gunakan hanya klaim yang dapat ditelusuri di source; jangan menambahkan matching AI atau jaminan hasil. |
@@ -54,7 +54,7 @@ Tujuan utama: pengunjung dapat mengenali kebutuhannya, memahami cara penggunaan 
 | 6 | Informasi pendampingan/paket: cakupan layanan yang diusulkan dan hal yang perlu disepakati. | Pada draft desain boleh ada pratinjau bertanda belum final. Pada versi publik, tampilkan paket/harga hanya setelah isi, batas, dan tarif disetujui; jangan menyebut harga belum ditentukan sebagai Gratis. |
 | 7 | Jadi Mentor: berbagi keahlian, latar belakang relevan, pemeriksaan profil dan interview yang direncanakan; tautkan informasi lengkap. | Pelajari Pendaftaran Mentor dapat menggulir; CTA Daftar sebagai Mentor mengirim argumen role mentor ke register seperti pintu masuk login yang sudah ada. Tidak menjamin mentee atau pendapatan. |
 | 8 | Bukti kepercayaan: proses pemeriksaan mentor yang dapat dibuktikan, tim, lalu ulasan nyata bila tersedia. | Dua baris × enam ulasan diterapkan setelah data dan izin tersedia. Sebelum itu jangan menampilkan kutipan/rating contoh di halaman publik. |
-| 9 | FAQ untuk mahasiswa dan calon mentor: jenis bantuan, cara memilih mentor, alur kuesioner, pembayaran, verifikasi, serta batas bantuan akademik. | FAQ publik baru perlu disusun; jangan sekadar menautkan `/faq` saat ini yang dilindungi login dan masih berisi penjelasan yang berbeda. |
+| 9 | FAQ untuk mahasiswa dan calon mentor: jenis bantuan, akun, cara memilih mentor, pembayaran manual, pendaftaran mentor dan batas bantuan akademik. | Enam pertanyaan dasar sudah tersedia langsung pada landing tanpa login. Rincian jadwal/paket/kebijakan ditambahkan mengikuti pengembangan layanan. |
 | 10 | CTA akhir: pilih tujuan pengguna atau mentor, kemudian footer berisi kontak resmi dan kebijakan. | Mulai sebagai Pengguna → register; Daftar sebagai Mentor → register dengan role mentor; pengguna lama → login. Kontak publik/kebijakan hanya ditampilkan setelah kanal dan dokumennya siap. |
 
 Jangan membuat bagian masalah panjang yang mengulang tiga kartu layanan. Untuk halaman pertama, penjelasan layanan dan alur lebih penting daripada grafik pengangguran, proyeksi pendapatan, jumlah server atau perbandingan kompetitor.
@@ -186,4 +186,14 @@ Tanggal: 24 Oktober 2026. [Bagian status terkini di TODO_WEB.md](../TODO_WEB.md#
 
 Keterangan status: **jawaban tersedia** tidak sama dengan **fitur selesai**. Sumber secara eksplisit menyebut beberapa rincian sebagai usulan/proposal dan meminta checklist implementasi selesai setelah angka disahkan, kebijakan tertulis, serta aplikasi sesuai. Sinkronisasi ini menutup pekerjaan membaca/memetakan jawaban; tidak menandai booking, paket, seleksi, reward atau pembayaran sebagai sudah aktif.
 
-Yang tetap terbuka adalah finalisasi/pelaksanaan sesuai syarat pemilik, kontak bantuan aktual, jangka retensi final, serta ulasan nyata/izin jika akan digunakan sebagai bukti pengalaman. Contoh fiktif yang sudah dikirim tetap hanya pratinjau development. Tidak mengulang enam pertanyaan dasar yang sudah dijawab.
+Catatan bagian 11 merekam status saat sinkronisasi jawaban. Konfirmasi pemilik sesudahnya dicatat pada bagian 12 dan menggantikan status menunggu persetujuan angka di atas. Pelaksanaan operasional/teknis, pemeriksaan alamat bantuan yang ditulis di TODO, jangka retensi final, serta ulasan nyata/izin tetap dilacak. Contoh fiktif yang sudah dikirim tetap hanya pratinjau development. Tidak mengulang enam pertanyaan dasar yang sudah dijawab.
+
+## 12. Konfirmasi terbaru dan implementasi navigasi
+
+Pemilik mengonfirmasi seluruh arahan saat ini dan akan memberi kabar jika ada perubahan. Prioritas pertama kelanjutan ini adalah navigasi. Enam jawaban menjadi acuan yang disetujui, termasuk dua paket Rp75.000/Rp250.000, komisi mentoring 15%, seleksi berbasis kompetensi/interview, pertemuan daring eksternal, reward tervalidasi dan rancangan dukungan/data. Ini menutup kebutuhan meminta konfirmasi yang sama; penerapan layanan serta kesiapan operasional tetap harus dikerjakan.
+
+Navigasi desktop kini menyediakan Layanan, Cara Kerja, Jadi Mentor, FAQ, Masuk dan Daftar. Layanan/Cara Kerja/FAQ menggulir ke judul dengan jarak aman di bawah header tetap; bagian aktif ditandai. Logo kembali ke awal. Pada HP/tablet atau ukuran teks besar, tautan dipindahkan ke menu ringkas, sedangkan Masuk tetap terlihat. Jadi Mentor langsung membuka formulir yang sudah ada dengan argumen `mentor`; pendaftaran pengguna tidak membawa argumen tersebut.
+
+FAQ publik dasar ditambahkan sebagai tujuan menu FAQ, berisi enam pertanyaan sesuai kemampuan aplikasi saat ini. Aksesnya tidak memerlukan akun. Perubahan ini belum memperluas Cara Kerja per layanan, mengaktifkan paket/booking, atau mengganti sistem pembayaran.
+
+Validasi: analisis Flutter bersih, 176 tes lulus termasuk 10 tes navigasi baru. Tes mencakup gulir dan penanda bagian aktif pada desktop/HP, logo kembali ke awal, pendaftaran dengan peran yang tepat, login, keyboard, penutupan menu dengan Escape dan teks 200% pada lebar 320 piksel. Build web rilis berhasil; pemeriksaan browser dan tangkapan layar dicatat di bagian progres navigasi pada TODO.

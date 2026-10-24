@@ -378,21 +378,21 @@ Jawaban asli pemilik dipertahankan di bawah untuk keterlacakan. Ringkasan keputu
 
 **Enam jawaban lanjutan sudah tersedia dan telah dibaca seluruhnya.** Bagian `jawaban pemilik` di bawah menjadi acuan draft terbaru, melengkapi dan memperbarui ringkasan awal di atas. Informasi yang sudah dijawab tidak ditandai sebagai belum diberikan dan tidak ditanyakan ulang.
 
-Beberapa angka/aturan secara eksplisit diberi label **usulan** atau **proposal keputusan pemilik** oleh sumbernya. Karena itu, status selesai pada tabel ini berarti penerimaan dan pemetaan jawaban selesai; pengesahan angka, penulisan kebijakan dan implementasi tetap dilacak tersendiri sesuai ketentuan pemilik.
+**Konfirmasi terbaru, 24 Oktober 2026:** pemilik menyatakan seluruh arahan saat ini sudah dikonfirmasi, dan perubahan berikutnya akan diberitahukan. Enam jawaban menjadi arah pengembangan yang disetujui, termasuk paket Rp75.000/Rp250.000 dan komisi mentoring 15%. Label usulan/proposal pada jawaban asli dipertahankan sebagai riwayat penulisan; tidak perlu meminta persetujuan pemilik yang sama lagi. Penyiapan operasional, kesepakatan mentor, kebijakan tertulis dan implementasi tetap dilacak sebagai pekerjaan tersendiri. Prioritas implementasi pertama pada kelanjutan ini adalah navigasi landing.
 
 | Bidang | Jawaban yang sudah tersedia | Status lanjutan |
 | --- | --- | --- |
-| Paket dan CTA | Konsultasi Awal: 1 × 60 menit, 3 topik chat dalam 3 hari, 1 review maksimal 5 halaman, masa berlaku 14 hari, hasil ringkasan/rekomendasi; harga usulan Rp75.000. Pendampingan Terarah: 4 × 60 menit, 12 topik chat pada jam mentor, maksimal 4 review masing-masing 10 halaman, masa berlaku 30 hari, catatan progres/umpan balik/tindak lanjut; harga usulan Rp250.000. CTA: Cari Mentor, Lihat Cara Kerja, Daftar sebagai Mentor. | Draft isi, batas, harga usulan dan label CTA sudah dijawab. Harga final menunggu kesepakatan cakupan dan pendapatan mentor sesuai jawaban pemilik. UI/kuota/booking/hasil sesi belum otomatis tersedia. CTA terbaru dicatat untuk penerapan berikutnya; hero yang sudah dibuat masih memakai Lihat Layanan/Masuk. |
+| Paket dan CTA | Konsultasi Awal: 1 × 60 menit, 3 topik chat dalam 3 hari, 1 review maksimal 5 halaman, masa berlaku 14 hari, hasil ringkasan/rekomendasi; Rp75.000. Pendampingan Terarah: 4 × 60 menit, 12 topik chat pada jam mentor, maksimal 4 review masing-masing 10 halaman, masa berlaku 30 hari, catatan progres/umpan balik/tindak lanjut; Rp250.000. CTA: Cari Mentor, Lihat Cara Kerja, Daftar sebagai Mentor. | Isi, batas, harga dan label CTA telah dikonfirmasi sebagai arah pengembangan. Kesepakatan mentor dan UI/kuota/booking/hasil sesi tetap perlu disiapkan. Hero saat ini masih memakai Lihat Layanan/Masuk; navigasi mentor sudah diterapkan. |
 | Mentor | Kompetensi dan kemampuan membimbing menjadi dasar; semester 5 acuan nonwajib. Rubrik: penguasaan bidang 35%, menjelaskan 30%, komunikasi/empati 15%, integritas 15%, kesiapan 5%; usulan ambang 75/100 dan dua aspek utama masing-masing minimal 70%. Penilai admin dan penilai bidang; bukti wajib/opsional, empat status pendaftar, semester kondisional, penolakan pribadi dan usulan daftar ulang 30 hari sudah diuraikan. | Rubrik, penilai, bukti dan alur penolakan sudah tersedia sebagai draft; formulir serta proses operasional belum diterapkan. Tidak meminta rubrik dari awal lagi. |
 | Jadwal dan layanan | Awal peluncuran diarahkan daring melalui pertemuan eksternal; video internal ditunda dan tatap muka belum ditawarkan. Usulan pemesanan minimal 24 jam, reschedule satu kali minimal 12 jam sebelumnya, ketentuan pembatalan/refund, masa tunggu no-show 15 menit, gangguan teknis dan kanal/waktu keluhan sudah tertulis. | Draft aturan sudah dijawab; penyusunan dokumen final dan dukungan booking/penjadwalan masih backlog. Tidak menampilkan layanan tatap muka/video internal sebagai fitur aktif. |
-| Transaksi dan komisi | Usulan terbaru 15% dari harga jasa setelah diskon yang ditanggung mentor; biaya gateway terpisah, usulan ditanggung platform selama layak. Diskon platform tidak mengurangi hak mentor. Empat jenis saldo, hak withdraw, minimum Rp20.000, pembayaran langsung per pesanan untuk awal, refund bagian belum terpakai, konfirmasi transfer dan pengembalian saldo tepat sekali sudah dijelaskan. | Dasar perhitungan dan prinsip transaksi sudah dijawab. Gunakan 15% sebagai usulan terbaru dalam draft; 25%/75% dipertahankan sebagai riwayat keputusan awal, bukan dua skema aktif sekaligus. Pengesahan angka dan implementasi finansial belum dilakukan; provider dan perjanjian pihak ketiga belum ditetapkan. |
+| Transaksi dan komisi | Komisi terbaru 15% dari harga jasa setelah diskon yang ditanggung mentor; biaya gateway terpisah, ditanggung platform selama layak. Diskon platform tidak mengurangi hak mentor. Empat jenis saldo, hak withdraw, minimum Rp20.000, pembayaran langsung per pesanan untuk awal, refund bagian belum terpakai, konfirmasi transfer dan pengembalian saldo tepat sekali sudah dijelaskan. | Dasar perhitungan, angka dan prinsip transaksi telah dikonfirmasi. Gunakan 15%; 25%/75% dipertahankan sebagai riwayat keputusan awal. Implementasi finansial, provider dan perjanjian pihak ketiga masih harus disiapkan. |
 | Reward | Kriteria respons sah, sumber dana dari anggaran pemilik survei atau subsidi tercatat, validasi integrasi/manual, status Dikirim → Menunggu validasi → Disetujui/ditolak → Reward tersedia, ID respons unik, satu reward per respons sah, idempotensi, audit dan pencatatan atomik sudah ditentukan sebagai persyaratan draft. Reward Rp100 tetap acuan awal. | Prinsip validasi, sumber dana dan pencegahan reward ganda sudah dijawab; detail teknologi/integrasi dan backend masih perlu dibangun. Screenshot bukan bukti tunggal otomatis; jawaban tidak ditolak karena berbeda dari hipotesis. |
 | Dukungan dan data | Usulan Senin–Sabtu 09.00–17.00 WIB, target respons awal satu hari kerja, keluhan sederhana tiga hari kerja, pembaruan kasus kompleks dua hari kerja; kanal resmi yang dipantau. Retensi mengikuti tujuan/jenis data, verifikasi mentah dibatasi, akses berdasarkan tugas, penghapusan akun dan siklus backup; tidak memakai retensi tak terbatas secara menyeluruh. | Jam, target respons dan prinsip pengelolaan data sudah dijawab. Jangan kembali memakai admin 24/7 atau simpan selamanya sebagai arahan terbaru. Alamat kontak aktual, durasi retensi final per jenis data dan peninjauan kebijakan masih terbuka. |
 
 - [x] Terima dan petakan seluruh enam jawaban lanjutan, termasuk bagian 5–6 yang belum tercermin lengkap pada checklist sebelumnya.
 - [x] Catat tiga nama publik yang disetujui dan implementasi awal landing/root/pratinjau ulasan yang sudah dikerjakan; pilihan bagian awal tidak perlu ditanyakan lagi.
-- [ ] Finalisasi harga dan pengesahan rincian yang masih berlabel usulan sesuai syarat yang ditulis pemilik — Draft tersedia; bukan informasi yang belum diberikan.
-- [ ] Cantumkan alamat email/akun kanal bantuan resmi yang benar-benar akan dipantau — Nama kanal/alamat aktual belum ditulis.
+- [x] Terima konfirmasi pemilik atas rincian dan angka pada enam jawaban — Persetujuan arah pengembangan diterima; kesepakatan operasional dan implementasi tetap harus diselesaikan sebelum layanan dinyatakan aktif.
+- [ ] Cantumkan alamat email/akun kanal bantuan resmi yang benar-benar akan dipantau — Nama kanal/alamat aktual belum ditulis. alamat email: cermatifycompany@gamil.com
 - [ ] Tetapkan durasi retensi final per jenis data dan selesaikan dokumen kebijakan untuk ditinjau — Prinsip retensi sudah tersedia.
 - [ ] Terima dan verifikasi ulasan nyata serta izin publikasi bila akan dipakai sebagai bukti pengalaman — Materi terbaru yang diberikan eksplisit berupa contoh fiktif.
 - [ ] Terapkan UI, proses operasional dan backend pada subtahap terkait, lalu jalankan validasi — Tidak ditandai selesai hanya karena rancangan sudah tertulis.
@@ -586,7 +586,7 @@ Keenam jawaban ini dapat dimasukkan sebagai **proposal keputusan pemilik**. Chec
 - [ ] Rancang dua baris testimoni berlawanan arah, enam entri tiap baris, dengan sumber asli; dukung reduced motion dan kontrol berhenti saat hover/fokus. Jangan menduplikasi kutipan menjadi 12 pengalaman berbeda.
 - [ ] Susun FAQ untuk landing dan dashboard serta informasi bantuan admin; cocokkan setiap jawaban dengan fitur yang tersedia.
 - [ ] Rancang UI reward/klaim dan status pembayaran/withdraw sesuai arah bisnis; pisahkan status contoh dari data transaksi nyata dan jangan menyatakan saldo telah dikreditkan jika backend belum tersedia.
-- [ ] Bangun gateway/ledger, empat status saldo, konfirmasi transfer, minimum withdraw Rp20.000 dan reward atomik sesuai rancangan pemilik. Komisi draft terbaru 15%; sahkan angka sebelum implementasi finansial dan pertahankan 25%/75% hanya sebagai riwayat awal. Ubah backend/controller/rules serta tes secara konsisten.
+- [ ] Bangun gateway/ledger, empat status saldo, konfirmasi transfer, minimum withdraw Rp20.000 dan reward atomik sesuai rancangan pemilik. Komisi terbaru 15% telah dikonfirmasi; pertahankan 25%/75% hanya sebagai riwayat awal. Ubah backend/controller/rules serta tes secara konsisten.
 - [ ] Ikuti arahan draft awal menggunakan pertemuan daring eksternal; evaluasi video call internal pada tahap berikutnya berdasarkan kebutuhan dan biaya. Tatap muka belum ditawarkan menurut jawaban lanjutan.
 
 ### Progres pencatatan jawaban
@@ -858,7 +858,7 @@ Konten, alur, dan keputusan yang relevan sudah disetujui.
 
 Checklist:
 
-- [ ] Perbarui navigasi sesuai bagian yang tersedia.
+- [x] Perbarui navigasi sesuai bagian yang tersedia — Layanan, Cara Kerja dan FAQ menggulir ke bagian publik; Jadi Mentor membuka register dengan peran mentor; Masuk/Daftar tersedia; logo kembali ke awal; menu ringkas untuk HP/tablet.
 
 - [x] Terapkan headline, deskripsi, dan CTA pembuka yang disepakati; CTA penutup tetap menjadi bagian implementasi berikutnya.
 
@@ -872,9 +872,9 @@ Checklist:
 
 - [ ] Perkuat testimoni berdasarkan data nyata.
 
-- [ ] Tambahkan ajakan bergabung sebagai mentor.
+- [ ] Tambahkan bagian ajakan bergabung sebagai mentor — Aksi Jadi Mentor pada navigasi sudah tersedia; bagian penjelasan mentor belum dibuat.
 
-- [ ] Tambahkan FAQ pengguna dan mentor.
+- [x] Tambahkan FAQ dasar publik untuk pengguna dan calon mentor — Enam pertanyaan tersedia dan dapat dibuka tanpa login. Rincian paket, jadwal dan kebijakan diperluas mengikuti implementasi layanan berikutnya.
 
 - [ ] Tambahkan kontak serta tautan kebijakan yang sudah disetujui.
 
@@ -1052,7 +1052,7 @@ Persetujuan pemilik: keseluruhan draft copy, urutan bagian, dan bagian implement
 - [x] Hapus kutipan contoh dan tampilan Cerita Pengguna sementara menunggu materi asli; ganti klaim umum Pendamping terverifikasi pada hero dengan Pendampingan akademik.
 - [x] Perbaiki kartu ringkasan hero yang sebelumnya memiliki tinggi tetap agar teks 200% tidak overflow.
 - [ ] Terima dan periksa materi 12 ulasan/rating serta izin publikasi sebelum mengaktifkan bagian animasi — Belum terverifikasi; persetujuan rencana tidak menandai penerimaan materi selesai.
-- [ ] Lanjutkan Cara Kerja per layanan, navigasi bagian, informasi mentor/FAQ dan CTA akhir sesuai urutan yang disetujui — Bagian lain belum diimplementasikan pada langkah ini.
+- [ ] Lanjutkan Cara Kerja per layanan, informasi mentor dan CTA akhir sesuai urutan yang disetujui — Navigasi bagian dan FAQ dasar sudah diselesaikan pada kelanjutan di bawah; bagian lainnya tetap backlog.
 - [ ] Paket/harga final, jadwal, video call, gateway/reward dan konsolidasi teknis kuesioner tetap backlog tahap terkait; tidak diubah melalui pekerjaan pembuka/kartu.
 
 ### File
@@ -1117,6 +1117,26 @@ Permintaan: periksa bagian jawaban pemilik dan gunakan jawaban yang sudah tersed
 - [x] Catat CTA terbaru Cari Mentor / Lihat Cara Kerja / Daftar sebagai Mentor untuk iterasi berikutnya; penerapan hero sebelumnya tetap tercatat terpisah.
 - [x] Pertahankan seluruh teks enam jawaban lanjutan dan sepuluh jawaban awal persis; validasi perbandingan dilakukan sebelum penulisan.
 - [x] Perbarui `docs/landing-page-proposal-review.md` agar tidak lagi menyebut rincian yang telah diberikan sebagai belum tersedia.
-- [ ] Finalisasi dan implementasikan rincian sesuai syarat sumber yang masih berlabel usulan/proposal — Tetap backlog, bukan permintaan mengulang jawaban.
+- [ ] Implementasikan rincian yang telah dikonfirmasi pemilik sesuai syarat operasional sumber — Persetujuan terbaru diterima setelah sinkronisasi ini; pelaksanaan tetap backlog dan tidak memerlukan pengulangan jawaban dasar.
 
 Validasi perubahan dokumentasi: perbandingan teks sumber jawaban lulus; UTF-8, struktur enam jawaban dan pemeriksaan whitespace diperiksa. Tidak mengubah kode aplikasi atau menjalankan ulang tes Flutter untuk pekerjaan dokumentasi ini. Hasil 166 tes pada tahap sebelumnya tetap catatan tahap tersebut, bukan hasil tes baru.
+
+## Tahap 7 — navigasi landing dan konfirmasi terbaru, 24 Oktober 2026
+
+Arahan pemilik: seluruh arahan saat ini sudah dikonfirmasi; perubahan akan diberitahukan kemudian. Untuk awal kelanjutan ini, perbarui navigasi. Persetujuan tersebut diterima tanpa meminta ulang enam jawaban yang sudah diberikan. Implementasi pada langkah ini berfokus pada navigasi dan tujuan FAQ dasarnya.
+
+- [x] Catat enam jawaban sebagai arah yang disetujui, termasuk paket Rp75.000/Rp250.000 dan komisi mentoring 15%; pertahankan teks jawaban asli dan riwayat 25%/75%.
+- [x] Buat menu desktop: Layanan, Cara Kerja, Jadi Mentor, FAQ, Masuk dan Daftar.
+- [x] Sediakan menu ringkas pada HP/tablet serta saat ukuran teks diperbesar; Masuk tetap terlihat dan menu menutup setelah pilihan dibuat atau Escape ditekan.
+- [x] Gulir ke bagian Layanan, Cara Kerja dan FAQ dengan judul tidak tertutup header tetap; tandai bagian aktif pada desktop. Hormati preferensi pengurangan animasi.
+- [x] Jadikan logo tombol kembali ke awal halaman.
+- [x] Arahkan Jadi Mentor ke formulir register yang sudah ada dengan argumen peran `mentor`; Daftar pengguna tidak membawa argumen mentor. Masuk menuju login.
+- [x] Tambahkan enam FAQ dasar publik mengenai layanan, akun, pemilihan mentor, pembayaran manual, pendaftaran mentor dan batas pendampingan akademik.
+- [x] Perbaiki pembungkusan teks badge ringkasan agar tampilan lebar 320 piksel dengan teks 200% tidak overflow.
+- [x] Jalankan `flutter analyze --no-pub`: tidak ada masalah.
+- [x] Jalankan seluruh `flutter test --no-pub --reporter expanded`: **176 tes lulus**, termasuk 10 tes navigasi baru. Log lokal: `build/landing-navigation-full-test.log`.
+- [x] Bangun web rilis dengan `--base-href /cermatify/`: berhasil; Wasm dry run berhasil.
+- [x] Periksa Chrome lokal pada desktop 1440×1200 dan HP 390×1000: header/menu terlihat baik; URL root dan pengalihan `/landing` tetap bekerja; **0 exception runtime** pada smoke test. Tangkapan layar lokal: `build/landing-navigation-desktop.png` dan `build/landing-navigation-mobile-menu.png`.
+- [ ] Lanjutkan penjelasan Cara Kerja per layanan, kemudian informasi mentor/paket serta CTA sesuai acuan yang disetujui. Belum mengaktifkan booking, paket atau gateway melalui perubahan navigasi ini.
+
+File implementasi: `lib/app/modules/landing/views/landing_view.dart`, `lib/app/modules/landing/widgets/landing_navigation.dart`, `lib/app/modules/landing/widgets/landing_faq.dart`, dan `test/landing_navigation_test.dart`. Kajian diselaraskan pada bagian 12 `docs/landing-page-proposal-review.md`. Belum melakukan deployment.
