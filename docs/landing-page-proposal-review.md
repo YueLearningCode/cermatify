@@ -48,14 +48,14 @@ Tujuan utama: pengunjung dapat mengenali kebutuhannya, memahami cara penggunaan 
 | --- | --- | --- |
 | 1 | Navigasi: Layanan, Cara Kerja, Jadi Mentor, FAQ; logo, Masuk dan Daftar. | Sudah diterapkan: Layanan/Cara Kerja/FAQ menggulir ke bagian publik, Jadi Mentor membuka register dengan argumen mentor, logo kembali ke awal. Menu ringkas pada HP/tablet dan saat teks diperbesar; menu desktop menandai bagian aktif. |
 | 2 | Hero: kebutuhan karya ilmiah, kompetisi dan responden dalam satu pesan; screenshot aplikasi atau ilustrasi brand. | Lihat Layanan menggulir ke kartu; Masuk menuju login. Ini memberi kesempatan menjelajah sampai CTA akhir sesuai arahan pemilik. |
-| 3 | Tiga kartu layanan: Cermat Paper, Cermat Competition, Cermat Kuesioner. Masing-masing menjelaskan kebutuhan, bentuk bantuan dan batas singkat. | Tombol Pelajari Alurnya menggulir ke penjelasan terkait. Tiga nama publik sudah diterapkan pada kartu; tombol/alur detail layanan ditangani pada bagian Cara Kerja berikutnya. |
+| 3 | Tiga kartu layanan: Cermat Paper, Cermat Competition, Cermat Kuesioner. Masing-masing menjelaskan kebutuhan, bentuk bantuan dan batas singkat. | Tiga nama publik sudah diterapkan. Sesuai arahan 25 Oktober 2026, petunjuk penggunaan rinci ditempatkan pada tutorial setelah login dan dapat dibuka kembali lewat tombol tanda tanya dalam lingkaran; tombol Pelajari Alurnya bukan lagi kebutuhan tahap landing ini. |
 | 4 | Empat manfaat konkret: filter mentor, profil yang dapat ditinjau, chat pendampingan, pengajuan link/kriteria responden. | Gunakan hanya klaim yang dapat ditelusuri di source; jangan menambahkan matching AI atau jaminan hasil. |
-| 5 | Cara Kerja dengan dua alur yang jelas: mentoring dan kuesioner. | Tampilkan proses aktual termasuk verifikasi pembayaran manual; jadwal/paket/video internal belum dijanjikan aktif. |
+| 5 | Cara Kerja memberi gambaran singkat mentoring dan kuesioner sebelum pengguna masuk. | Petunjuk penggunaan rinci menjadi tutorial pop-up setelah login, dengan tombol bantuan untuk membuka ulang. Gambaran publik tetap mengikuti proses aktual; jadwal/paket/video internal belum dijanjikan aktif. |
 | 6 | Informasi pendampingan/paket: cakupan layanan yang diusulkan dan hal yang perlu disepakati. | Pada draft desain boleh ada pratinjau bertanda belum final. Pada versi publik, tampilkan paket/harga hanya setelah isi, batas, dan tarif disetujui; jangan menyebut harga belum ditentukan sebagai Gratis. |
 | 7 | Jadi Mentor: berbagi keahlian, latar belakang relevan, pemeriksaan profil dan interview yang direncanakan; tautkan informasi lengkap. | Pelajari Pendaftaran Mentor dapat menggulir; CTA Daftar sebagai Mentor mengirim argumen role mentor ke register seperti pintu masuk login yang sudah ada. Tidak menjamin mentee atau pendapatan. |
 | 8 | Bukti kepercayaan: proses pemeriksaan mentor yang dapat dibuktikan, tim, lalu ulasan nyata bila tersedia. | Dua baris × enam ulasan diterapkan setelah data dan izin tersedia. Sebelum itu jangan menampilkan kutipan/rating contoh di halaman publik. |
 | 9 | FAQ untuk mahasiswa dan calon mentor: jenis bantuan, akun, cara memilih mentor, pembayaran manual, pendaftaran mentor dan batas bantuan akademik. | Enam pertanyaan dasar sudah tersedia langsung pada landing tanpa login. Rincian jadwal/paket/kebijakan ditambahkan mengikuti pengembangan layanan. |
-| 10 | CTA akhir: pilih tujuan pengguna atau mentor, kemudian footer berisi kontak resmi dan kebijakan. | Mulai sebagai Pengguna → register; Daftar sebagai Mentor → register dengan role mentor; pengguna lama → login. Kontak publik/kebijakan hanya ditampilkan setelah kanal dan dokumennya siap. |
+| 10 | CTA akhir: pilihan pengguna atau mentor; footer berisi brand, navigasi dan bantuan. | Sudah diterapkan pada 25 Oktober 2026: Mulai sebagai Pengguna → register; Daftar sebagai Mentor → register dengan role mentor; Masuk di sini → login. Footer menyediakan tautan bagian/FAQ, email bantuan yang dikonfirmasi dan jam bantuan. Tautan kebijakan menunggu dokumen publik yang siap. |
 
 Jangan membuat bagian masalah panjang yang mengulang tiga kartu layanan. Untuk halaman pertama, penjelasan layanan dan alur lebih penting daripada grafik pengangguran, proyeksi pendapatan, jumlah server atau perbandingan kompetitor.
 
@@ -94,6 +94,8 @@ Jangan membuat bagian masalah panjang yang mengulang tiga kartu layanan. Untuk h
 Pemilik menyetujui copy dan urutan bagian pada 24 Oktober 2026. Bagian implementasi pertama adalah pembuka dan tiga kartu layanan. Formulasi proses interview dan syarat mentor tetap diselaraskan dengan kemampuan operasional; label verifikasi tidak dipakai sebagai klaim umum tanpa bukti.
 
 ## 5. Dua alur yang perlu dijelaskan
+
+**Penempatan terbaru, 25 Oktober 2026:** urutan rinci di bawah menjadi bahan tutorial dalam aplikasi setelah login, bukan penjelasan panjang di landing. Tutorial juga dapat dibuka melalui tombol tanda tanya dalam lingkaran. Landing cukup menyampaikan gambaran layanan; fitur tutorial belum diimplementasikan.
 
 **Mentoring Paper/Competition — berdasarkan source saat ini:** daftar/masuk → pilih layanan dan filter → tinjau profil mentor → ajukan order serta unggah bukti pembayaran → tunggu verifikasi admin → lanjutkan chat pada order progress. Jadwal, durasi, review dokumen terstruktur, hasil sesi dan video call internal masih kebutuhan pengembangan.
 
@@ -197,3 +199,19 @@ Navigasi desktop kini menyediakan Layanan, Cara Kerja, Jadi Mentor, FAQ, Masuk d
 FAQ publik dasar ditambahkan sebagai tujuan menu FAQ, berisi enam pertanyaan sesuai kemampuan aplikasi saat ini. Aksesnya tidak memerlukan akun. Perubahan ini belum memperluas Cara Kerja per layanan, mengaktifkan paket/booking, atau mengganti sistem pembayaran.
 
 Validasi: analisis Flutter bersih, 176 tes lulus termasuk 10 tes navigasi baru. Tes mencakup gulir dan penanda bagian aktif pada desktop/HP, logo kembali ke awal, pendaftaran dengan peran yang tepat, login, keyboard, penutupan menu dengan Escape dan teks 200% pada lebar 320 piksel. Build web rilis berhasil; pemeriksaan browser dan tangkapan layar dicatat di bagian progres navigasi pada TODO.
+
+## 13. Tutorial penggunaan di dalam aplikasi — 25 Oktober 2026
+
+Pemilik mengarahkan petunjuk langkah penggunaan ke pop-up tutorial setelah login dan meminta tombol tanda tanya dalam lingkaran agar tutorial bisa dibuka kembali. Arahan ini sudah diterima; implementasinya dilacak sebagai pekerjaan aplikasi setelah login pada `TODO_WEB.md`.
+
+Landing mempertahankan gambaran singkat Cara Kerja serta navigasi yang sudah tersedia. Pekerjaan landing berikutnya berfokus pada informasi mentor/paket dan CTA. Penjelasan rinci memilih mentor, mengirim pengajuan, pembayaran dan tindak lanjut disiapkan untuk tutorial sesuai layanan yang dipilih dan kemampuan aplikasi saat itu.
+
+Rekomendasi UX untuk implementasi: tampil otomatis pada login pertama, dapat dilewati/ditutup, menyediakan navigasi langkah serta dapat dibuka ulang kapan saja. Frekuensi login pertama adalah rekomendasi, bukan rincian yang telah disebut pemilik. Tahap ini hanya menyelaraskan dokumentasi; tutorial belum tersedia dan tidak ada hasil tes aplikasi baru.
+
+## 14. CTA penutup dan footer — 25 Oktober 2026
+
+CTA penutup diperbarui dengan judul yang disetujui, **Siap menentukan langkah berikutnya?**, serta pilihan **Mulai sebagai Pengguna** dan **Daftar sebagai Mentor**. Pengguna lama memiliki tautan **Masuk di sini**. Ketiganya memakai alur autentikasi yang sudah ada; pendaftaran mentor membawa argumen `mentor`, sedangkan pendaftaran pengguna tidak membawanya. Tombol ditumpuk pada layar sempit atau teks besar.
+
+Footer ditambahkan untuk memberi penutup halaman serta akses cepat ke informasi layanan dan bantuan: identitas Cermatify, gambaran pendampingan, tautan Lihat layanan/Cara kerja layanan/Pertanyaan umum, email bantuan, jam dukungan, target respons awal, copyright dan Kembali ke atas. Pemilik mengonfirmasi ejaan email yang benar adalah **cermatifycompany@gmail.com**. Email menjadi tautan `mailto:`; jam bantuan memakai acuan Senin–Sabtu 09.00–17.00 WIB dengan target respons awal satu hari kerja.
+
+Footer memakai tiga kolom pada desktop dan susunan vertikal pada layar sempit/teks besar. Tautan kebijakan ditambahkan setelah halaman/dokumen publiknya tersedia. Perubahan ini berfokus pada CTA penutup dan footer; informasi mentor/paket serta tutorial setelah login tetap memiliki backlog sendiri. Hasil validasi dicatat pada progres CTA/footer di `TODO_WEB.md`.

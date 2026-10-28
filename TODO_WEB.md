@@ -74,16 +74,16 @@ Kriteria selesai:
 
 ## P1 — Firebase Web
 
-> Pending sementara sejak 24 Agustus 2026 karena Firebase tidak dapat diakses.
-> Checklist yang memerlukan Console atau koneksi Firebase dilanjutkan setelah
-> layanan tersedia kembali.
+> Pembaruan 25 Oktober 2026: pemilik melaporkan akses Firebase sudah tersedia
+> kembali. Checklist Console/koneksi di bawah siap dilanjutkan; hasilnya tetap
+> perlu diverifikasi dan belum dianggap lulus hanya berdasarkan kabar akses.
 > Deployment Web untuk sementara tetap diizinkan tanpa App Check. Jangan
 > aktifkan enforcement sebelum `FIREBASE_RECAPTCHA_SITE_KEY` dipasang kembali.
 
 - [x] Verifikasi konfigurasi Firebase Web di `firebase_options.dart`.
 - [ ] Tambahkan `localhost` ke Firebase Authorized Domains untuk development.
 - [ ] Tambahkan `yuelearningcode.github.io` ke Firebase Authorized Domains.
-- [ ] Tambahkan custom domain produksi jika akan digunakan.
+- [ ] Siapkan `cermatify.com` sebagai domain produksi sesuai laporan pemilik 25 Oktober 2026; domain belum dihosting dan konfigurasi DNS/Authorized Domains belum diverifikasi.
 - [ ] Uji login customer melalui browser.
 - [ ] Uji login mentor dan status verifikasinya.
 - [ ] Uji login admin dan proteksi datanya.
@@ -212,9 +212,9 @@ Kriteria selesai:
 - [x] Putuskan environment staging belum diperlukan untuk rilis awal.
 - [x] Dokumentasikan bahwa preset Cloudinary dan site key reCAPTCHA adalah public variables, bukan secrets.
 - [x] Tandai deploy staging tidak diperlukan untuk rilis awal.
-- [ ] Jalankan smoke test setelah deployment.
+- [x] Jalankan smoke test deployment awal Firebase Hosting pada 25 Oktober 2026: root/aset, pengalihan legacy dan guard tamu profil/admin lulus. Uji akun nyata dan transaksi tetap mengikuti checklist penerimaan.
 - [x] Dokumentasikan proses rollback.
-- [ ] Deploy production setelah checklist penerimaan selesai.
+- [ ] Selesaikan checklist penerimaan produksi dan rilis fitur penuh — Deployment live awal Firebase Hosting sudah dilakukan pada 25 Oktober 2026; autentikasi tiap role, transaksi, upload nyata, domain kustom dan App Check masih perlu diselesaikan sesuai checklist terkait.
 
 Kriteria selesai:
 
@@ -387,12 +387,13 @@ Jawaban asli pemilik dipertahankan di bawah untuk keterlacakan. Ringkasan keputu
 | Jadwal dan layanan | Awal peluncuran diarahkan daring melalui pertemuan eksternal; video internal ditunda dan tatap muka belum ditawarkan. Usulan pemesanan minimal 24 jam, reschedule satu kali minimal 12 jam sebelumnya, ketentuan pembatalan/refund, masa tunggu no-show 15 menit, gangguan teknis dan kanal/waktu keluhan sudah tertulis. | Draft aturan sudah dijawab; penyusunan dokumen final dan dukungan booking/penjadwalan masih backlog. Tidak menampilkan layanan tatap muka/video internal sebagai fitur aktif. |
 | Transaksi dan komisi | Komisi terbaru 15% dari harga jasa setelah diskon yang ditanggung mentor; biaya gateway terpisah, ditanggung platform selama layak. Diskon platform tidak mengurangi hak mentor. Empat jenis saldo, hak withdraw, minimum Rp20.000, pembayaran langsung per pesanan untuk awal, refund bagian belum terpakai, konfirmasi transfer dan pengembalian saldo tepat sekali sudah dijelaskan. | Dasar perhitungan, angka dan prinsip transaksi telah dikonfirmasi. Gunakan 15%; 25%/75% dipertahankan sebagai riwayat keputusan awal. Implementasi finansial, provider dan perjanjian pihak ketiga masih harus disiapkan. |
 | Reward | Kriteria respons sah, sumber dana dari anggaran pemilik survei atau subsidi tercatat, validasi integrasi/manual, status Dikirim → Menunggu validasi → Disetujui/ditolak → Reward tersedia, ID respons unik, satu reward per respons sah, idempotensi, audit dan pencatatan atomik sudah ditentukan sebagai persyaratan draft. Reward Rp100 tetap acuan awal. | Prinsip validasi, sumber dana dan pencegahan reward ganda sudah dijawab; detail teknologi/integrasi dan backend masih perlu dibangun. Screenshot bukan bukti tunggal otomatis; jawaban tidak ditolak karena berbeda dari hipotesis. |
-| Dukungan dan data | Usulan Senin–Sabtu 09.00–17.00 WIB, target respons awal satu hari kerja, keluhan sederhana tiga hari kerja, pembaruan kasus kompleks dua hari kerja; kanal resmi yang dipantau. Retensi mengikuti tujuan/jenis data, verifikasi mentah dibatasi, akses berdasarkan tugas, penghapusan akun dan siklus backup; tidak memakai retensi tak terbatas secara menyeluruh. | Jam, target respons dan prinsip pengelolaan data sudah dijawab. Jangan kembali memakai admin 24/7 atau simpan selamanya sebagai arahan terbaru. Alamat kontak aktual, durasi retensi final per jenis data dan peninjauan kebijakan masih terbuka. |
+| Dukungan dan data | Usulan Senin–Sabtu 09.00–17.00 WIB, target respons awal satu hari kerja, keluhan sederhana tiga hari kerja, pembaruan kasus kompleks dua hari kerja; kanal resmi yang dipantau. Retensi mengikuti tujuan/jenis data, verifikasi mentah dibatasi, akses berdasarkan tugas, penghapusan akun dan siklus backup; tidak memakai retensi tak terbatas secara menyeluruh. | Jam, target respons dan prinsip pengelolaan data sudah dijawab. Email bantuan `cermatifycompany@gmail.com` dikonfirmasi pemilik dan dipasang pada footer tanggal 25 Oktober 2026. Durasi retensi final per jenis data dan peninjauan kebijakan masih terbuka. |
 
 - [x] Terima dan petakan seluruh enam jawaban lanjutan, termasuk bagian 5–6 yang belum tercermin lengkap pada checklist sebelumnya.
 - [x] Catat tiga nama publik yang disetujui dan implementasi awal landing/root/pratinjau ulasan yang sudah dikerjakan; pilihan bagian awal tidak perlu ditanyakan lagi.
 - [x] Terima konfirmasi pemilik atas rincian dan angka pada enam jawaban — Persetujuan arah pengembangan diterima; kesepakatan operasional dan implementasi tetap harus diselesaikan sebelum layanan dinyatakan aktif.
-- [ ] Cantumkan alamat email/akun kanal bantuan resmi yang benar-benar akan dipantau — Nama kanal/alamat aktual belum ditulis. alamat email: cermatifycompany@gamil.com
+- [x] Catat arahan 25 Oktober 2026: petunjuk langkah penggunaan ditampilkan melalui tutorial pop-up setelah login dan dapat dibuka kembali dengan tombol tanda tanya dalam lingkaran. Rincian tutorial menjadi pekerjaan aplikasi setelah login; landing cukup memberi gambaran singkat layanan.
+- [x] Cantumkan alamat email bantuan publik — Pemilik mengoreksi dan mengonfirmasi `cermatifycompany@gmail.com` pada 25 Oktober 2026; footer memakai tautan email tersebut. Penulisan awal `cermatifycompany@gamil.com` digantikan oleh konfirmasi ini.
 - [ ] Tetapkan durasi retensi final per jenis data dan selesaikan dokumen kebijakan untuk ditinjau — Prinsip retensi sudah tersedia.
 - [ ] Terima dan verifikasi ulasan nyata serta izin publikasi bila akan dipakai sebagai bukti pengalaman — Materi terbaru yang diberikan eksplisit berupa contoh fiktif.
 - [ ] Terapkan UI, proses operasional dan backend pada subtahap terkait, lalu jalankan validasi — Tidak ditandai selesai hanya karena rancangan sudah tertulis.
@@ -682,7 +683,7 @@ Checklist:
 
 - [ ] Identifikasi aturan penjadwalan ulang, pembatalan, dan keluhan yang belum diputuskan.
 
-- [ ] Susun bagian “Cara Kerja” yang berbeda untuk tiap layanan bila diperlukan.
+- [ ] Susun gambaran singkat Cara Kerja di landing; tempatkan petunjuk penggunaan rinci per layanan pada tutorial pop-up setelah login sesuai arahan 25 Oktober 2026.
 
 Arahan:
 
@@ -860,13 +861,13 @@ Checklist:
 
 - [x] Perbarui navigasi sesuai bagian yang tersedia — Layanan, Cara Kerja dan FAQ menggulir ke bagian publik; Jadi Mentor membuka register dengan peran mentor; Masuk/Daftar tersedia; logo kembali ke awal; menu ringkas untuk HP/tablet.
 
-- [x] Terapkan headline, deskripsi, dan CTA pembuka yang disepakati; CTA penutup tetap menjadi bagian implementasi berikutnya.
+- [x] Terapkan headline, deskripsi, dan CTA pembuka yang disepakati; CTA penutup diperbarui pada 25 Oktober 2026 dengan pilihan pengguna, mentor dan masuk.
 
 - [x] Perjelas nama dan manfaat Cermat Paper, Cermat Competition dan Cermat Kuesioner pada landing.
 
 - [ ] Tambahkan alasan memilih Cermatify yang dapat dibuktikan.
 
-- [ ] Terapkan alur per layanan.
+- [ ] Terapkan gambaran singkat layanan di landing; tutorial langkah penggunaan per layanan dikerjakan di dalam aplikasi setelah login, dengan tombol bantuan untuk membuka ulang.
 
 - [ ] Tambahkan informasi mentor dan paket jika sudah siap.
 
@@ -876,7 +877,9 @@ Checklist:
 
 - [x] Tambahkan FAQ dasar publik untuk pengguna dan calon mentor — Enam pertanyaan tersedia dan dapat dibuka tanpa login. Rincian paket, jadwal dan kebijakan diperluas mengikuti implementasi layanan berikutnya.
 
-- [ ] Tambahkan kontak serta tautan kebijakan yang sudah disetujui.
+- [x] Tambahkan footer berisi identitas Cermatify, navigasi bagian, FAQ, email bantuan yang dikonfirmasi, jam bantuan dan tombol kembali ke atas.
+
+- [ ] Tambahkan tautan kebijakan setelah dokumen publiknya tersedia dan ditinjau; dokumen kebijakan belum diimplementasikan pada perubahan CTA/footer ini.
 
 - [ ] Periksa seluruh tombol, tautan, dan navigasi.
 
@@ -1137,6 +1140,150 @@ Arahan pemilik: seluruh arahan saat ini sudah dikonfirmasi; perubahan akan diber
 - [x] Jalankan seluruh `flutter test --no-pub --reporter expanded`: **176 tes lulus**, termasuk 10 tes navigasi baru. Log lokal: `build/landing-navigation-full-test.log`.
 - [x] Bangun web rilis dengan `--base-href /cermatify/`: berhasil; Wasm dry run berhasil.
 - [x] Periksa Chrome lokal pada desktop 1440×1200 dan HP 390×1000: header/menu terlihat baik; URL root dan pengalihan `/landing` tetap bekerja; **0 exception runtime** pada smoke test. Tangkapan layar lokal: `build/landing-navigation-desktop.png` dan `build/landing-navigation-mobile-menu.png`.
-- [ ] Lanjutkan penjelasan Cara Kerja per layanan, kemudian informasi mentor/paket serta CTA sesuai acuan yang disetujui. Belum mengaktifkan booking, paket atau gateway melalui perubahan navigasi ini.
+- [ ] Lanjutkan informasi mentor/paket serta CTA sesuai acuan yang disetujui. Arahan 25 Oktober 2026 memindahkan petunjuk penggunaan rinci ke tutorial setelah login; landing cukup menampilkan gambaran singkat Cara Kerja. Belum mengaktifkan booking, paket atau gateway melalui perubahan navigasi ini.
 
 File implementasi: `lib/app/modules/landing/views/landing_view.dart`, `lib/app/modules/landing/widgets/landing_navigation.dart`, `lib/app/modules/landing/widgets/landing_faq.dart`, dan `test/landing_navigation_test.dart`. Kajian diselaraskan pada bagian 12 `docs/landing-page-proposal-review.md`. Belum melakukan deployment.
+
+## Arahan tutorial setelah login — 25 Oktober 2026
+
+Pemilik menetapkan bahwa urutan penggunaan layanan dijelaskan melalui pop-up tutorial setelah pengguna login. Tutorial juga harus bisa dipicu kembali melalui tombol ikon tanda tanya dalam lingkaran. Arahan ini menggantikan rencana menempatkan petunjuk penggunaan rinci sebagai pekerjaan landing berikutnya. Navigasi dan bagian Cara Kerja yang sudah tersedia tetap ada; pengunjung cukup mendapat gambaran singkat sebelum masuk.
+
+- [x] Catat dua pemicu yang diminta: setelah login dan tombol bantuan untuk membuka kembali tutorial.
+- [x] Selaraskan rencana landing serta kajian proposal dengan penempatan tutorial di dalam aplikasi.
+- [ ] Bangun tutorial pop-up per layanan berdasarkan alur aktual Cermat Paper, Cermat Competition dan Cermat Kuesioner.
+- [ ] Hubungkan tutorial dengan keberhasilan login serta tombol bantuan berbentuk tanda tanya dalam lingkaran yang mudah ditemukan.
+- [ ] Siapkan tombol Sebelumnya, Berikutnya, Lewati/Tutup dan Selesai, beserta navigasi keyboard dan label aksesibilitas.
+- [ ] Tentukan serta terapkan frekuensi tampil otomatis dan penyimpanan status tutorial. Rekomendasi UX: tampil otomatis pada login pertama, lalu buka ulang kapan saja melalui tombol bantuan; frekuensi ini adalah rekomendasi, bukan rincian yang sudah disebut pemilik.
+- [ ] Uji pemicu login, pembukaan ulang, penutupan tutorial, perpindahan langkah dan tampilan HP/desktop sebelum menandai fitur selesai.
+
+Status: **arahan tercatat; fitur tutorial belum diimplementasikan**. Perubahan pada langkah ini hanya dokumentasi; tidak menjalankan ulang tes Flutter. Urutan landing berikutnya berfokus pada informasi mentor/paket dan CTA dengan gambaran Cara Kerja yang singkat.
+
+## Tahap 7 — CTA penutup dan footer, 25 Oktober 2026
+
+Permintaan: terapkan CTA terbaru di landing dan pertimbangkan footer. Footer ringkas ditambahkan sebagai penutup serta tempat navigasi dan bantuan. Pemilik mengoreksi alamat bantuan menjadi **cermatifycompany@gmail.com**; alamat tersebut menjadi acuan terbaru.
+
+- [x] Ganti CTA penutup lama dengan judul **Siap menentukan langkah berikutnya?**, deskripsi pilihan penggunaan, tombol **Mulai sebagai Pengguna**, **Daftar sebagai Mentor**, dan tautan **Masuk di sini**.
+- [x] Gunakan alur register/login yang sudah ada: pendaftaran mentor membawa argumen `mentor`; pengguna biasa tidak membawa argumen tersebut.
+- [x] Buat CTA dengan kontras biru/putih; tombol tersusun vertikal pada HP atau ukuran teks besar dan tinggi mengikuti isi.
+- [x] Tambahkan footer responsif: brand/deskripsi, navigasi Lihat layanan/Cara kerja layanan/Pertanyaan umum, email bantuan, jam Senin–Sabtu 09.00–17.00 WIB, target respons awal satu hari kerja, copyright dan Kembali ke atas.
+- [x] Gunakan tautan `mailto:cermatifycompany@gmail.com` untuk membuka penulisan email; tidak mengirim email secara otomatis.
+- [x] Pastikan tautan bagian footer menggulir ke judul yang tidak tertutup header tetap; Kembali ke atas menuju awal halaman.
+- [x] Pertahankan jawaban asli pemilik dan arahan tutorial setelah login; sinkronkan kajian pada bagian 14 `docs/landing-page-proposal-review.md`.
+- [x] `flutter analyze --no-pub`: tidak ada masalah.
+- [x] Seluruh `flutter test --no-pub --reporter expanded`: **186 tes lulus**, termasuk 10 tes tambahan untuk CTA/footer. Log lokal: `build/landing-cta-footer-full-test.log`.
+- [x] Pengujian tambahan memeriksa tiga jalur CTA pada HP/desktop, navigasi footer, tujuan email memakai launcher tiruan, serta CTA/footer pada lebar 320 piksel dan teks 200%.
+- [x] `flutter build web --release --no-pub --base-href /cermatify/`: berhasil; Wasm dry run berhasil.
+- [x] Smoke test Chrome lokal pada desktop 1440×1200 dan HP 390×1000: tampilan CTA/footer ditinjau, root dan pengalihan legacy tetap berfungsi, **0 exception runtime** pada pemeriksaan ini. Screenshot lokal: [desktop](build/landing-cta-footer-desktop.png), [CTA HP](build/landing-cta-mobile.png), [footer HP](build/landing-footer-mobile.png).
+- [x] `git diff --check` dan perbandingan teks enam jawaban lanjutan serta sepuluh jawaban awal: lulus.
+- [ ] Tambahkan tautan syarat/privasi setelah dokumen publik tersedia dan ditinjau.
+- [ ] Lanjutkan bagian informasi mentor/paket sesuai arahan yang sudah disetujui; tutorial setelah login tetap backlog tersendiri.
+
+File aplikasi: `lib/app/modules/landing/widgets/landing_cta.dart`, `landing_footer.dart`, serta integrasi pada `lib/app/modules/landing/views/landing_view.dart`. Tes ditambahkan pada `test/landing_navigation_test.dart`. Belum deployment atau menguji pengiriman/penerimaan email sungguhan; tes email memeriksa pembukaan tujuan `mailto`, bukan status kotak masuk.
+
+## Penanda edit style Cara Kerja — 25 Oktober 2026
+
+- [x] Tambahkan komentar yang bisa dicari dengan `EDIT CARA KERJA` pada `lib/app/modules/landing/views/landing_view.dart`: judul/subjudul, isi empat langkah, kolom/breakpoint, jarak, lingkaran/angka, judul langkah, deskripsi dan garis bawah.
+- [x] Tandai bahwa `_SectionHeader` juga dipakai bagian Layanan dan FAQ sehingga perubahan stylenya memengaruhi bagian tersebut.
+- [x] Pertahankan isi empat langkah dan pengaturan style terbaru pengguna; langkah ini hanya menambahkan komentar panduan.
+
+Validasi: pemeriksaan lokasi penanda dan `git diff --check`. Tidak menjalankan ulang tes Flutter karena perubahan langkah ini hanya komentar dan dokumentasi.
+
+## Posisi nomor Cara Kerja di atas teks — 25 Oktober 2026
+
+- [x] Ubah susunan `_StepTile` dari `Row` menjadi `Column` dengan rata kiri; lingkaran nomor berada di atas judul dan deskripsi.
+- [x] Ganti jarak horizontal dengan `SizedBox(height: 12)`; hapus pembungkus `Expanded` agar tinggi langkah mengikuti isi; garis bawah tetap selebar kolom.
+- [x] Perbarui komentar `EDIT CARA KERJA` untuk menunjukkan pengaturan posisi serta jarak vertikal nomor.
+- [x] Jalankan 32 tes landing responsif dan navigasi: seluruhnya lulus. Log lokal: `build/landing-steps-layout-test.log`.
+- [x] `git diff --check`: lulus.
+
+File: `lib/app/modules/landing/views/landing_view.dart`, komponen `_StepTile`. Isi empat langkah dan jumlah kolom mengikuti perubahan pengguna yang sudah tersedia.
+
+Catatan validasi tambahan: `flutter analyze --no-pub` dan analisis langsung file tidak mengembalikan hasil selama pemeriksaan, sehingga dihentikan. Tidak mengklaim analisis statis lulus pada langkah ini; kompilasi serta 32 tes landing/navigasi di atas berhasil.
+
+## Alignment tengah layanan/Cara Kerja dan akses Firebase — 25 Oktober 2026
+
+- [x] Ratakan judul/subjudul bagian Layanan dan Cara Kerja ke tengah dengan parameter `textAlign` pada `_SectionHeader`.
+- [x] Posisikan ikon dan seluruh teks pada tiga kartu layanan di tengah.
+- [x] Posisikan lingkaran nomor di tengah atas judul; ratakan judul/deskripsi ke tengah pada keempat langkah Cara Kerja.
+- [x] Pertahankan isi dan jumlah langkah terbaru pengguna serta layout responsif yang tersedia; beri komentar penanda alignment untuk pengeditan berikutnya.
+- [x] Jalankan 32 tes landing responsif dan navigasi: seluruhnya lulus. Log lokal: `build/landing-center-layout-test.log`.
+- [x] Catat laporan pemilik bahwa akses Firebase sudah tersedia kembali; perbarui status penundaan di bagian P1 Firebase Web. Konfigurasi lokal menunjuk proyek `cermatify`.
+- [ ] Verifikasi akses proyek melalui Console/sesi pengembangan, Authorized Domains, login/registrasi tiap role, persistence/logout, dan kesiapan App Check sesuai checklist P1. Status pengujian tersebut tetap belum selesai; perubahan alignment ini tidak menerapkan konfigurasi atau deployment Firebase.
+
+File UI: `lib/app/modules/landing/views/landing_view.dart`, komponen `_SectionHeader`, `_FeatureTile` dan `_StepTile`. Validasi langkah ini menggunakan kompilasi/widget test dan pemeriksaan diff; tidak mengklaim hasil analisis statis atau build web baru.
+
+## Logo footer berbingkai biru — 25 Oktober 2026
+
+- [x] Tambahkan logo Cermatify di sebelah kiri nama brand pada footer, menggunakan aset `assets/images/logo.jpeg`.
+- [x] Gunakan kotak 48×48, border biru 1,5 piksel, radius sudut 12 dan jarak 12 ke nama brand; teks dapat membungkus pada layar sempit/ukuran teks besar.
+- [x] Tandai pengaturan dengan komentar `EDIT LOGO FOOTER` pada `lib/app/modules/landing/widgets/landing_footer.dart`.
+- [x] Empat tes footer yang sudah tersedia lulus: navigasi desktop/HP, tautan email, serta lebar 320 piksel dengan teks 200%. Format Dart dan `git diff --check` bersih.
+
+## Domain dan usulan fokus berikutnya — 25 Oktober 2026
+
+Pemilik menyatakan akses Firebase sudah tersedia dan memiliki domain **cermatify.com**, tetapi belum melakukan hosting. Ini pencatatan informasi pemilik; belum memverifikasi kepemilikan/DNS, menghubungkan domain atau menerapkan deployment.
+
+- [x] Catat domain produksi yang direncanakan sebagai `cermatify.com`; domain REST API lama `cermatify.my.id` tetap tidak digunakan.
+- [x] Susun rekomendasi: lanjutkan validasi backend/integrasi alur inti sebelum memperluas UI. Landing sudah memiliki pembuka, layanan, Cara Kerja ringkas, FAQ, CTA dan footer.
+- [ ] Prioritas pertama yang direkomendasikan: verifikasi proyek Firebase/konfigurasi lokal, domain development, registrasi/login customer/mentor/admin, verifikasi mentor, persistence/logout serta akses data sesuai role. Checklist emulator yang sudah lulus tidak otomatis membuktikan perilaku proyek Firebase aktual.
+- [ ] Selesaikan P0 upload: pencabutan secret Cloudinary lama dan pembatasan preset sebelum memakai upload nyata.
+- [ ] Validasi alur inti bertahap: profil/daftar mentor → pengajuan/order → upload bukti → verifikasi admin → chat; jalur kuesioner diuji tersendiri. Gunakan data uji yang terpisah untuk pemeriksaan.
+- [ ] Bangun transaksi tepercaya/ledger, komisi 15%, withdraw/refund dan reward sesuai rancangan yang dikonfirmasi sebelum dinyatakan aktif; gateway mengikuti kesiapan alur pembayaran.
+- [ ] Sesuaikan UI, keadaan loading/error dan tutorial setelah login berdasarkan alur yang telah berhasil diuji.
+- [x] Siapkan dan deploy Firebase Hosting awal pada `https://cermatify.web.app` berdasarkan permintaan pemilik 25 Oktober 2026.
+- [ ] Sambungkan domain `cermatify.com` dan selesaikan pemeriksaan Auth/App Check serta penerimaan fitur sebelum menyatakan seluruh layanan siap produksi.
+
+Status: **rekomendasi urutan, belum memulai perubahan backend atau konfigurasi eksternal**. Hosting domain bukan prasyarat untuk melanjutkan pengujian lokal/emulator. Rujukan teknis: [Firebase Local Emulator Suite](https://firebase.google.com/docs/emulator-suite), [Hosting: test/preview/deploy](https://firebase.google.com/docs/hosting/test-preview-deploy) dan [Hosting: custom domain](https://firebase.google.com/docs/hosting/custom-domain). Perubahan pada langkah ini hanya dokumentasi; tidak menjalankan ulang tes aplikasi.
+
+## Penyesuaian panduan Firebase Hosting — 25 Oktober 2026
+
+Pemilik membagikan panduan Firebase Hosting/Spark dan domain kustom. Panduan ditinjau terhadap proyek lokal serta dokumentasi resmi; belum menjalankan inisialisasi, deployment atau perubahan DNS.
+
+- [x] Identifikasi penyesuaian Flutter: artefak publik adalah hasil build `build/web`; untuk domain root gunakan base href `/`, menggantikan `/cermatify/` yang dipakai workflow GitHub Pages saat ini. Sertakan konfigurasi build upload/App Check yang berlaku ketika menyiapkan rilis.
+- [x] Konfirmasi kondisi lokal: `firebase.json` sudah memuat konfigurasi Flutter dan Firestore Rules, tetapi belum memiliki bagian Hosting; `.firebaserc` belum tersedia. Konfigurasi yang sudah ada perlu dipertahankan saat penyiapan Hosting.
+- [x] Catat bahwa Spark menyediakan kuota Hosting tanpa biaya dalam batas pemakaiannya; status billing proyek aktual belum diverifikasi melalui Console.
+- [x] Siapkan konfigurasi Hosting untuk `build/web`, pilihan proyek `cermatify`, uji artefak lalu deploy khusus Hosting pada 25 Oktober 2026. Deployment tidak sekaligus menerapkan Firestore Rules yang tercantum di konfigurasi.
+- [ ] Setelah artefak teruji, pertimbangkan preview Hosting untuk pengujian bersama; penyambungan `cermatify.com` memerlukan konfigurasi domain/DNS dan pemeriksaan HTTPS serta Firebase Auth/App Check.
+
+Referensi: [Hosting quickstart](https://firebase.google.com/docs/hosting/quickstart), [kuota dan harga Hosting](https://firebase.google.com/docs/hosting/usage-quotas-pricing), [custom domain](https://firebase.google.com/docs/hosting/custom-domain). Perubahan pada langkah ini hanya dokumentasi; tidak menjalankan ulang tes Flutter.
+
+## Inisialisasi dan deployment Firebase Hosting — 25 Oktober 2026
+
+Permintaan pemilik: lakukan init dan deploy. Penyiapan dilakukan dengan menambahkan konfigurasi Hosting ke file yang sudah ada; tidak menjalankan wizard yang dapat menimpa konfigurasi Flutter/Firestore atau `index.html` hasil build.
+
+**Hasil live:** [cermatify.web.app](https://cermatify.web.app) dan [cermatify.firebaseapp.com](https://cermatify.firebaseapp.com). Situs `cermatify`, versi Hosting `a6a8304593f4a2c9`, rilis 25 Oktober 2026 sekitar 15.42 WIB. Domain `cermatify.com` belum disambungkan.
+
+- [x] Tambahkan `hosting.public = build/web`, fallback ke `index.html`, serta header `Cache-Control: no-cache` di `firebase.json`; pertahankan konfigurasi Flutter/Firestore yang sudah ada.
+- [x] Tambahkan `.firebaserc` dengan proyek default `cermatify`; abaikan cache deployment lokal `.firebase/` melalui `.gitignore`.
+- [x] Siapkan Firebase CLI 15.28.1 melalui `npx`; pemilik menyelesaikan autentikasi Google langsung di browser. CLI terautentikasi sebagai `cermatifycompany@gmail.com` dan akses situs proyek dikonfirmasi lewat API Hosting.
+- [x] Build rilis Flutter Web terbaru dengan base href `/`, cloud `rgovyuw1` dan preset `flutter_upload`; build serta Wasm dry run berhasil.
+- [x] Seluruh 186 tes Flutter lulus sebelum deployment. Log lokal: `build/firebase-hosting-full-test.log`.
+- [x] Validasi JSON/target/base href dan pemindaian pola credential privat pada artefak: lulus. Tidak menyimpan token CLI di repository.
+- [x] Periksa build root lokal di Chrome: landing, legacy `/landing`, serta guard tamu `/profile` dan `/admin-dashboard` lulus; 0 exception runtime pada smoke test.
+- [x] Jalankan deploy khusus Hosting melalui `npx --yes firebase-tools@15.28.1 deploy --only hosting --project cermatify --non-interactive`; CLI melaporkan Deploy complete. Log lokal: `build/firebase-hosting-deploy.log`.
+- [x] Verifikasi HTTPS/HTTP 200 serta SHA-256 file publik terhadap build lokal untuk `index.html`, `flutter_bootstrap.js`, `main.dart.js`, `manifest.json` dan logo. Alamat alternatif `cermatify.firebaseapp.com` juga menyajikan index yang sama.
+- [x] Periksa situs live di Chrome: root, pengalihan legacy dan dua guard tamu lulus; 0 exception runtime pada smoke test. Screenshot lokal: `build/firebase-hosting-live.png`.
+- [x] Perbarui petunjuk deploy ulang dan rollback di `docs/WEB_DEPLOYMENT.md`; `git diff --check` lulus.
+- [ ] Sambungkan DNS/domain `cermatify.com` ke Hosting, lalu periksa HTTPS dan konfigurasi Auth/App Check domain tersebut.
+- [ ] Lengkapi penerimaan login/registrasi tiap role, upload nyata, transaksi dan persyaratan backend lainnya; deployment Hosting ini tidak membuktikan seluruh alur bisnis sudah aktif.
+- [ ] Isi site key reCAPTCHA dan selesaikan App Check sesuai checklist P1. Build ini mengikuti pengecualian sementara tanpa App Check yang sudah tercatat; tidak mengubah enforcement atau deploy Firestore Rules.
+
+Batas validasi: belum menjalankan analisis statis baru pada tahap deployment ini karena percobaan sebelumnya tidak mengembalikan hasil. Build release dan seluruh tes lulus. Workflow GitHub Pages yang sudah tersedia tidak diubah, dan tidak mengubah DNS atau menambah tagihan/billing proyek.
+
+## Verifikasi DNS domain kustom — 25 Oktober 2026
+
+- [x] Periksa DNS setelah pemilik memasang record melalui Hostinger: A `cermatify.com` mengarah ke `199.36.158.100` dan TXT berisi `hosting-site=cermatify`.
+- [x] Konfirmasi TXT terlihat melalui resolver lokal serta nameserver `aurora.dns-parking.com` dan `nebula.dns-parking.com`.
+- [ ] Selesaikan verifikasi Firebase dan provisioning HTTPS. Saat pemeriksaan ini, HTTPS `cermatify.com` belum lolos validasi sertifikat; belum menyatakan domain Connected atau HTTPS siap.
+
+Tidak mengubah record DNS pada langkah pemeriksaan ini. Pemilik dapat mencoba Verify kembali; propagasi DNS dan provisioning sertifikat dapat memerlukan hingga 24 jam menurut [dokumentasi Firebase](https://firebase.google.com/docs/hosting/custom-domain).
+
+## Panduan pembaruan Hosting dari VS Code — 25 Oktober 2026
+
+- [x] Catat laporan pemilik bahwa domain sudah berstatus **Minting certificate**; provisioning HTTPS masih berlangsung, belum menyatakan Connected berdasarkan laporan ini.
+- [x] Dokumentasikan alur simpan/uji lokal → build Flutter rilis dengan base href `/` → deploy khusus Hosting → periksa situs di `docs/WEB_DEPLOYMENT.md`.
+- [x] Jelaskan bahwa hot reload dan commit/push Git tidak otomatis memperbarui Firebase Hosting pada konfigurasi saat ini; workflow GitHub yang tersedia masih menargetkan Pages.
+- [x] Catat bahwa inisialisasi/domain DNS tidak perlu diulang untuk perubahan UI biasa, sedangkan login CLI diulang bila sesi memerlukannya dan konfigurasi build publik harus dipertahankan.
+- [ ] Pertimbangkan otomatisasi Firebase Hosting melalui GitHub Actions sebagai pekerjaan terpisah jika dibutuhkan.
+
+Langkah ini hanya memperbarui petunjuk/status; tidak melakukan deployment baru atau mengubah DNS. Uji aplikasi tidak dijalankan ulang untuk perubahan dokumentasi.

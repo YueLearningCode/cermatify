@@ -4,6 +4,8 @@ import 'package:cermatify/app/routes/app_pages.dart';
 import 'package:cermatify/app/modules/landing/widgets/review_preview_section.dart';
 import 'package:cermatify/app/modules/landing/widgets/landing_navigation.dart';
 import 'package:cermatify/app/modules/landing/widgets/landing_faq.dart';
+import 'package:cermatify/app/modules/landing/widgets/landing_cta.dart';
+import 'package:cermatify/app/modules/landing/widgets/landing_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
@@ -169,15 +171,20 @@ class _LandingViewState extends State<LandingView> {
                         const SizedBox(height: 72),
                         _SectionHeader(
                           key: _servicesKey,
+                          textAlign: TextAlign.start,
                           title: 'Pilih layanan sesuai kebutuhanmu',
                           subtitle:
-                              'Pendampingan karya ilmiah, persiapan kompetisi, dan kebutuhan responden penelitian dalam satu aplikasi.',
+                              'Kenali langkah awal menggunakan layanan Cermatify.',
                         ),
                         const SizedBox(height: 16),
                         const _FeatureGrid(),
+                        // EDIT CARA KERJA — jarak dari bagian layanan di atas.
                         const SizedBox(height: 72),
+                        // EDIT CARA KERJA — judul dan subjudul bagian ini.
+                        // Style teksnya ada di _SectionHeader (dipakai juga oleh bagian lain).
                         _SectionHeader(
                           key: _howItWorksKey,
+                          textAlign: TextAlign.start,
                           title: 'Cara Kerja Cermatify',
                           subtitle:
                               'Alurnya dibuat sederhana agar pengguna bisa langsung mulai tanpa kebingungan.',
@@ -195,7 +202,9 @@ class _LandingViewState extends State<LandingView> {
                         const SizedBox(height: 16),
                         const LandingFaq(),
                         const SizedBox(height: 72),
-                        const _FinalCta(),
+                        LandingCta(onSelected: _navigate),
+                        const SizedBox(height: 56),
+                        LandingFooter(onSelected: _navigate),
                       ],
                     ),
                   ),
@@ -759,18 +768,26 @@ class _HowItWorks extends StatelessWidget {
       ),
       _StepTile(
         number: '2',
-        title: 'Pilih Layanan',
-        description: 'Masuk ke fitur yang sesuai dengan kebutuhanmu.',
+        title: 'Tentukan kebutuhanmu',
+        description:
+            'Pilih pendampingan karya ilmiah, persiapan kompetisi, atau kebutuhan responden penilitian.',
       ),
       _StepTile(
         number: '3',
-        title: 'Mulai Proses',
-        description: 'Ikuti alur aplikasi sampai kebutuhan akademik selesai.',
+        title: 'Ajukan Layanan',
+        description:
+            'Pilih mentor yang sesuai atau kirim tautan kuisioner beserta kriteria responden.',
+      ),
+      _StepTile(
+        number: '4',
+        title: 'Tinjau dan Lanjutkan',
+        description:
+            'Ikuti petunjuk pembayaran dan tunggu konfirmasi dari mentor atau tim Cermatify. ENJOY!',
       ),
     ];
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900 ? 3 : 1;
+        final columns = constraints.maxWidth >= 900 ? 4 : 1;
         const spacing = 12.0;
         final width =
             (constraints.maxWidth - (spacing * (columns - 1))) / columns;
@@ -786,101 +803,31 @@ class _HowItWorks extends StatelessWidget {
   }
 }
 
-class _FinalCta extends StatelessWidget {
-  const _FinalCta();
-
-  @override
-  Widget build(BuildContext context) {
-    final compact = _isCompact(context);
-    final copy = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Siap mulai lebih cermat?',
-          style: GoogleFonts.poppins(
-            fontSize: compact ? 20 : 28,
-            fontWeight: FontWeight.w900,
-            color: AppColors.whiteColor,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Masuk atau daftar untuk menggunakan seluruh layanan Cermatify.',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            height: 1.55,
-            color: AppColors.whiteColor.withValues(alpha: 0.88),
-          ),
-        ),
-      ],
-    );
-    final action = ElevatedButton(
-      onPressed: () => Get.toNamed(Routes.REGISTER),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.whiteColor,
-        foregroundColor: AppColors.primaryColor,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      child: Text(
-        'Daftar Gratis',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.w800),
-      ),
-    );
-
-    return LayoutBuilder(
-      builder: (context, constraints) => Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(constraints.maxWidth >= 700 ? 40 : 20),
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.24),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: constraints.maxWidth >= 700
-            ? Row(
-                children: [
-                  Expanded(child: copy),
-                  const SizedBox(width: 32),
-                  action,
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [copy, const SizedBox(height: 20), action],
-              ),
-      ),
-    );
-  }
-}
-
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     super.key,
     required this.title,
     required this.subtitle,
+    this.textAlign = TextAlign.start,
   });
 
   final String title;
   final String subtitle;
+  final TextAlign textAlign;
 
   @override
   Widget build(BuildContext context) {
     final compact = _isCompact(context);
 
+    // EDIT ALIGNMENT — judul bagian memakai lebar penuh agar bisa rata tengah.
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           title,
+          textAlign: textAlign,
           style: GoogleFonts.poppins(
+            // EDIT CARA KERJA — ukuran judul bagian: layar kecil / layar besar.
             fontSize: compact ? 19 : 21,
             fontWeight: FontWeight.w900,
             height: 1.24,
@@ -890,7 +837,9 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           subtitle,
+          textAlign: textAlign,
           style: GoogleFonts.poppins(
+            // EDIT CARA KERJA — ukuran subjudul dan jarak antar barisnya.
             fontSize: 13,
             height: 1.58,
             color: AppColors.greyTextSecondaryColor,
@@ -1049,11 +998,13 @@ class _FeatureTile extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // EDIT LAYANAN — posisi ikon dan seluruh isi kartu.
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             width: 44,
             height: 44,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
@@ -1063,6 +1014,7 @@ class _FeatureTile extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -1072,6 +1024,7 @@ class _FeatureTile extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             benefit,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -1082,6 +1035,7 @@ class _FeatureTile extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             description,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 13,
               height: 1.65,
@@ -1094,6 +1048,7 @@ class _FeatureTile extends StatelessWidget {
   }
 }
 
+// EDIT CARA KERJA — STYLE SATU LANGKAH (berlaku untuk semua nomor).
 class _StepTile extends StatelessWidget {
   const _StepTile({
     required this.number,
@@ -1108,55 +1063,67 @@ class _StepTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
+      // EDIT CARA KERJA — jarak bawah setiap langkah.
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      // EDIT CARA KERJA — Column menempatkan nomor di atas teks.
+      child: Column(
+        // EDIT CARA KERJA — posisi lingkaran nomor di tengah kolom.
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // EDIT CARA KERJA — ukuran lingkaran nomor.
           Container(
             width: 36,
             height: 36,
             alignment: Alignment.center,
             decoration: BoxDecoration(
+              // EDIT CARA KERJA — warna latar lingkaran.
               color: AppColors.primary,
               shape: BoxShape.circle,
             ),
             child: Text(
               number,
+              // EDIT CARA KERJA — font, warna dan ketebalan angka.
               style: GoogleFonts.poppins(
                 color: AppColors.whiteColor,
                 fontWeight: FontWeight.w900,
               ),
             ),
           ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 12),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.border)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.black414,
-                    ),
+          // EDIT CARA KERJA — jarak vertikal nomor ke judul.
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            // EDIT CARA KERJA — jarak teks ke garis bawah, lalu style garis.
+            padding: const EdgeInsets.only(bottom: 12),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: AppColors.border)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  // EDIT CARA KERJA — fontSize, fontWeight dan color judul langkah.
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.black414,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      height: 1.5,
-                      color: AppColors.greyTextSecondaryColor,
-                    ),
+                ),
+                // EDIT CARA KERJA — jarak judul langkah ke deskripsi.
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  textAlign: TextAlign.center,
+                  // EDIT CARA KERJA — fontSize, height (jarak baris) dan color deskripsi.
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    height: 1.5,
+                    color: AppColors.greyTextSecondaryColor,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

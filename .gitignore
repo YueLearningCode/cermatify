@@ -56,4 +56,5 @@ app.*.map.json
 *.key
 service-account*.json
 firebase-adminsdk*.json
+.firebase/
 node_modules/

@@ -66,6 +66,11 @@ void main() {
     await finishNavigation(tester);
   }
 
+  Future<void> reveal(WidgetTester tester, Finder target) async {
+    await Scrollable.ensureVisible(tester.element(target), alignment: .5);
+    await finishNavigation(tester);
+  }
+
   for (final width in <double>[375, 1366]) {
     testWidgets(
       'section navigation and brand work without login at $width px',
@@ -143,7 +148,106 @@ void main() {
       expect(Get.currentRoute, Routes.LOGIN);
       expect(find.text('Formulir masuk'), findsOneWidget);
     });
+
+    for (final action in [
+      ('user', Routes.REGISTER, null),
+      ('mentor', Routes.REGISTER, 'mentor'),
+      ('login', Routes.LOGIN, null),
+    ]) {
+      testWidgets(
+        'closing CTA ${action.$1} opens the right form at $width px',
+        (tester) async {
+          await pumpLanding(tester, width);
+          final button = find.byKey(ValueKey('landing-cta-${action.$1}'));
+          await reveal(tester, button);
+          await tester.tap(button);
+          await finishNavigation(tester);
+          expect(Get.currentRoute, action.$2);
+          expect(Get.arguments, action.$3);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
+    testWidgets(
+      'footer links navigate within the public landing at $width px',
+      (tester) async {
+        await pumpLanding(tester, width);
+        for (final section in [
+          ('services', 'Pilih layanan sesuai kebutuhanmu'),
+          ('howItWorks', 'Cara Kerja Cermatify'),
+          ('faq', 'Pertanyaan yang sering diajukan'),
+        ]) {
+          final link = find.byKey(ValueKey('landing-footer-${section.$1}'));
+          await reveal(tester, link);
+          await tester.tap(link);
+          await finishNavigation(tester);
+          final heading = tester.getRect(find.text(section.$2));
+          expect(heading.top, greaterThanOrEqualTo(72));
+          expect(heading.top, lessThanOrEqualTo(96));
+          expect(Get.currentRoute, '/');
+        }
+        final top = find.byKey(const ValueKey('landing-footer-top'));
+        await reveal(tester, top);
+        await tester.tap(top);
+        await finishNavigation(tester);
+        final scroll = tester.widget<CustomScrollView>(
+          find.byType(CustomScrollView),
+        );
+        expect(scroll.controller!.offset, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
+
+  testWidgets('footer email opens the confirmed support address', (
+    tester,
+  ) async {
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final launchedUrls = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+      call,
+    ) async {
+      if (call.method == 'launch') {
+        launchedUrls.add((call.arguments as Map)['url'] as String);
+      }
+      return true;
+    });
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        channel,
+        null,
+      ),
+    );
+    await pumpLanding(tester, 375);
+    final email = find.byKey(const ValueKey('landing-footer-email'));
+    await reveal(tester, email);
+    await tester.tap(email);
+    await finishNavigation(tester);
+    expect(launchedUrls, ['mailto:cermatifycompany@gmail.com']);
+    expect(Get.currentRoute, '/');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('closing CTA and footer fit at 320 px with text at 200 percent', (
+    tester,
+  ) async {
+    await pumpLanding(tester, 320, textScale: 2);
+    for (final key in [
+      'landing-cta-user',
+      'landing-cta-mentor',
+      'landing-cta-login',
+      'landing-footer-email',
+      'landing-footer-top',
+    ]) {
+      final control = find.byKey(ValueKey(key));
+      await reveal(tester, control);
+      final bounds = tester.getRect(control);
+      expect(bounds.left, greaterThanOrEqualTo(24));
+      expect(bounds.right, lessThanOrEqualTo(296));
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets('desktop sections can be reached with the keyboard', (
     tester,
