@@ -83,7 +83,7 @@ Kriteria selesai:
 - [x] Verifikasi konfigurasi Firebase Web di `firebase_options.dart`.
 - [ ] Tambahkan `localhost` ke Firebase Authorized Domains untuk development.
 - [ ] Tambahkan `yuelearningcode.github.io` ke Firebase Authorized Domains.
-- [ ] Siapkan `cermatify.com` sebagai domain produksi sesuai laporan pemilik 25 Oktober 2026; domain belum dihosting dan konfigurasi DNS/Authorized Domains belum diverifikasi.
+- [x] Sambungkan `cermatify.com` ke Hosting — DNS A/TXT telah terlihat; pemeriksaan 28 Oktober 2026 berhasil mengakses halaman Flutter lewat HTTPS dengan HTTP 200. Konfigurasi Authorized Domains/App Check domain tetap diperiksa terpisah.
 - [ ] Uji login customer melalui browser.
 - [ ] Uji login mentor dan status verifikasinya.
 - [ ] Uji login admin dan proteksi datanya.
@@ -1287,3 +1287,104 @@ Tidak mengubah record DNS pada langkah pemeriksaan ini. Pemilik dapat mencoba Ve
 - [ ] Pertimbangkan otomatisasi Firebase Hosting melalui GitHub Actions sebagai pekerjaan terpisah jika dibutuhkan.
 
 Langkah ini hanya memperbarui petunjuk/status; tidak melakukan deployment baru atau mengubah DNS. Uji aplikasi tidak dijalankan ulang untuk perubahan dokumentasi.
+
+## Package Android dan audit Google Play — 28 Oktober 2026
+
+Permintaan pemilik: ubah package Android menjadi `com.cermatify.app` dan periksa kesiapan unggah Google Play. Pemilik mengonfirmasi belum pernah mengunggah Cermatify, dan akun Play Console yang digunakan adalah personal/pribadi. Tanggal pembuatan akun belum diketahui.
+
+- [x] Ganti `applicationId` dan namespace Android menjadi `com.cermatify.app`; pindahkan serta sesuaikan package `MainActivity`.
+- [x] Daftarkan Android app baru pada proyek Firebase `cermatify`: `1:1083109793751:android:f1aa56860023933c093592`; aplikasi Firebase lama tetap ada dan data pengguna proyek tidak dihapus.
+- [x] Unduh `google-services.json` resmi yang memuat package baru, selaraskan Android `FirebaseOptions` dan metadata `firebase.json`, lalu aktifkan plugin Google Services pada modul Android app.
+- [x] Tambahkan izin `INTERNET` ke manifest utama agar ikut pada build rilis; sebelumnya izin hanya ada di debug/profile.
+- [x] Verifikasi signing key rilis yang sudah ada: keystore/private key tersedia, bukan sertifikat debug, RSA 2048-bit/SHA384withRSA dan berlaku sampai 31 Maret 2053. Tidak membuat ulang signing key atau mencetak password.
+- [x] `flutter analyze --no-pub`: tidak ada masalah, 16 detik. Log lokal `build/play-readiness-analyze.log`.
+- [x] Seluruh tes Flutter: 186 lulus. Log lokal `build/play-readiness-flutter-test.log`.
+- [x] Konfirmasi SDK Flutter 3.44.4 menyediakan compile/target API 36, min SDK 24; Android SDK 36 dan NDK 28.2.13676358 tersedia.
+- [x] Build AAB/APK rilis bertanda tangan berhasil; dump manifest/badging mengonfirmasi `com.cermatify.app`, versi `1.0.0+1`, target/compile API 36, min 24 dan izin INTERNET pada artefak.
+- [x] AAB lolos bundletool Google 1.18.3 dan verifikasi JAR; APK lolos apksigner (v2, fingerprint sesuai key rilis), zipalign 16 KB dan pemeriksaan ELF. Bundle memakai `PAGE_ALIGNMENT_16K`; seluruh native 64-bit lolos alignment.
+- [x] Uji startup dan halaman login APK rilis pada emulator 16 KB/API 37/x86_64: aplikasi dan Firebase native terinisialisasi, tidak ditemukan fatal/unhandled exception aplikasi pada smoke test. Dialog System UI emulator sempat muncul dan hilang setelah Wait; batas ini dicatat pada laporan.
+- [x] Susun laporan [GOOGLE_PLAY_READINESS.md](docs/GOOGLE_PLAY_READINESS.md), mencakup temuan teknis, penghalang rilis, sumber resmi dan checklist Play Console.
+- [ ] Implementasikan jalur penghapusan akun/data di aplikasi serta resource permintaan penghapusan di web.
+- [ ] Siapkan kebijakan privasi publik yang berlaku untuk aplikasi, tautkan di aplikasi dan Play Console, serta selesaikan syarat layanan.
+- [ ] Telaah kepatuhan pembayaran QRIS/manual terhadap Google Play Billing per produk; pengecualian layanan online 1:1 memiliki syarat dan tidak otomatis mencakup seluruh layanan.
+- [ ] Lengkapi Data safety, App access/akun peninjau, rating konten, target usia, iklan, identitas developer, aset/listing dan persyaratan pengujian akun personal.
+- [ ] Jalankan penerimaan fitur Android dengan akun nyata: registrasi/login tiap role, verifikasi mentor, order, chat, upload, kuesioner dan kegagalan jaringan.
+- [ ] Hapus fallback `dummyKuesioner` saat query gagal; gunakan keadaan error/kosong dan coba lagi agar data contoh tidak tampil sebagai data nyata.
+
+Status audit: **belum siap rilis publik**. Build dan pemeriksaan teknis selesai; tidak mengunggah aplikasi ke Play Console pada langkah ini. Jika akun personal dibuat setelah 13 November 2023, syarat closed test minimum 12 tester selama 14 hari berlaku sesuai [panduan Google Play](https://support.google.com/googleplay/android-developer/answer/14151465?hl=en).
+
+Artefak: AAB `build/app/outputs/bundle/release/app-release.aab` (67.696.770 byte), APK `build/app/outputs/flutter-apk/app-release.apk` (69.068.908 byte). SHA-256, hasil validasi, peringatan build/signing, screenshot dan daftar penghalang rilis tersedia di `docs/GOOGLE_PLAY_READINESS.md`. Build/validasi teknis selesai; belum melakukan unggahan Google Play atau deployment web pada pekerjaan Android ini.
+
+## Kajian payment gateway dan otomasi keuangan — 28 Oktober 2026
+
+Pemilik meminta integrasi payment gateway, verifikasi otomatis serta tools untuk memantau/mengelola uang masuk dan keluar. Setelah klarifikasi, pemilik memilih **bandingkan dahulu** dan menyatakan **belum punya akun merchant/sandbox**. Provider dan aktivasi belum ditentukan.
+
+- [x] Audit alur saat ini: pembayaran manual/unggah bukti, approval admin, kredit saldo dan withdraw; cocokkan dengan keputusan komisi 15% serta empat jenis saldo.
+- [x] Temukan ketidaksesuaian yang perlu ditangani saat implementasi: approval masih mengkredit harga penuh, minimum withdraw kode/rules masih Rp50.000 dan pengajuan belum mereservasi saldo.
+- [x] Bandingkan Midtrans dan Xendit menggunakan sumber resmi terbaru, termasuk hosted checkout, webhook, payout, laporan dan komponen biaya. Harga final mengikuti penawaran merchant; jangan memakai artikel bantuan lama sebagai tarif final.
+- [x] Susun rekomendasi awal **Midtrans Snap sandbox** untuk checkout awal; Xendit menjadi kandidat bila operasi payout/platform/pelaporan lebih luas diprioritaskan. Ini rekomendasi, belum keputusan pemilik.
+- [x] Telaah tools pembukuan terpisah: dashboard gateway, ledger internal, lalu Mekari Jurnal/Accurate bila dibutuhkan. Tidak menganggap pembayaran diterima, settlement, layanan selesai dan payout mentor sebagai satu status.
+- [x] Simpan kajian di [PAYMENT_GATEWAY_COMPARISON.md](docs/PAYMENT_GATEWAY_COMPARISON.md), termasuk kebutuhan backend terpercaya, secret, idempotensi, rekonsiliasi dan batas Google Play.
+- [ ] Tentukan provider dan buat akun sandbox sebelum integrasi khusus provider; jangan kirim secret melalui chat.
+- [ ] Implementasikan checkout/backend/webhook dan ledger yang diuji dengan transaksi sandbox, sesuai cakupan yang dipilih.
+- [ ] Putuskan hosting backend: jika memakai Firebase Cloud Functions, deployment memerlukan Blaze. Belum memeriksa billing aktual atau melakukan perubahan paket/tagihan.
+- [ ] Selesaikan pemetaan kewajiban Play Billing untuk Android sebelum mengaktifkan pembayaran eksternal pada distribusi Google Play.
+- [ ] Siapkan produksi setelah uji sandbox, verifikasi merchant/bank dan rekonsiliasi lulus.
+
+Status: kajian/perbandingan selesai; belum membuat akun provider, mengubah kode pembayaran, melakukan transaksi, deploy backend, memindahkan saldo atau mengganti alur produksi. Perubahan langkah ini hanya dokumentasi; tidak menjalankan ulang tes aplikasi. Jawaban asli pemilik tetap dipertahankan.
+
+## Persiapan akun payment gateway — 28 Oktober 2026
+
+- [x] Susun daftar persiapan sandbox dan aktivasi produksi pada `docs/PAYMENT_GATEWAY_COMPARISON.md`; Midtrans tetap rekomendasi, belum pilihan provider yang dikonfirmasi.
+- [x] Bedakan persiapan awal (email/telepon, akun sandbox, akses key) dengan aktivasi produksi (verifikasi merchant, rekening/dokumen, kesiapan website dan kebijakan).
+- [x] Konfirmasi `https://cermatify.com/` merespons HTTPS/HTTP 200 dan memuat aplikasi Flutter. Ini memperbarui catatan sebelumnya yang masih menunggu sertifikat; status Console/Auth/App Check tidak disimpulkan dari HTTP saja.
+- [x] Pertahankan keputusan paket, komisi 15% dan minimum withdraw Rp20.000 yang sudah ada; tidak menanyakan ulang data bisnis tersebut.
+- [ ] Pemilik memilih provider dan membuat akun sandbox; Server Key dimasukkan langsung ke konfigurasi backend, bukan chat.
+- [ ] Siapkan backend dan endpoint webhook yang diuji; bila memakai Firebase Functions, putuskan aktivasi Blaze ketika siap deploy. Belum mengubah billing.
+- [ ] Selesaikan dokumen/kesiapan layanan serta verifikasi merchant sebelum menerima pembayaran nyata.
+
+Langkah ini hanya memeriksa URL bisnis dan memperbarui panduan/checklist; tidak membuat akun, membaca atau menyimpan secret gateway, mengaktifkan pembayaran, ataupun melakukan deployment baru.
+
+## GoPay Merchant aktif — 28 Oktober 2026
+
+- [x] Terima pembaruan pemilik bahwa akun GoPay Merchant sudah aktif; bedakan dari status akses akun gateway/sandbox yang sebelumnya belum tersedia.
+- [x] Tinjau QRIS statis/dinamis GoPay Merchant dan jalur integrasi QRIS GoPay melalui Midtrans pada dokumentasi resmi; catat di `docs/PAYMENT_GATEWAY_COMPARISON.md`.
+- [x] Utamakan pemeriksaan jalur integrasi akun yang sudah ada sebelum menyarankan pendaftaran merchant baru; belum menganggap akun GoPay Merchant otomatis mempunyai Server Key/API Midtrans.
+- [ ] Konfirmasikan kepada bantuan/provider apakah merchant ID yang sudah ada dapat dipakai untuk API/webhook, produk yang perlu diaktifkan, sandbox dan tarif sesuai kategori Cermatify.
+- [ ] Tentukan jalur provider setelah konfirmasi, lalu integrasikan backend/order/webhook yang teruji.
+
+Belum menerima/mengakses credential, menghubungi pihak lain, mendaftarkan akun baru, mengubah pembayaran atau melakukan transaksi. Perubahan pada langkah ini hanya kajian dan dokumentasi.
+
+## Persiapan rilis Play Store berbayar — 28 Oktober 2026
+
+Status: **pengerjaan kandidat uji; belum siap produksi**. Pemilik mengonfirmasi rilis Android tetap berbayar dan aplikasi `com.cermatify.app` sudah dibuat di Play Console, tetapi produk pembayaran belum dibuat. Kajian GoPay/Midtrans tetap relevan untuk web; tidak menjadi pengganti Play Billing pada checkout Android ini.
+
+- [x] Tambahkan dokumen privasi, syarat layanan, dan permintaan hapus akun tanpa login; tautkan dari pendaftaran, profil semua peran dan footer. Konten Flutter dan HTML mandiri bersumber dari `assets/legal/*.json`, regenerasi melalui `tool/generate_legal_pages.py`.
+- [x] Sediakan tindakan email penghapusan akun beserta salin alamat bantuan. Jelaskan verifikasi, data terkait, pengecualian retensi dan perbedaan mengirim permintaan dengan penghapusan selesai. Penghapusan lintas Firebase/Cloudinary masih memakai operator dan perlu uji nyata.
+- [x] Hapus fallback `dummyKuesioner` pada query gagal; tampilkan loading/error serta coba lagi. Tidak mengganti data gagal dengan testimoni atau konten fiktif pada rilis.
+- [x] Siapkan checkout Play Billing untuk Android pada pendampingan dan kuesioner; harga dari Google Play dan paket Awal/Intensif mengikuti keputusan pemilik. QRIS/proof upload tidak ditampilkan pada kedua checkout Android ini.
+- [x] Siapkan Functions Node 22 di `asia-southeast2`: intent dari katalog server, verifikasi Developer API, binding akun/produk/order, transaksi atomik dan idempotensi token, consumption backend, pemulihan pending melalui listener/RTDN serta pembatalan/refund tervalidasi. Tidak menaruh secret pada Flutter; penjualan default nonaktif. Pembuatan intent dibatasi 20/menit dan 100/hari per akun; quote harga tidak membuat intent.
+- [x] Siapkan ledger 15% komisi/85% hak mentor, dana pending sampai layanan selesai, available, payout reserved, hold/debt untuk refund yang memerlukan rekonsiliasi. Biaya Google/pajak terpisah dari hak mentor dan memerlukan perhitungan margin.
+- [x] Pindahkan pengajuan pencairan baru ke backend dengan reservasi, idempotensi, minimum Rp20.000, pelepasan dana saat ditolak dan catatan transfer selesai memakai referensi. Persetujuan admin tidak otomatis mengirim uang; transfer keluar masih manual.
+- [x] Lindungi pesanan Play dari approval Firestore client lama serta tulis katalog/receipt/ledger dan withdraw baru dari backend tepercaya. Saldo legacy/historis tidak dihitung ulang otomatis.
+- [x] Tambahkan uji akses dokumen publik/tampilan sempit serta pengujian keuangan: callback ganda, akun/token salah, pending, order-kuesioner atomik, komisi saat selesai, pencairan bersamaan, retry, referensi transfer dan refund/hold. Hasil sementara: 193 tes Flutter, 11 unit backend, 14 rules dan 13 integration test lulus; analyzer bersih setelah koreksi lint.
+- [x] Siapkan template tiga produk Play, draft listing, inventaris Data safety/App access, skenario penerimaan, proses hapus akun dan migrasi di `docs/PLAY_STORE_RELEASE.md`.
+- [x] Naikkan version code kandidat ke `1.0.0+2`; pertahankan upload key yang sudah ada.
+- [x] Bangun ulang AAB/APK bertanda tangan dan web; validasi bundle, signature APK, ZIP alignment 16 KB, serta ELF 12 native libraries per artefak. Smoke test emulator 16 KB berhasil untuk landing/menu dan halaman hapus akun tanpa autentikasi. Hash artefak terbaru dan batas pengujian dicatat di `docs/PLAY_STORE_RELEASE.md`.
+- [ ] Tinjau dokumen legal/identitas pengelola, tetapkan retensi per data, uji permintaan hapus akun sampai selesai dan publikasikan URL HTML aktif di Hosting.
+- [ ] Buat produk Play `cermatify_mentoring_basic`, `cermatify_mentoring_intensive`, `cermatify_questionnaire`; cocokkan harga final, pajak, negara penjualan dan margin. Katalog publik lama Firebase masih Rp10.000–Rp20.000; migrasi paket web dan penegakan kuota sesi/chat/review belum selesai.
+- [x] Konfirmasi status billing Firebase: pada 29 Oktober 2026 pemilik menyatakan masih Spark dan belum ingin mengaktifkan billing. Pertahankan keputusan ini sampai ada arahan baru.
+- [ ] Deployment Functions/IAM/RTDN/katalog — ditunda mengikuti keputusan tetap Spark. Produk belum diaktifkan dan Functions/rules baru belum diterapkan. Client pencairan baru memerlukan backend baru sebelum dirilis; jangan menerapkan rules migrasi secara terpisah.
+- [ ] Uji pembelian license tester dari track Play beserta pending, putus koneksi, refund dan pemulihan aplikasi tertutup. Siapkan monitoring/retry dan rekonsiliasi Voided Purchases/laporan Google berkala; job rekonsiliasi berkala belum dibuat.
+- [ ] Audit pesanan/saldo/pencairan legacy, selesaikan migrasi approval manual yang masih memakai harga penuh, enforcement paket/reward, dan audit upload Cloudinary. Jalur legacy tidak boleh dipakai sebagai pengganti ledger baru.
+- [ ] Uji semua alur dengan akun reviewer/mentor yang aman dan perangkat fisik ARM64, lengkapi screenshot/aset listing, Data safety, App access, content rating serta target umur.
+- [ ] Jalankan closed testing sesuai syarat dashboard akun personal dan ajukan produksi setelah semua penghalang selesai. Tidak mengunggah AAB atau mempublikasikan aplikasi ke Play pada langkah ini.
+
+## Tetap Spark — keputusan 29 Oktober 2026
+
+- [x] Catat keputusan pemilik untuk belum mengaktifkan billing. Target rilis berbayar tetap berlaku; keputusan ini tidak mengubah aplikasi menjadi versi gratis.
+- [x] Pertahankan pembayaran nonaktif dan kode backend sebagai persiapan lokal. Tidak mengganti verifikasi tepercaya dengan pemeriksaan pembayaran di client atau kembali ke QRIS pada Android.
+- [ ] Lanjutkan pekerjaan yang tidak bergantung deployment Functions: UI/error handling, enforcement paket yang dapat diuji lokal, dokumen legal dan proses penghapusan akun, bahan Data safety/listing serta uji perangkat.
+- [ ] Sebelum penjualan aktif, putuskan infrastruktur backend tepercaya yang dapat dioperasikan. Blaze belum disetujui; backend eksternal juga belum dipilih atau diimplementasikan. Tidak menganggap backend eksternal otomatis gratis.
+
+Status rilis publik berbayar masih tertahan pada deployment/verifikasi pembayaran serta penghalang produk dan operasional yang tercatat di atas. Kandidat lokal bukan aplikasi berbayar yang siap dipublikasikan.

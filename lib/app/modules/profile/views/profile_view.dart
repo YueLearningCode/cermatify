@@ -9,6 +9,7 @@ import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import '../controllers/profile_controller.dart';
 import 'withdraw_dialog_view.dart';
 import '../../../routes/app_pages.dart';
+import '../../legal/views/legal_view.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -473,6 +474,7 @@ class ProfileView extends GetView<ProfileController> {
                             isOutlined: true,
                           ),
                         ),
+                        const PrivacyAccountLinks(),
                         // Saldo for mentor and customer only
                         Obx(
                           () => controller.userRole.value != 'admin'
@@ -2128,6 +2130,7 @@ class AdminProfileActions extends StatelessWidget {
         if (compact) {
           return Column(
             children: [
+              const PrivacyAccountLinks(),
               for (var index = 0; index < buttons.length; index++) ...[
                 styled(buttons[index]),
                 if (index < buttons.length - 1) const SizedBox(height: 10),
@@ -2136,12 +2139,17 @@ class AdminProfileActions extends StatelessWidget {
           );
         }
 
-        return Row(
+        return Column(
           children: [
-            for (var index = 0; index < buttons.length; index++) ...[
-              Expanded(child: styled(buttons[index])),
-              if (index < buttons.length - 1) const SizedBox(width: 12),
-            ],
+            const PrivacyAccountLinks(),
+            Row(
+              children: [
+                for (var index = 0; index < buttons.length; index++) ...[
+                  Expanded(child: styled(buttons[index])),
+                  if (index < buttons.length - 1) const SizedBox(width: 12),
+                ],
+              ],
+            ),
           ],
         );
       },

@@ -1,0 +1,17 @@
+{
+  "mentoring_basic": {
+    "enabled": false,
+    "productId": "cermatify_mentoring_basic",
+    "price": 75000
+  },
+  "mentoring_intensive": {
+    "enabled": false,
+    "productId": "cermatify_mentoring_intensive",
+    "price": 250000
+  },
+  "kuesioner": {
+    "enabled": false,
+    "productId": "cermatify_questionnaire",
+    "price": 25000
+  }
+}

@@ -1,7 +1,6 @@
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:cermatify/app/data/models/kuesioner_model.dart';
-import 'package:cermatify/app/data/dummy_kuesioner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
@@ -9,6 +8,8 @@ import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 
 class KuesionerController extends GetxController {
   final kuesionerList = <Kuesioner>[].obs;
+  final recommendationsLoading = false.obs;
+  final recommendationsError = ''.obs;
   final hasRespondenData = false.obs;
   final respondenData = <String, dynamic>{}.obs;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -37,9 +38,9 @@ class KuesionerController extends GetxController {
     _loadSignedByMe();
   }
 
-  void loadKuesioner() {
+  Future<void> loadKuesioner() async {
     // Fetch from Firestore and filter by responden attributes if available
-    _loadKuesionerFiltered();
+    await _loadKuesionerFiltered();
   }
 
   Future<void> reloadRespondenData() async {
@@ -49,7 +50,7 @@ class KuesionerController extends GetxController {
 
   Future<void> refreshAll() async {
     await _loadResponden();
-    loadKuesioner();
+    await loadKuesioner();
     await loadCreatedByMe();
     await _loadSignedByMe();
   }
@@ -84,6 +85,8 @@ class KuesionerController extends GetxController {
   }
 
   Future<void> _loadKuesionerFiltered() async {
+    recommendationsLoading.value = true;
+    recommendationsError.value = '';
     try {
       if (!hasRespondenData.value || respondenData.isEmpty) {
         // If user hasn't set data tambahan, don't show any recommended kuesioners
@@ -224,8 +227,11 @@ class KuesionerController extends GetxController {
       filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       kuesionerList.value = filtered;
     } catch (_) {
-      // fallback to dummy if collection doesn't exist
-      kuesionerList.value = dummyKuesioner;
+      kuesionerList.clear();
+      recommendationsError.value =
+          'Kuesioner belum dapat dimuat. Periksa koneksi dan coba lagi.';
+    } finally {
+      recommendationsLoading.value = false;
     }
   }
 

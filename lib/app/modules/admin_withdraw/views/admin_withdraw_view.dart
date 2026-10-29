@@ -15,6 +15,7 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
     ('Menunggu', 'pending'),
     ('Disetujui', 'approved'),
     ('Ditolak', 'rejected'),
+    ('Selesai', 'completed'),
   ];
 
   @override
@@ -154,8 +155,56 @@ class AdminWithdrawView extends GetView<AdminWithdrawController> {
       statusColor: controller.getStatusColor(withdraw.status),
       statusText: controller.getStatusText(withdraw.status),
       isUpdating: controller.isUpdating.value,
-      onStatusChanged: (status) =>
-          controller.updateWithdrawStatus(withdraw.id, status),
+      onStatusChanged: (status) async {
+        if (status != 'completed') {
+          await controller.updateWithdrawStatus(withdraw.id, status);
+          return;
+        }
+        final input = TextEditingController();
+        final reference = await Get.dialog<String>(
+          AlertDialog(
+            title: const Text('Konfirmasi transfer selesai'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Pastikan transfer telah berhasil. Masukkan referensi transfer untuk catatan pencairan. Persetujuan permintaan saja belum berarti dana sudah dikirim.',
+                ),
+                TextField(
+                  controller: input,
+                  maxLength: 200,
+                  decoration: const InputDecoration(
+                    labelText: 'Referensi transfer',
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  if (input.text.trim().isNotEmpty) {
+                    Get.back(result: input.text.trim());
+                  }
+                },
+                child: const Text('Catat selesai'),
+              ),
+            ],
+          ),
+        );
+        // Let the closing dialog finish using its controller before disposal.
+        WidgetsBinding.instance.addPostFrameCallback((_) => input.dispose());
+        if (reference != null) {
+          await controller.updateWithdrawStatus(
+            withdraw.id,
+            status,
+            notes: reference,
+          );
+        }
+      },
     );
   }
 
@@ -427,6 +476,12 @@ class AdminWithdrawCard extends StatelessWidget {
   }
 
   Widget _buildActions() {
+    if (withdraw.status == 'approved') {
+      return FilledButton(
+        onPressed: isUpdating ? null : () => onStatusChanged('completed'),
+        child: const Text('Catat transfer selesai'),
+      );
+    }
     if (withdraw.status == 'pending') {
       return Row(
         children: [
@@ -457,8 +512,8 @@ class AdminWithdrawCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        withdraw.status == 'approved'
-            ? 'Pencairan telah disetujui'
+        withdraw.status == 'completed'
+            ? 'Transfer telah dicatat selesai'
             : 'Permintaan telah ditolak',
         style: GoogleFonts.poppins(
           fontSize: 10,

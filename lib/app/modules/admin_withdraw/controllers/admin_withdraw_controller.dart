@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cermatify/app/data/models/withdraw_model.dart';
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
@@ -107,63 +108,12 @@ class AdminWithdrawController extends GetxController {
     if (isUpdating.value) return;
     try {
       isUpdating.value = true;
-      await _firestore.runTransaction((transaction) async {
-        final withdrawReference = _firestore
-            .collection('withdraws')
-            .doc(withdrawId);
-        final withdrawDocument = await transaction.get(withdrawReference);
-        if (!withdrawDocument.exists) {
-          throw StateError('Withdraw tidak ditemukan');
-        }
-
-        final data = withdrawDocument.data()!;
-        final oldStatus = data['status']?.toString() ?? 'pending';
-        final mentorId = data['mentorId']?.toString() ?? '';
-        final nominal = (data['nominal'] as num?)?.toInt() ?? 0;
-        if (oldStatus != 'pending' ||
-            !['approved', 'rejected'].contains(newStatus)) {
-          throw StateError(
-            'Hanya withdraw pending yang dapat disetujui atau ditolak.',
-          );
-        }
-        if (mentorId.isEmpty || nominal <= 0) {
-          throw StateError('Data withdraw tidak valid.');
-        }
-
-        DocumentReference<Map<String, dynamic>>? mentorReference;
-        DocumentSnapshot<Map<String, dynamic>>? mentorDocument;
-        if (mentorId.isNotEmpty && nominal > 0) {
-          mentorReference = _firestore.collection('users').doc(mentorId);
-          mentorDocument = await transaction.get(mentorReference);
-          if (!mentorDocument.exists) {
-            throw StateError('Mentor tidak ditemukan');
-          }
-        }
-
-        if (mentorReference != null && mentorDocument != null) {
-          final currentBalance =
-              (mentorDocument.data()?['saldo'] as num?)?.toInt() ?? 0;
-          var newBalance = currentBalance;
-          if (newStatus == 'approved') {
-            newBalance -= nominal;
-            if (newBalance < 0) {
-              throw StateError('Saldo mentor tidak mencukupi');
-            }
-          }
-          if (newBalance != currentBalance) {
-            transaction.update(mentorReference, {'saldo': newBalance});
-          }
-        }
-
-        final update = <String, dynamic>{
-          'status': newStatus,
-          'updatedAt': FieldValue.serverTimestamp(),
-          'adminId': currentUserId,
-        };
-        if (notes != null && notes.trim().isNotEmpty) {
-          update['notes'] = notes.trim();
-        }
-        transaction.update(withdrawReference, update);
+      await FirebaseFunctions.instanceFor(
+        region: 'asia-southeast2',
+      ).httpsCallable('updateWithdrawalStatus').call({
+        'withdrawalId': withdrawId,
+        'status': newStatus,
+        'notes': notes ?? '',
       });
 
       final index = withdraws.indexWhere((item) => item.id == withdrawId);

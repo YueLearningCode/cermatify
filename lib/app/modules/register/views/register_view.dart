@@ -560,23 +560,20 @@ class RegisterView extends GetView<RegisterController> {
                           activeColor: AppColors.primaryColor,
                         ),
                         Expanded(
-                          child: RichText(
-                            text: TextSpan(
-                              style: GoogleFonts.poppins(
-                                color: AppColors.greyTextSecondaryColor,
-                                fontSize: 14,
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text('Saya menyetujui'),
+                              TextButton(
+                                onPressed: () => Get.toNamed(Routes.TERMS),
+                                child: const Text('Syarat dan Ketentuan'),
                               ),
-                              children: const [
-                                TextSpan(text: "Saya setuju dengan "),
-                                TextSpan(
-                                  text: "Syarat dan Ketentuan",
-                                  style: TextStyle(
-                                    color: AppColors.primaryColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              const Text('dan telah membaca'),
+                              TextButton(
+                                onPressed: () => Get.toNamed(Routes.PRIVACY),
+                                child: const Text('Kebijakan Privasi'),
+                              ),
+                            ],
                           ),
                         ),
                       ],

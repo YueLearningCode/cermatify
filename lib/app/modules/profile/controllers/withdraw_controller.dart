@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,10 +14,11 @@ class WithdrawController extends GetxController {
   final TextEditingController namaRekeningController = TextEditingController();
   final TextEditingController nomorRekeningController = TextEditingController();
 
+  String? _withdrawRequestId;
   final isLoading = false.obs;
   final formKey = GlobalKey<FormState>();
 
-  static const int minWithdraw = 50000; // Minimum 50rb
+  static const int minWithdraw = 20000; // Keputusan pemilik: minimum Rp20.000
 
   @override
   void onClose() {
@@ -61,8 +63,9 @@ class WithdrawController extends GetxController {
       if (userData['role'] != 'mentor' || userData['status'] != 'active') {
         throw StateError('Withdraw hanya tersedia untuk mentor aktif.');
       }
-      final mentorName = userData['nama'] ?? user.displayName ?? 'Mentor';
-      final currentSaldo = (userData['saldo'] as int?) ?? 0;
+      final currentSaldo =
+          ((userData['saldo'] as num?)?.toInt() ?? 0) +
+          ((userData['playAvailable'] as num?)?.toInt() ?? 0);
       if (namaRekeningController.text.trim().isEmpty ||
           !RegExp(r'^\d+$').hasMatch(nomorRekeningController.text.trim())) {
         throw StateError('Isi nama pemilik dan nomor rekening yang valid.');
@@ -97,19 +100,15 @@ class WithdrawController extends GetxController {
         return;
       }
 
-      // Create withdraw document
-      final withdrawData = {
-        'mentorId': user.uid,
-        'mentorName': mentorName,
+      _withdrawRequestId ??= _firestore.collection('withdraws').doc().id;
+      await FirebaseFunctions.instanceFor(
+        region: 'asia-southeast2',
+      ).httpsCallable('requestWithdrawal').call({
+        'requestId': _withdrawRequestId,
         'nominal': nominal,
         'namaRekening': namaRekeningController.text.trim(),
         'nomorRekening': nomorRekeningController.text.trim(),
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      await _firestore.collection('withdraws').add(withdrawData);
+      });
 
       // Clear form
       nominalController.clear();

@@ -1,0 +1,10 @@
+{
+  "title": "Hapus akun dan data Cermatify",
+  "updated": "28 Oktober 2026",
+  "sections": [
+    {"title": "Cara mengajukan", "body": "Kirim email ke cermatifycompany@gmail.com dengan subjek Permintaan penghapusan akun Cermatify, menggunakan alamat email yang terdaftar pada akun Anda. Tuliskan bahwa Anda meminta penghapusan akun beserta data terkait. Anda tidak perlu menginstal ulang atau login ke aplikasi untuk mengirim permintaan ini. Jika sudah tidak dapat mengakses email akun, hubungi alamat bantuan yang sama untuk proses verifikasi alternatif."},
+    {"title": "Verifikasi dan konfirmasi", "body": "Tim akan memverifikasi kepemilikan akun sebelum memproses permintaan dan memberi informasi mengenai tindak lanjutnya. Jangan kirim password, kode OTP, nomor kartu atau salinan dokumen identitas melalui email permintaan awal. Tombol Kirim permintaan hanya membuka aplikasi email; Anda tetap harus mengirim emailnya. Akun belum terhapus saat halaman atau aplikasi email terbuka."},
+    {"title": "Data yang ditinjau untuk dihapus", "body": "Permintaan mencakup akun autentikasi, profil, data responden, unggahan dan data pribadi terkait pesanan serta percakapan. Tim juga meninjau data pada penyedia seperti Firebase dan Cloudinary. Penghapusan atau anonimisasi dilakukan dengan memperhatikan hak pihak lain dalam percakapan serta data transaksi yang perlu dipertahankan."},
+    {"title": "Pengecualian dan waktu penanganan", "body": "Data tertentu dapat dipertahankan secara terbatas untuk kewajiban hukum, transaksi yang belum selesai, sengketa atau pencegahan penipuan. Tim akan menjelaskan data, alasan retensi dan langkah berikutnya untuk kasus Anda. Bantuan tersedia Senin–Sabtu pukul 09.00–17.00 WIB, dengan target respons awal satu hari kerja. Respons awal bukan konfirmasi penghapusan selesai; konfirmasi penyelesaian diberikan setelah proses dilaksanakan."}
+  ]
+}

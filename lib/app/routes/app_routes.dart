@@ -7,6 +7,9 @@ part of 'app_pages.dart';
 abstract class Routes {
   Routes._();
   static const LANDING = _Paths.LANDING;
+  static const PRIVACY = _Paths.PRIVACY;
+  static const TERMS = _Paths.TERMS;
+  static const DELETE_ACCOUNT = _Paths.DELETE_ACCOUNT;
   static const LEGACY_LANDING = _Paths.LEGACY_LANDING;
   static const HOME = _Paths.HOME;
   static const LOGIN = _Paths.LOGIN;
@@ -50,6 +53,9 @@ abstract class Routes {
 abstract class _Paths {
   _Paths._();
   static const LANDING = '/';
+  static const PRIVACY = '/privacy';
+  static const TERMS = '/terms';
+  static const DELETE_ACCOUNT = '/delete-account';
   static const LEGACY_LANDING = '/landing';
   static const HOME = '/home';
   static const LOGIN = '/login';

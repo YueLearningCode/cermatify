@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCi-hE_vK-jHrmvcpEGq9oteu1UTMgZft4',
-    appId: '1:1083109793751:android:e40aa399ae70144a093592',
+    appId: '1:1083109793751:android:f1aa56860023933c093592',
     messagingSenderId: '1083109793751',
     projectId: 'cermatify',
     storageBucket: 'cermatify.firebasestorage.app',

@@ -1,4 +1,8 @@
 {
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22"
+  },
   "firestore": {
     "rules": "firestore.rules"
   },
@@ -32,7 +36,7 @@
       "android": {
         "default": {
           "projectId": "cermatify",
-          "appId": "1:1083109793751:android:e40aa399ae70144a093592",
+          "appId": "1:1083109793751:android:f1aa56860023933c093592",
           "fileOutput": "android/app/google-services.json"
         }
       },
@@ -56,7 +60,7 @@
         "lib/firebase_options.dart": {
           "projectId": "cermatify",
           "configurations": {
-            "android": "1:1083109793751:android:e40aa399ae70144a093592",
+            "android": "1:1083109793751:android:f1aa56860023933c093592",
             "ios": "1:1083109793751:ios:f41185c43cc2b0a2093592",
             "macos": "1:1083109793751:ios:f41185c43cc2b0a2093592",
             "web": "1:1083109793751:web:51679ccbb6f94e95093592",

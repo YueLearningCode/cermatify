@@ -111,7 +111,7 @@ class WithdrawDialogView extends StatelessWidget {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Saldo belum mencapai minimal withdraw Rp 50.000.',
+                              'Saldo belum mencapai minimal withdraw Rp 20.000.',
                               style: GoogleFonts.poppins(
                                 color: AppColors.textPrimary,
                                 fontSize: 10,
@@ -172,14 +172,14 @@ class WithdrawDialogView extends StatelessWidget {
                   _WithdrawField(
                     controller: controller.nominalController,
                     label: 'Nominal withdraw',
-                    hint: 'Minimal Rp 50.000',
+                    hint: 'Minimal Rp 20.000',
                     icon: Icons.payments_outlined,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (value) {
                       final amount = int.tryParse(value?.trim() ?? '') ?? 0;
                       if (amount < WithdrawController.minWithdraw) {
-                        return 'Minimal withdraw Rp 50.000';
+                        return 'Minimal withdraw Rp 20.000';
                       }
                       if (amount > currentSaldo) return 'Saldo tidak mencukupi';
                       return null;

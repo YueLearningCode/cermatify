@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
@@ -222,39 +223,46 @@ class AdminOrdersController extends GetxController {
     try {
       isUpdating.value = true;
       final orderReference = _firestore.collection('orders').doc(orderId);
-      await _firestore.runTransaction((transaction) async {
-        final orderDocument = await transaction.get(orderReference);
-        if (!orderDocument.exists) throw Exception('Order tidak ditemukan');
+      final snapshot = await orderReference.get();
+      if (snapshot.data()?['billingProvider'] == 'google_play') {
+        await FirebaseFunctions.instanceFor(region: 'asia-southeast2')
+            .httpsCallable('updatePlayOrderStatus')
+            .call({'orderId': orderId, 'status': newStatus});
+      } else {
+        await _firestore.runTransaction((transaction) async {
+          final orderDocument = await transaction.get(orderReference);
+          if (!orderDocument.exists) throw Exception('Order tidak ditemukan');
 
-        final data = orderDocument.data()!;
-        final currentStatus = data['status']?.toString().toLowerCase() ?? '';
-        final mentorId = data['mentorId']?.toString() ?? '';
-        final price = (data['price'] as num?)?.toInt() ?? 0;
-        final validTransition =
-            (['waiting verification', 'pending'].contains(currentStatus) &&
-                ['progress', 'approved', 'rejected'].contains(newStatus)) ||
-            (['progress', 'approved'].contains(currentStatus) &&
-                newStatus == 'completed');
-        if (!validTransition) {
-          throw StateError('Perubahan status order tidak valid');
-        }
-        final isFirstApproval =
-            (newStatus == 'progress' || newStatus == 'approved') &&
-            currentStatus != 'progress' &&
-            currentStatus != 'approved' &&
-            mentorId.isNotEmpty &&
-            price > 0;
+          final data = orderDocument.data()!;
+          final currentStatus = data['status']?.toString().toLowerCase() ?? '';
+          final mentorId = data['mentorId']?.toString() ?? '';
+          final price = (data['price'] as num?)?.toInt() ?? 0;
+          final validTransition =
+              (['waiting verification', 'pending'].contains(currentStatus) &&
+                  ['progress', 'approved', 'rejected'].contains(newStatus)) ||
+              (['progress', 'approved'].contains(currentStatus) &&
+                  newStatus == 'completed');
+          if (!validTransition) {
+            throw StateError('Perubahan status order tidak valid');
+          }
+          final isFirstApproval =
+              (newStatus == 'progress' || newStatus == 'approved') &&
+              currentStatus != 'progress' &&
+              currentStatus != 'approved' &&
+              mentorId.isNotEmpty &&
+              price > 0;
 
-        transaction.update(orderReference, {
-          'status': newStatus,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-        if (isFirstApproval) {
-          transaction.update(_firestore.collection('users').doc(mentorId), {
-            'saldo': FieldValue.increment(price),
+          transaction.update(orderReference, {
+            'status': newStatus,
+            'updatedAt': FieldValue.serverTimestamp(),
           });
-        }
-      });
+          if (isFirstApproval) {
+            transaction.update(_firestore.collection('users').doc(mentorId), {
+              'saldo': FieldValue.increment(price),
+            });
+          }
+        });
+      }
 
       final index = orders.indexWhere((order) => order['id'] == orderId);
       if (index >= 0) {

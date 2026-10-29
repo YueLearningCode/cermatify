@@ -1,5 +1,6 @@
 import 'package:cermatify/app/data/models/mentor_model.dart';
 import 'package:cermatify/app/data/services/app_logger.dart';
+import 'package:cermatify/app/data/services/play_billing_service.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/theme/app_formats.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
@@ -308,7 +309,9 @@ class MentorProfileHero extends StatelessWidget {
                 if (price != null)
                   _HeroMetric(
                     icon: Icons.payments_outlined,
-                    value: AppFormats.hargaPendek(price!),
+                    value: usesGooglePlayBilling
+                        ? 'Harga paket di Google Play'
+                        : AppFormats.hargaPendek(price!),
                   ),
               ],
             ),

@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../controllers/order_controller.dart';
+import '../../../data/services/play_billing_service.dart';
+import '../../../data/widgets/play_checkout_panel.dart';
 
 class OrderDialogView extends StatefulWidget {
   const OrderDialogView({
@@ -75,6 +77,22 @@ class _OrderDialogViewState extends State<OrderDialogView> {
 
   @override
   Widget build(BuildContext context) {
+    if (usesGooglePlayBilling) {
+      return Dialog(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: PlayCheckoutPanel(
+              selection: {
+                'serviceId': widget.layananId,
+                'mentorId': widget.mentorId,
+              },
+            ),
+          ),
+        ),
+      );
+    }
     final viewport = MediaQuery.sizeOf(context);
     return Dialog(
       insetPadding: EdgeInsets.symmetric(

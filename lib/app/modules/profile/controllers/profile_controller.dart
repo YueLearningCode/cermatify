@@ -29,7 +29,7 @@ class ProfileController extends GetxController {
   final isLoading = false.obs;
   final mentorOrders = <Map<String, dynamic>>[].obs;
   final isLoadingOrders = false.obs;
-  final saldo = 0.obs; 
+  final saldo = 0.obs;
   final isOpeningAdminChat = false.obs;
 
   Future<void> openAdminChat() async {
@@ -253,7 +253,9 @@ class ProfileController extends GetxController {
           }
 
           // Fetch saldo for all users
-          saldo.value = (data['saldo'] as int?) ?? 0;
+          saldo.value =
+              ((data['saldo'] as num?)?.toInt() ?? 0) +
+              ((data['playAvailable'] as num?)?.toInt() ?? 0);
           setupSaldoListener();
 
           // Fetch mentor orders if user is a mentor
@@ -383,7 +385,9 @@ class ProfileController extends GetxController {
           if (snapshot.exists) {
             final data = snapshot.data();
             if (data != null) {
-              saldo.value = (data['saldo'] as int?) ?? 0;
+              saldo.value =
+                  ((data['saldo'] as num?)?.toInt() ?? 0) +
+                  ((data['playAvailable'] as num?)?.toInt() ?? 0);
             }
           }
         });

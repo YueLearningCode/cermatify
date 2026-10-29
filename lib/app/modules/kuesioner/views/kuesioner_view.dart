@@ -49,6 +49,24 @@ class KuesionerView extends GetView<KuesionerController> {
                       sliver: SliverToBoxAdapter(child: _buildTabs()),
                     ),
                     if (controller.selectedTab.value == 0 &&
+                        controller.recommendationsLoading.value)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (controller.selectedTab.value == 0 &&
+                        controller.recommendationsError.value.isNotEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: KuesionerEmptyState(
+                          icon: Icons.cloud_off_outlined,
+                          title: 'Tidak dapat memuat kuesioner',
+                          message: controller.recommendationsError.value,
+                          actionLabel: 'Coba lagi',
+                          onAction: controller.refreshAll,
+                        ),
+                      )
+                    else if (controller.selectedTab.value == 0 &&
                         !controller.hasRespondenData.value)
                       SliverFillRemaining(
                         hasScrollBody: false,

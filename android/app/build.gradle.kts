@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -17,7 +18,7 @@ val keystoreProperties = Properties().apply {
 
 
 android {
-    namespace = "com.example.cermatify"
+    namespace = "com.cermatify.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.2.13676358"
 
@@ -31,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.cermatify"
+        applicationId = "com.cermatify.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:get/get.dart';
+import '../modules/legal/views/legal_view.dart';
 
 import '../modules/chat/bindings/chat_binding.dart';
 import '../modules/chat/views/chat_view.dart';
@@ -61,6 +62,18 @@ class AppPages {
   );
 
   static final routes = [
+    GetPage(
+      name: _Paths.PRIVACY,
+      page: () => const LegalView(document: 'privacy'),
+    ),
+    GetPage(
+      name: _Paths.TERMS,
+      page: () => const LegalView(document: 'terms'),
+    ),
+    GetPage(
+      name: _Paths.DELETE_ACCOUNT,
+      page: () => const LegalView(document: 'delete-account'),
+    ),
     GetPage(name: _Paths.LANDING, page: () => const LandingView()),
     GetPage(
       name: _Paths.LEGACY_LANDING,

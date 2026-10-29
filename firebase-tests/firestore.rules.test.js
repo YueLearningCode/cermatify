@@ -294,7 +294,7 @@ test('room identity merge creates absent rooms and preserves existing previews',
   assert.equal((await getDoc(room)).data().lastMessage, 'keep me');
 });
 
-test('withdraw requires active mentor, minimum 50000, sufficient balance and account data', async () => {
+test('withdraw writes are backend-only; clients cannot forge requests or approvals', async () => {
   await testEnv.withSecurityRulesDisabled(async (context) => {
     await updateDoc(doc(context.firestore(), 'users/mentor-1'), { saldo: 100000 });
   });
@@ -304,7 +304,7 @@ test('withdraw requires active mentor, minimum 50000, sufficient balance and acc
     namaRekening: 'Mentor', nomorRekening: '0123456789', status: 'pending',
     createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
   };
-  await assertSucceeds(setDoc(doc(db, 'withdraws/valid'), withdrawal));
+  await assertFails(setDoc(doc(db, 'withdraws/valid'), withdrawal));
   for (const [id, changes] of Object.entries({
     below: { nominal: 49999 }, above: { nominal: 100001 },
     fraction: { nominal: 50000.5 }, name: { namaRekening: '' },
@@ -321,4 +321,26 @@ test('withdraw requires active mentor, minimum 50000, sufficient balance and acc
   await assertFails(setDoc(doc(customerDb, 'withdraws/customer'), {
     ...withdrawal, mentorId: 'customer-1',
   }));
+});
+
+test('Play purchases and catalog are inaccessible to client writes, including admins', async () => {
+  for (const user of ['customer-1', 'admin-1']) {
+    const db = testEnv.authenticatedContext(user).firestore();
+    for (const path of ['playBillingCatalog/paper', 'playPurchaseIntents/intent1', 'playPurchases/receipt1']) {
+      await assertFails(setDoc(doc(db, path), { userId: user, enabled: true }));
+      await assertFails(getDoc(doc(db, path)));
+    }
+  }
+});
+
+test('admin cannot alter Google Play order or credit it using the legacy client approval', async () => {
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'orders/play-order'), {
+      userId: 'customer-1', mentorId: 'mentor-1', billingProvider: 'google_play',
+      paymentStatus: 'paid', price: 75000, status: 'waiting verification',
+    });
+  });
+  const admin = testEnv.authenticatedContext('admin-1').firestore();
+  await assertSucceeds(getDoc(doc(admin, 'orders/play-order')));
+  await assertFails(updateDoc(doc(admin, 'orders/play-order'), { status: 'progress', paymentStatus: 'paid' }));
 });

@@ -137,7 +137,8 @@ service cloud.firestore {
           request.resource.data.paymentProofUrl.matches(
             'https://res.cloudinary.com/(dvxsmpz3m|rgovyuw1)/.*'
           );
-      allow update, delete: if isAdmin();
+      allow update, delete: if isAdmin() &&
+          resource.data.get('billingProvider', '') != 'google_play';
     }
 
     match /kuesioners/{kuesionerId} {
@@ -166,29 +167,8 @@ service cloud.firestore {
       allow read: if isAdmin() || (
         signedIn() && resource.data.mentorId == request.auth.uid
       );
-      allow create: if signedIn() &&
-          request.resource.data.mentorId == request.auth.uid &&
-          currentUser().data.role == 'mentor' &&
-          currentUser().data.status == 'active' &&
-          request.resource.data.status == 'pending' &&
-          request.resource.data.nominal is int &&
-          request.resource.data.nominal >= 50000 &&
-          request.resource.data.nominal <= currentUser().data.get('saldo', 0) &&
-          request.resource.data.namaRekening is string &&
-          request.resource.data.namaRekening.matches('.*[^ ].*') &&
-          request.resource.data.nomorRekening is string &&
-          request.resource.data.nomorRekening.matches('[0-9]+') &&
-          request.resource.data.keys().hasOnly([
-            'mentorId',
-            'mentorName',
-            'nominal',
-            'namaRekening',
-            'nomorRekening',
-            'status',
-            'createdAt',
-            'updatedAt'
-          ]);
-      allow update, delete: if isAdmin();
+      // Requests reserve funds in a trusted backend transaction.
+      allow create, update, delete: if false;
     }
 
     match /chatRooms/{roomId} {

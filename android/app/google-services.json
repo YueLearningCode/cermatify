@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1083109793751:android:f1aa56860023933c093592",
+        "android_client_info": {
+          "package_name": "com.cermatify.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCi-hE_vK-jHrmvcpEGq9oteu1UTMgZft4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1083109793751:android:e40aa399ae70144a093592",
         "android_client_info": {
           "package_name": "com.example.cermatify"

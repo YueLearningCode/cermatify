@@ -17,6 +17,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import '../controllers/sourcelink_controller.dart';
 import '../../kuesioner/controllers/create_kuesioner_controller.dart';
+import '../../../data/services/play_billing_service.dart';
+import '../../../data/widgets/play_checkout_panel.dart';
 
 class SourcelinkSubmitView extends GetView<SourcelinkController> {
   const SourcelinkSubmitView({super.key});
@@ -292,6 +294,33 @@ class _SourcelinkSubmitViewStatefulState
 
   @override
   Widget build(BuildContext context) {
+    if (usesGooglePlayBilling) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Ajukan Cermat Kuesioner')),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: PlayCheckoutPanel(
+                selection: {
+                  'serviceId': 'kuesioner',
+                  'questionnaire': {
+                    'link': widget.controller.linkController.text.trim(),
+                    'rentangUsia': widget.controller.selectedUsia.value,
+                    'jenisKelamin': widget.controller.selectedKelamin.value,
+                    'tingkatPenghasilan':
+                        widget.controller.selectedPenghasilan.value,
+                    'pendidikanTerakhir':
+                        widget.controller.selectedPendidikan.value,
+                  },
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(

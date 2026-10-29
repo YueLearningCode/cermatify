@@ -35,6 +35,9 @@ void main() {
       Routes.LOGIN,
       Routes.REGISTER,
       Routes.SPLASH,
+      Routes.PRIVACY,
+      Routes.TERMS,
+      Routes.DELETE_ACCOUNT,
     };
     final privatePages = AppPages.routes.where(
       (page) => !publicRoutes.contains(page.name),

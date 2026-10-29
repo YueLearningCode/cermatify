@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app/data/services/firebase_web_service.dart';
 import 'app/data/services/session_state.dart';
 import 'app/routes/app_pages.dart';
+import 'app/data/services/play_billing_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseWebService.initialize();
   await SessionState.initialize();
+  if (usesGooglePlayBilling) Get.put(PlayBillingService(), permanent: true);
 
   await initializeDateFormatting('id_ID');
 
