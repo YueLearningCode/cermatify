@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../data/services/session_state.dart';
+import '../data/widgets/account_policy_gate.dart';
 
 class LegacyLandingMiddleware extends GetMiddleware {
   @override
@@ -20,6 +21,9 @@ class AuthenticatedMiddleware extends GetMiddleware {
   AuthenticatedMiddleware({this.allowedRoles});
 
   final Set<String>? allowedRoles;
+
+  @override
+  Widget onPageBuilt(Widget page) => AccountPolicyGate(child: page);
 
   @override
   RouteSettings? redirect(String? route) {

@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 
 import '../controllers/chat_controller.dart';
 import '../../dashboard/controllers/dashboard_controller.dart';
+import '../../../data/services/moderation_service.dart';
+import 'chat_safety_controls.dart';
 
 class ChatRoomView extends StatefulWidget {
   const ChatRoomView({
@@ -37,10 +39,14 @@ class _ChatRoomViewState extends State<ChatRoomView>
   Mentor? get mentor => widget.mentor;
   String? get orderId => widget.orderId;
   String? get partnerName => widget.partnerName;
+  late final ModerationService _moderation;
+  late final Stream<bool> _blocked;
 
   @override
   void initState() {
     super.initState();
+    _moderation = ModerationService();
+    _blocked = _moderation.watchBlocked(mentorId);
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) controller.loadMessages(mentorId, orderId: orderId);
@@ -80,6 +86,67 @@ class _ChatRoomViewState extends State<ChatRoomView>
       return;
     }
     Get.offAllNamed(Routes.DASHBOARD, arguments: const {'initialTab': 1});
+  }
+
+  Future<void> _report([String messageId = '']) async {
+    final id = _moderation.newReportId();
+    final sent = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ChatReportDialog(
+        submit: (reason, details) => _moderation.report(
+          id: id,
+          targetId: mentorId,
+          roomId: controller.buildRoomId(mentorId, orderId: orderId),
+          messageId: messageId,
+          reason: reason,
+          details: details,
+        ),
+      ),
+    );
+    if (sent == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Laporan diterima untuk ditinjau admin.')),
+      );
+    }
+  }
+
+  Future<void> _changeBlock(bool blocked) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(blocked ? 'Buka blokir pengguna?' : 'Blokir pengguna ini?'),
+        content: Text(
+          blocked
+              ? 'Pesan dapat dikirim kembali jika kedua akun aktif dan tidak ada blokir lain.'
+              : 'Pesan baru di antara Anda dan pengguna ini akan dihentikan di semua percakapan. Riwayat tetap tersedia untuk pelaporan. Pesanan atau pengembalian dana tidak otomatis dibatalkan; hubungi bantuan untuk penyelesaiannya.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(blocked ? 'Buka blokir' : 'Blokir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _moderation.setBlocked(mentorId, !blocked);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Perubahan blokir belum tersimpan. Silakan coba lagi.',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -128,7 +195,36 @@ class _ChatRoomViewState extends State<ChatRoomView>
                             child: Text(controller.readStatusError.value),
                           ),
                   ),
-                  _buildMessageComposer(compact),
+                  StreamBuilder<bool>(
+                    stream: _blocked,
+                    builder: (context, snapshot) => Column(
+                      children: [
+                        ChatSafetyControls(
+                          blocked: snapshot.data == true,
+                          onBlock: () => _changeBlock(snapshot.data == true),
+                          onReport: _report,
+                        ),
+                        if (snapshot.hasError)
+                          const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Text(
+                              'Status keamanan chat belum dapat dimuat. Buka kembali percakapan untuk mencoba lagi.',
+                            ),
+                          )
+                        else if (!snapshot.hasData)
+                          const LinearProgressIndicator()
+                        else if (snapshot.data == true)
+                          const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Text(
+                              'Pengguna diblokir. Buka blokir untuk melanjutkan percakapan.',
+                            ),
+                          )
+                        else
+                          _buildMessageComposer(compact),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -186,6 +282,15 @@ class _ChatRoomViewState extends State<ChatRoomView>
                   isMine: message.senderId == controller.currentUserId,
                   partnerName: _displayName,
                 ),
+                if (message.senderId != controller.currentUserId)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _report(message.id),
+                      icon: const Icon(Icons.flag_outlined, size: 16),
+                      label: const Text('Laporkan pesan'),
+                    ),
+                  ),
               ],
             );
           },

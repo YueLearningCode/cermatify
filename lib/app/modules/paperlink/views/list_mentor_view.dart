@@ -54,7 +54,7 @@ class _ListMentorViewState extends State<ListMentorView> {
 
   Query<Map<String, dynamic>> get _mentorQuery {
     Query<Map<String, dynamic>> query = FirebaseFirestore.instance
-        .collection('users')
+        .collection('publicProfiles')
         .where('role', isEqualTo: 'mentor');
     final kampus = widget.kampus?.trim() ?? '';
     final jurusan = widget.jurusan?.trim() ?? '';
@@ -128,7 +128,9 @@ class _ListMentorViewState extends State<ListMentorView> {
         final mentors = (snapshot.data?.docs ?? const [])
             .where((document) {
               final data = document.data();
-              if (data['verificationStatus']?.toString() != 'verified') {
+              if (data['verificationStatus']?.toString() != 'verified' ||
+                  data['status'] != 'active' ||
+                  data['accountStatus'] == 'disabled') {
                 return false;
               }
               final service = _toText(data['layanan']).toLowerCase();
@@ -155,7 +157,7 @@ class _ListMentorViewState extends State<ListMentorView> {
                 jurusan: _toText(data['jurusan']),
                 layanan: _toText(data['layanan']),
                 image: _toText(data['image']),
-                email: _toText(data['email']),
+                email: '',
                 bio: _toText(data['bio']),
                 rating: (data['rating'] as num?)?.toDouble() ?? 0,
                 totalSessions: (data['totalSessions'] as num?)?.toInt() ?? 0,

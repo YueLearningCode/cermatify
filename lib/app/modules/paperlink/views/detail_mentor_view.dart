@@ -136,7 +136,7 @@ class _DetailMentorViewState extends State<DetailMentorView> {
       body: SafeArea(
         child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           future: FirebaseFirestore.instance
-              .collection('users')
+              .collection('publicProfiles')
               .doc(mentor.id)
               .get(),
           builder: (context, snapshot) {
@@ -407,11 +407,6 @@ class _InformationCard extends StatelessWidget {
             icon: Icons.menu_book_outlined,
             label: 'Jurusan',
             value: mentor.jurusan,
-          ),
-          _InfoTile(
-            icon: Icons.mail_outline_rounded,
-            label: 'Email',
-            value: mentor.email,
           ),
           if (linkedin.isNotEmpty)
             _InfoTile(

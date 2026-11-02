@@ -2,6 +2,7 @@
 
 import 'package:get/get.dart';
 import '../modules/legal/views/legal_view.dart';
+import '../modules/moderation/views/admin_moderation_view.dart';
 
 import '../modules/chat/bindings/chat_binding.dart';
 import '../modules/chat/views/chat_view.dart';
@@ -62,6 +63,13 @@ class AppPages {
   );
 
   static final routes = [
+    GetPage(
+      name: _Paths.ADMIN_MODERATION,
+      page: () => const AdminModerationView(),
+      middlewares: [
+        AuthenticatedMiddleware(allowedRoles: {'admin'}),
+      ],
+    ),
     GetPage(
       name: _Paths.PRIVACY,
       page: () => const LegalView(document: 'privacy'),

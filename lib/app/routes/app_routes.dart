@@ -28,6 +28,7 @@ abstract class Routes {
   static const ADMIN_KUESIONER = _Paths.ADMIN_KUESIONER;
   static const ADMIN_ORDERS = _Paths.ADMIN_ORDERS;
   static const ADMIN_WITHDRAW = _Paths.ADMIN_WITHDRAW;
+  static const ADMIN_MODERATION = _Paths.ADMIN_MODERATION;
   static const ADMIN_USER_DETAIL = _Paths.ADMIN_USER_DETAIL;
   static const ADMIN_MENTOR_DETAIL = _Paths.ADMIN_MENTOR_DETAIL;
   static const EDIT_PROFILE = _Paths.EDIT_PROFILE;
@@ -74,6 +75,7 @@ abstract class _Paths {
   static const ADMIN_KUESIONER = '/admin-kuesioner';
   static const ADMIN_ORDERS = '/admin/orders';
   static const ADMIN_WITHDRAW = '/admin/withdraw';
+  static const ADMIN_MODERATION = '/admin/reports';
   static const ADMIN_USER_DETAIL = '/admin/users/:userId';
   static const ADMIN_MENTOR_DETAIL = '/admin/mentors/:mentorId';
   static const EDIT_PROFILE = '/profile/edit';

@@ -14,10 +14,103 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
+    function publicProfileData(userId, source) {
+      let mentor = source.get('role', 'customer') == 'mentor';
+      return {
+        'id': userId,
+        'nama': source.get('nama', source.get('namaLengkap', 'Pengguna Cermatify')),
+        'image': source.get('image', ''),
+        'role': source.get('role', 'customer'),
+        'status': source.get('status', 'inactive'),
+        'accountStatus': source.get('accountStatus', 'active'),
+        'verificationStatus': mentor ? source.get('verificationStatus', 'pending') : '',
+        'kampus': mentor ? source.get('kampus', '') : '',
+        'jurusan': mentor ? source.get('jurusan', '') : '',
+        'layanan': mentor ? source.get('layanan', []) : [],
+        'linkedin': mentor ? source.get('linkedin', '') : '',
+        'bio': mentor ? source.get('bio', '') : '',
+        'rating': mentor ? source.get('rating', 0) : 0,
+        'totalSessions': mentor ? source.get('totalSessions', 0) : 0
+      };
+    }
+
+    function publicProfileSynced(userId) {
+      return getAfter(/databases/$(database)/documents/publicProfiles/$(userId)).data ==
+          publicProfileData(userId, request.resource.data);
+    }
+
+    match /publicProfiles/{userId} {
+      allow get: if signedIn() && activeAccount(request.auth.uid);
+      // Customers are reachable by known ID for chat, not as a browseable directory.
+      allow list: if isAdmin() || (signedIn() && activeAccount(request.auth.uid) &&
+          resource.data.role in ['mentor', 'admin']);
+      allow create, update: if (isOwner(userId) || isAdmin()) &&
+          request.resource.data == publicProfileData(userId,
+            getAfter(/databases/$(database)/documents/users/$(userId)).data);
+      allow delete: if isAdmin() && !existsAfter(/databases/$(database)/documents/users/$(userId));
+    }
+
     function isAdmin() {
       return signedIn() &&
           currentUser().data.role == 'admin' &&
-          currentUser().data.status == 'active';
+          activeAccount(request.auth.uid);
+    }
+
+    function activeAccount(userId) {
+      let profile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return profile.status == 'active' && profile.get('accountStatus', 'active') != 'disabled';
+    }
+
+    function acceptedPolicy() {
+      return currentUser().data.get('adultConfirmed', false) == true &&
+          currentUser().data.get('termsVersion', '') == '2026-11-01' &&
+          currentUser().data.termsAcceptedAt is timestamp;
+    }
+
+    function canContact(first, second) {
+      return first != second && activeAccount(first) && activeAccount(second) &&
+          !exists(/databases/$(database)/documents/userBlocks/$(first)/blocked/$(second)) &&
+          !exists(/databases/$(database)/documents/userBlocks/$(second)/blocked/$(first));
+    }
+
+    match /userBlocks/{userId}/blocked/{targetId} {
+      allow read, delete: if isOwner(userId);
+      allow create: if isOwner(userId) && activeAccount(userId) && userId != targetId &&
+          exists(/databases/$(database)/documents/users/$(targetId)) &&
+          request.resource.data.keys().hasOnly(['createdAt']) &&
+          request.resource.data.createdAt == request.time;
+      allow update: if false;
+    }
+
+    match /moderationReports/{reportId} {
+      function reportedRoom() {
+        return get(/databases/$(database)/documents/chatRooms/$(request.resource.data.roomId)).data;
+      }
+      function validMessageReference() {
+        return request.resource.data.messageId == '' ||
+            get(/databases/$(database)/documents/chatRooms/$(request.resource.data.roomId)/messages/$(request.resource.data.messageId)).data.senderId == request.resource.data.targetId;
+      }
+      allow read: if isAdmin() || (signedIn() && resource.data.reporterId == request.auth.uid);
+      allow create: if signedIn() && activeAccount(request.auth.uid) && acceptedPolicy() &&
+          request.resource.data.keys().hasOnly([
+            'reporterId', 'targetId', 'roomId', 'messageId', 'reason', 'details', 'status', 'createdAt'
+          ]) &&
+          request.resource.data.reporterId == request.auth.uid &&
+          request.resource.data.targetId != request.auth.uid &&
+          request.auth.uid in reportedRoom().users &&
+          request.resource.data.targetId in reportedRoom().users &&
+          request.resource.data.messageId is string && validMessageReference() &&
+          request.resource.data.reason in ['Pelecehan atau ancaman', 'Penipuan', 'Spam', 'Konten tidak pantas', 'Lainnya'] &&
+          request.resource.data.details is string && request.resource.data.details.size() <= 2000 &&
+          request.resource.data.status == 'open' && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'notes', 'reviewedBy', 'updatedAt']) &&
+          request.resource.data.status in ['reviewing', 'resolved', 'dismissed'] &&
+          request.resource.data.notes is string && request.resource.data.notes.size() > 0 &&
+          request.resource.data.notes.size() <= 2000 &&
+          request.resource.data.reviewedBy == request.auth.uid &&
+          request.resource.data.updatedAt == request.time;
+      allow delete: if false;
     }
 
     function validNewUser(userId) {
@@ -26,6 +119,9 @@ service cloud.firestore {
           request.resource.data.email == request.auth.token.email &&
           request.resource.data.role in ['customer', 'mentor'] &&
           request.resource.data.status == 'active' &&
+          request.resource.data.adultConfirmed == true &&
+          request.resource.data.termsVersion == '2026-11-01' &&
+          request.resource.data.termsAcceptedAt == request.time &&
           request.resource.data.get('saldo', 0) == 0 &&
           request.resource.data.keys().hasOnly([
             'id',
@@ -41,6 +137,9 @@ service cloud.firestore {
             'role',
             'status',
             'createdAt',
+            'adultConfirmed',
+            'termsVersion',
+            'termsAcceptedAt',
             'mentorRole',
             'layanan',
             'layananIds',
@@ -54,12 +153,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Existing screens query mentor/customer profiles directly. Consider
-      // moving public fields to a separate public_profiles collection.
-      allow read: if signedIn();
-      allow create: if validNewUser(userId);
-      allow update: if isAdmin() || (
-        isOwner(userId) &&
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if validNewUser(userId) && publicProfileSynced(userId);
+      allow update: if (isAdmin() || (
+        isOwner(userId) && activeAccount(userId) &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'nama',
           'noTelp',
@@ -75,8 +172,21 @@ service cloud.firestore {
           'linkedin',
           'updatedAt'
         ])
+      ) || (
+        isOwner(userId) && activeAccount(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'adultConfirmed', 'termsVersion', 'termsAcceptedAt'
+        ]) && request.resource.data.adultConfirmed == true &&
+        request.resource.data.termsVersion == '2026-11-01' &&
+        request.resource.data.termsAcceptedAt == request.time
+      )) && (
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'nama', 'namaLengkap', 'image', 'role', 'status', 'accountStatus',
+          'verificationStatus', 'kampus', 'jurusan', 'layanan', 'linkedin',
+          'bio', 'rating', 'totalSessions'
+        ]) || publicProfileSynced(userId)
       );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() && !existsAfter(/databases/$(database)/documents/publicProfiles/$(userId));
     }
 
     match /kampus/{documentId} {
@@ -95,7 +205,8 @@ service cloud.firestore {
     }
 
     match /data_diri/{userId} {
-      allow read, create, update: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isAdmin() || (isOwner(userId) && activeAccount(userId) && acceptedPolicy());
       allow delete: if isAdmin();
     }
 
@@ -117,6 +228,7 @@ service cloud.firestore {
           resource.data.mentorId == request.auth.uid)
       );
       allow create: if signedIn() &&
+          activeAccount(request.auth.uid) && acceptedPolicy() &&
           request.resource.data.userId == request.auth.uid &&
           request.resource.data.status == 'waiting verification' &&
           request.resource.data.price is int &&
@@ -148,6 +260,7 @@ service cloud.firestore {
           resource.data.status == 'approved')
       );
       allow create: if signedIn() &&
+          activeAccount(request.auth.uid) && acceptedPolicy() &&
           request.resource.data.userId == request.auth.uid &&
           request.resource.data.status == 'waiting verification' &&
           request.resource.data.signedBy.size() == 0 &&
@@ -179,12 +292,18 @@ service cloud.firestore {
       allow read: if isAdmin() || isRoomMember();
       allow create: if signedIn() &&
           request.resource.data.users is list &&
+          acceptedPolicy() &&
           request.resource.data.users.size() == 2 &&
-          request.auth.uid in request.resource.data.users;
-      allow update: if isAdmin() || (
+          request.auth.uid in request.resource.data.users &&
+          request.resource.data.roomId == roomId &&
+          canContact(request.resource.data.users[0], request.resource.data.users[1]);
+      allow update: if (
         isRoomMember() &&
+        canContact(resource.data.users[0], resource.data.users[1]) &&
         request.resource.data.users == resource.data.users &&
-        request.resource.data.roomId == resource.data.roomId
+        request.resource.data.roomId == resource.data.roomId &&
+        request.resource.data.get('orderId', '') == resource.data.get('orderId', '') &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt', 'lastMessage', 'lastSenderId'])
       );
       allow delete: if isAdmin();
 
@@ -199,6 +318,10 @@ service cloud.firestore {
 
         allow read: if isAdmin() || isParentRoomMember();
         allow create: if isParentRoomMember() &&
+            acceptedPolicy() &&
+            canContact(request.auth.uid, request.resource.data.receiverId) &&
+            request.resource.data.keys().hasOnly(['senderId', 'receiverId', 'message', 'timestamp', 'localTime', 'readAt']) &&
+            request.resource.data.timestamp == request.time &&
             request.resource.data.senderId == request.auth.uid &&
             request.resource.data.receiverId in parentRoom().data.users &&
             request.resource.data.receiverId != request.auth.uid &&

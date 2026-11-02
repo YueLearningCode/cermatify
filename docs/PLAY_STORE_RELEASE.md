@@ -1,5 +1,27 @@
 # Persiapan rilis Cermatify — 28 Oktober 2026
 
+**Status terbaru 2 November 2026:** kode kandidat `1.0.0+4` menambahkan pemisahan profil privat/publik dan migrasi yang diuji lokal. Lihat [panduan migrasi profil](PUBLIC_PROFILE_MIGRATION.md). Analyzer bersih; 202 tes Flutter, 12 unit backend/CLI, 25 rules, 17 integration test lulus; 7 tes legal diulang setelah perubahan dokumen dan lulus. Belum melakukan migrasi atau deployment produksi. Build awal `+4` gagal akibat Gradle 9.7.1 tidak kompatibel dengan AGP 8.11.1; wrapper dikembalikan ke 8.14 setelah konfigurasi sebelumnya disalin untuk referensi. Pembayaran tetap nonaktif dan backend eksternal belum diputuskan. Rilis publik belum siap.
+
+### Artefak terbaru `1.0.0+4` — 2 November 2026
+
+- Path: `build/app/outputs/bundle/release/app-release.aab`.
+- Ukuran: **69.585.515 byte**; SHA-256 **`dbaf5a1cb537bfa9674e2707ffbac25d1e7d99ac81440b5a02a8092dd3cac08e`**.
+- Build ulang dengan Gradle 8.14 berhasil. Bundletool validate lulus; manifest memuat `com.cermatify.app` dan version code `4`; jarsigner menyatakan `jar verified`; seluruh 12 native libraries lolos pemeriksaan ELF alignment 16 KB.
+- Log lokal: `build/play-release-nov2-aab-compatible.log`, `build/play-release-v4-bundle-validation.log`, `build/play-release-v4-signature.log`, `build/play-release-v4-native.json`.
+- Masih terdapat warning SDK XML/Kotlin/deprecation dan fallback cache lintas drive. Jarsigner tetap memberi warning sertifikat/metadata ZIP seperti kandidat sebelumnya. Tidak memodifikasi ZIP AAB secara manual. Penerimaan dan pengujian melalui Google Play belum dilakukan.
+- APK dan build web lama belum dibangun ulang pada tahap ini. Kandidat `+3` disimpan di `build/play-candidates/cermatify-1.0.0+3.aab` sebagai referensi; file AAB pada path utama kini `+4`.
+- Ini kandidat **pengujian**, bukan pernyataan siap produksi. Rules/proyeksi akun dan backend harus dimigrasikan sebelum memakai client ini pada layanan hidup. Belum mengunggah ke Play, menerbitkan legal baru, atau melakukan pembayaran.
+
+**Pembaruan 1 November 2026:** kandidat kode `1.0.0+3` menambahkan moderasi chat, blokir dua arah, persetujuan usia 18+ dan pengetatan akses akun. Pemilik menyebut identitas Windia/Cermatify dan memilih tetap Spark serta mengkaji backend eksternal dahulu. Informasi VPS belum terkonfirmasi karena penjelasan lanjut menyebut Firebase Google. Baca [kajian backend](BACKEND_SPARK_OPTIONS.md), [operasi moderasi dan usia](MODERATION_RELEASE_CHECKLIST.md), dan bagian 1 November pada `TODO_WEB.md`. Pembayaran masih belum operasional; tidak ada deployment baru. Hasil/hashes `+2` di bawah merupakan bukti tahap sebelumnya, bukan bukti build `+3`.
+
+Pemeriksaan 1 November: analyzer bersih; 199 tes Flutter lulus dan 26 tes terkait diulang setelah koreksi; 11 unit backend, 15 integration test backend, 21 tes rules lulus. Uji backend menggunakan emulator `demo-cermatify`. Tidak melakukan uji pembayaran nyata atau menganggap deklarasi usia sebagai verifikasi identitas. Draft target audience kini 18 and over; deklarasi content rating tetap berdasarkan fungsi/konten sebenarnya.
+
+### Validasi AAB `1.0.0+3` — selesai 2 November 2026
+
+Build selesai 1 November, pemeriksaan terakhir sempat tertunda akibat batas penggunaan alat. Bundletool validate lulus, manifest `com.cermatify.app` dengan version code `3`, jarsigner menyatakan `jar verified` dengan warning, dan pemeriksaan ELF alignment 16 KB lulus untuk 12 native libraries. Ukuran **69.571.869 byte**, SHA-256 **`89bc1c5d5a6a61a873f55dda2c81c60d0dc6505fd3a7ebf6f401637ef7b23ede`**. Log lokal: `build/play-release-nov2-bundle-validation.log`, `build/play-release-nov2-signature.log`, `build/play-release-nov2-native.json`.
+
+Artefak pada saat validasi: `build/app/outputs/bundle/release/app-release.aab`. APK lama belum dibangun ulang dalam tahap ini. AAB ini belum mencakup pengerjaan privasi profil yang dimulai 2 November; jangan menganggapnya representasi semua source terbaru. Gradle wrapper ditemukan berubah ke 9.7.1 setelah waktu build AAB tersebut; validasi artefak tidak membuktikan build ulang dengan wrapper terbaru berhasil. Perubahan wrapper tidak ditimpa ketika melanjutkan pekerjaan.
+
 **Status: kandidat pengujian lokal, belum layak dikirim ke produksi Play.** Aplikasi `com.cermatify.app` sudah dibuat pemilik di Play Console; produk pembayaran belum dibuat. Pemilik menetapkan rilis pertama tetap berbayar. Tidak mengunggah AAB, mengaktifkan produk, menaikkan paket billing, menerapkan rules baru, atau mempublikasikan dokumen legal dalam tahap ini.
 
 ## Perubahan yang disiapkan
@@ -67,14 +89,15 @@ Belum merupakan jawaban final untuk dikirim. Periksa tujuan, wajib/opsional, enk
 | --- | --- |
 | Nama, email, user ID, telepon | Firebase Auth/profil/login/komunikasi |
 | Informasi keuangan dan riwayat pembelian | Play Billing, orders, ledger, rekening/e-wallet, pencairan; bukti bayar pada web |
-| Pesan | Chat pengguna/mentor/admin |
+| Pesan | Chat pengguna/mentor/admin serta referensi pesan pada laporan moderasi |
+| Informasi keamanan akun dan persetujuan | Pernyataan usia 18+, versi/waktu persetujuan, daftar blokir, alasan laporan dan catatan moderasi; periksa pemetaan kategori final pada form |
 | Foto/gambar dan konten pengguna lain | Foto profil, unggahan dan materi layanan |
 | Informasi pribadi lain | Kampus, jurusan, semester, peran/kompetensi mentor dan demografi responden |
 | Integritas/perangkat/diagnostik SDK | Tinjau perilaku SDK Firebase, Play Billing, sistem unggahan dan konfigurasi yang benar-benar aktif; jangan menyimpulkan dari izin manifest saja |
 
 Google Play memproses informasi pembayaran menurut layanannya; jangan mengklaim Cermatify menyimpan nomor kartu apabila tidak demikian. Penggunaan penyedia layanan tidak otomatis berarti semua data harus ditandai “shared”; terapkan definisi/pengecualian form terhadap pemrosesan nyata. App Check Android/Play Integrity belum dikonfigurasi atau ditegakkan oleh perubahan ini. Tidak menemukan SDK iklan/analytics khusus dalam dependencies, tetapi deklarasi tetap harus mencerminkan aplikasi final.
 
-Sediakan akun reviewer customer dan mentor yang sudah terverifikasi, data uji aman serta petunjuk mengakses tiap fitur. Simpan kredensial pada App access Play Console, bukan dokumen repository. Hindari akses admin luas dan data pengguna nyata. Tetapkan target umur/content rating sesuai konten serta kebijakan pengguna; belum ditentukan hanya dari label “mahasiswa”.
+Sediakan akun reviewer customer dan mentor yang sudah terverifikasi, data uji aman serta petunjuk mengakses tiap fitur. Simpan kredensial pada App access Play Console, bukan dokumen repository. Hindari akses admin luas dan data pengguna nyata. Pada 1 November pemilik memilih target audience 18 tahun ke atas; content rating tetap diisi sesuai konten dan fungsi nyata, bukan otomatis disamakan dengan target umur.
 
 ## Draft listing Bahasa Indonesia
 

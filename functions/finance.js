@@ -6,7 +6,7 @@ const available = (user) => amount(user.saldo) + amount(user.playAvailable);
 
 async function requireAdmin(tx, db, uid) {
   const user = (await tx.get(db.doc(`users/${uid}`))).data();
-  if (user?.role !== 'admin') throw new Error('admin-required');
+  if (user?.role !== 'admin' || user.status !== 'active' || user.accountStatus === 'disabled') throw new Error('admin-required');
 }
 
 export async function changePlayOrderStatus(db, uid, orderId, status) {
@@ -56,7 +56,7 @@ export async function reserveWithdrawal(db, uid, input) {
       return;
     }
     const user = userDoc.data();
-    if (user?.role !== 'mentor' || user.status !== 'active' || amount(user.playDebt) > 0 || user.playPayoutHold) throw new Error('mentor-unavailable');
+    if (user?.role !== 'mentor' || user.status !== 'active' || user.accountStatus === 'disabled' || amount(user.playDebt) > 0 || user.playPayoutHold) throw new Error('mentor-unavailable');
     if (available(user) < nominal) throw new Error('insufficient-balance');
     const playAmount = Math.min(amount(user.playAvailable), nominal);
     const legacyAmount = nominal - playAmount;

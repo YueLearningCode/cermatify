@@ -3,6 +3,7 @@ import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../data/services/public_profile_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cermatify/app/data/models/selected_image_data.dart';
 import 'package:cermatify/app/data/services/media_upload_service.dart';
@@ -45,11 +46,14 @@ class ProfileController extends GetxController {
         return;
       }
       final admins = await _firestore
-          .collection('users')
+          .collection('publicProfiles')
           .where('role', isEqualTo: 'admin')
           .get();
       final admin = admins.docs.firstWhereOrNull(
-        (doc) => doc.id != userId && doc.data()['status'] == 'active',
+        (doc) =>
+            doc.id != userId &&
+            doc.data()['status'] == 'active' &&
+            doc.data()['accountStatus'] != 'disabled',
       );
       if (admin == null) {
         CustomSnackbar.show(
@@ -305,7 +309,7 @@ class ProfileController extends GetxController {
         if (customerId != null && customerId.isNotEmpty) {
           try {
             final customerDoc = await _firestore
-                .collection('users')
+                .collection('publicProfiles')
                 .doc(customerId)
                 .get();
             if (customerDoc.exists) {
@@ -445,7 +449,7 @@ class ProfileController extends GetxController {
           }
         }
 
-        await _firestore.collection('users').doc(user.uid).update(updateData);
+        await PublicProfileService.update(_firestore, user.uid, updateData);
 
         await fetchUserData();
         return true;
@@ -497,7 +501,7 @@ class ProfileController extends GetxController {
       final String downloadUrl = secureUrl;
 
       // Update user document in Firestore
-      await _firestore.collection('users').doc(user.uid).update({
+      await PublicProfileService.update(_firestore, user.uid, {
         'image': downloadUrl,
       });
 

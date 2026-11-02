@@ -53,6 +53,18 @@ class RegisterView extends GetView<RegisterController> {
                   ),
                   const SizedBox(height: 10),
                   Obx(
+                    () => CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: controller.adultConfirmed.value,
+                      onChanged: (value) =>
+                          controller.adultConfirmed.value = value ?? false,
+                      title: const Text(
+                        'Saya sudah berusia 18 tahun atau lebih.',
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ),
+                  Obx(
                     () => Text(
                       controller.userRole.value == 'mentor'
                           ? "Bergabunglah sebagai mentor dan bagikan pengetahuan Anda"

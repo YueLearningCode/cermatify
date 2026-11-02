@@ -1388,3 +1388,54 @@ Status: **pengerjaan kandidat uji; belum siap produksi**. Pemilik mengonfirmasi 
 - [ ] Sebelum penjualan aktif, putuskan infrastruktur backend tepercaya yang dapat dioperasikan. Blaze belum disetujui; backend eksternal juga belum dipilih atau diimplementasikan. Tidak menganggap backend eksternal otomatis gratis.
 
 Status rilis publik berbayar masih tertahan pada deployment/verifikasi pembayaran serta penghalang produk dan operasional yang tercatat di atas. Kandidat lokal bukan aplikasi berbayar yang siap dipublikasikan.
+
+## Kelanjutan kesiapan Play Store — 1 November 2026
+
+Target pemilik: aplikasi dapat diunggah dan digunakan publik. Status saat ini masih **kandidat lokal, belum rilis publik**. Catatan ini memperbarui status, tanpa mengganti jawaban pemilik terdahulu.
+
+### Keputusan pemilik terbaru
+
+- [x] Tetap Firebase Spark; kaji backend eksternal dahulu tanpa aktivasi biaya.
+- [x] Identitas yang disampaikan pemilik: Windia dan Cermatify; disertakan pada draft kebijakan. Cocokkan dengan listing/identitas developer sebelum pengiriman.
+- [x] Rilis pertama hanya untuk pengguna berusia **18 tahun ke atas**.
+- [x] Klarifikasi informasi server: pemilik sempat memilih memiliki VPS, tetapi keterangan lanjut menyebut Firebase Google dan belum ada Docker. Server terpisah/SSH/runtime **belum terkonfirmasi**, sehingga tidak dilakukan deployment VPS dan tidak dianggap sudah tersedia.
+
+### Implementasi dan pemeriksaan lokal
+
+- [x] Tambahkan pelaporan pengguna/pesan dari chat, blokir/buka blokir, dan antrean laporan admin melalui akses cepat. Laporan merujuk pesan asli; identitas pelapor tidak dapat dibaca pengguna yang dilaporkan.
+- [x] Terapkan blokir dua arah di Firestore rules untuk semua room antara dua akun; percakapan baru tidak bisa digunakan untuk melewati blokir. Pertahankan akses ke riwayat untuk pelaporan dan pembukaan blokir.
+- [x] Admin dapat meninjau bukti, mencatat hasil, dan menonaktifkan akun; tindakan tidak dianggap sebagai refund atau transfer dana. Pembatasan akun memakai pemeriksaan `status` dan `accountStatus` yang konsisten pada area yang diperbarui.
+- [x] Terapkan pernyataan usia 18+ dan persetujuan ketentuan terpisah pada pendaftaran, simpan versi/timestamp server, serta tampilkan pemeriksaan persetujuan untuk akun lama pada rute privat. Tidak mengumpulkan KTP/tanggal lahir atau menyetujui akun lama secara otomatis.
+- [x] Tolak pesan/konten baru dan pembayaran baru tanpa persetujuan yang sesuai; perketat pemeriksaan akun admin/mentor nonaktif pada transaksi backend. Mentor dengan status selain `verified` tidak dianggap lolos verifikasi.
+- [x] Perbarui dokumen legal dan HTML mandiri; dokumentasikan pengelolaan laporan dan inventaris penghapusan di `docs/MODERATION_RELEASE_CHECKLIST.md`. Belum mempublikasikan kebijakan baru.
+- [x] Susun kajian backend tanpa Blaze di `docs/BACKEND_SPARK_OPTIONS.md`, termasuk batas Workers Free, ketidakcocokan Render Free untuk produksi, kebutuhan server Node, autentikasi, RTDN dan rekonsiliasi. Tidak membuat akun/menautkan kartu/menyimpan secret.
+- [x] Analyzer bersih. Seluruh **199 tes Flutter** lulus; **26 tes terkait** diulang setelah perbaikan navigasi/lint dan lulus. **11 unit backend**, **15 integration test backend**, serta **21 tes rules** lulus pada emulator lokal, bukan Firebase produksi atau transaksi Google Play.
+- [x] Bangun AAB kandidat `1.0.0+3` pada 1 November; validasi yang terhenti karena batas penggunaan alat dilanjutkan 2 November: bundletool, package/version code, tanda tangan dan alignment 16 KB lulus. Hash dicatat pada `docs/PLAY_STORE_RELEASE.md`. Kandidat ini belum mencakup perubahan pemisahan profil tanggal 2 November dan belum siap produksi.
+
+### Penghalang rilis berikutnya, sesuai urutan
+
+1. [ ] Pilih backend tepercaya yang benar-benar tersedia dan jalankan verifikasi/pencairan/rekonsiliasi di sana. Spark tetap dipertahankan; belum ada endpoint eksternal yang diimplementasikan/di-deploy. Checkout berbayar belum operasional.
+2. [ ] Terapkan pemisahan profil publik dan privat ke lingkungan tujuan (kode/pembaca dan tes selesai 2 November; migrasi produksi belum). Selesaikan kuota paket, reward responden, ledger/approval legacy, dan audit unggahan.
+3. [ ] Siapkan produk serta akses Google Play Developer API; uji pembelian/pending/cancel/refund/restore lewat track Play. Sediakan monitoring dan rekonsiliasi Voided Purchases yang dapat dioperasikan.
+4. [ ] Terapkan rules, katalog dan client sebagai migrasi terkoordinasi setelah backend siap. Jangan deploy rules sekarang secara terpisah: terdapat migrasi withdrawal dan perubahan field persetujuan yang tidak cocok dengan client/rules lama.
+5. [ ] Tetapkan retensi per jenis data dan operator moderasi/penghapusan; uji permintaan hapus akun sampai selesai; publikasi URL legal dan cek isi halaman sebenarnya.
+6. [ ] Uji alur autentikasi, mentor, order, chat, kuesioner, moderasi dan blokir dengan akun uji pada lingkungan terpasang serta perangkat fisik. Tes lokal bukan pengganti uji tersebut.
+7. [ ] Lengkapi Data safety, App access, target audience **18 and over**, content rating sesuai konten nyata, listing/aset/screenshot, dan closed testing bila diwajibkan dashboard. Jangan menyamakan target usia 18+ dengan rating konten dewasa otomatis.
+
+Belum mengaktifkan biaya, mengubah data produksi, deploy rules/backend/Hosting, mengunggah AAB, melakukan pembelian, atau menerbitkan aplikasi. Persiapan publik penuh masih memerlukan penyelesaian penghalang di atas.
+
+## Melanjutkan pekerjaan yang terhenti — 2 November 2026
+
+- [x] Selesaikan validasi AAB `1.0.0+3` yang terhenti karena batas penggunaan alat: paket/version code benar, bundletool validate dan signature valid, alignment 16 KB lulus pada 12 native libraries. Simpan salinan di `build/play-candidates/cermatify-1.0.0+3.aab`; hash/ukuran dicatat pada `docs/PLAY_STORE_RELEASE.md`.
+- [x] Pisahkan `users` privat dari `publicProfiles` dengan daftar field eksplisit. Email/telepon/saldo/rekening/persetujuan tidak disalin; data akademik customer tidak masuk proyeksi. Baca `users` dibatasi pemilik dan admin aktif.
+- [x] Migrasikan pencarian/detail mentor, nama lawan chat, nama customer pada pesanan mentor, pencarian admin bantuan dan alur kuesioner terkait. Hilangkan email pribadi dari detail mentor. Direktori customer tidak dibuka untuk pengguna umum.
+- [x] Sinkronkan registrasi, edit profil/avatar, verifikasi/penonaktifan akun dan tindakan moderasi secara atomik. Rules menolak profil publik palsu/field tambahan serta perubahan profil sumber tanpa proyeksi yang sesuai.
+- [x] Siapkan `functions/scripts/migrate-public-profiles.js`: default dry-run, target project eksplisit, penerapan memerlukan flag serta konfirmasi project yang sama, idempoten, dan tidak menulis `users`/Auth/saldo/pesanan. **Belum dijalankan ke produksi**, termasuk dry-run produksi.
+- [x] Dokumentasikan migrasi dan penghapusan di `docs/PUBLIC_PROFILE_MIGRATION.md`; perbarui draft kebijakan privasi dan HTML lokal untuk perilaku profil baru.
+- [x] Analyzer bersih; **202 tes Flutter**, **12 unit backend/CLI**, **25 tes rules**, **17 integration test backend** lulus. Ulangi **7 tes legal** setelah pembaruan dokumen dan semuanya lulus. Emulator memakai `demo-cermatify`, bukan data produksi.
+- [x] Identifikasi kegagalan build baru: wrapper sempat berubah ke Gradle 9.7.1 yang tidak cocok dengan AGP 8.11.1. Simpan konfigurasi tersebut di `build/play-candidates/gradle-wrapper-9.7.1-before-compatibility-fix.properties`, lalu kembalikan wrapper ke Gradle 8.14 yang digunakan build berhasil sebelumnya. Tidak mengubah upload key atau package.
+- [x] Selesaikan build dan validasi kandidat `1.0.0+4` yang memuat pemisahan profil: bundletool validate, package `com.cermatify.app`, version code `4`, signature dan alignment 16 KB pada 12 native libraries lulus. Ukuran 69.585.515 byte; SHA-256 `dbaf5a1cb537bfa9674e2707ffbac25d1e7d99ac81440b5a02a8092dd3cac08e`. Build masih memuat warning SDK/Kotlin dan fallback cache; tidak dianggap bebas warning atau siap produksi. APK belum dibangun ulang.
+- [ ] Terapkan migrasi profil/client/rules secara terkoordinasi setelah backend dan penghalang rilis lain siap. Perubahan lokal ini belum melindungi data pada aplikasi produksi yang masih memakai rules lama.
+- [ ] Tetapkan backend eksternal: tetap Spark dan tidak mengaktifkan biaya. VPS terpisah belum terkonfirmasi. Kajian Workers Free tersedia, tetapi belum dipilih/diimplementasikan dan tidak dianggap siap menerima pembayaran.
+
+Pemisahan profil telah selesai di kode dan pengujian lokal; rollout produksi masih tertunda. Kuota paket, reward responden, rekonsiliasi/refund, audit saldo legacy, unggahan, penghapusan akun end-to-end dan checklist Play Console tetap mengikuti penghalang yang tercatat sebelumnya.

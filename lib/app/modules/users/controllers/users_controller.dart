@@ -1,6 +1,7 @@
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../data/services/public_profile_service.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 
@@ -34,7 +35,9 @@ class UserData {
       verificationStatus:
           data['verificationStatus']
               as String?, // null or 'pending' or 'verified'
-      accountStatus: data['accountStatus']?.toString() ?? 'active',
+      accountStatus: data['status'] != 'active'
+          ? 'disabled'
+          : data['accountStatus']?.toString() ?? 'active',
     );
   }
 }
@@ -107,7 +110,7 @@ class UsersController extends GetxController {
       // If currentStatus is 'pending' or null, change to 'verified'
       final newStatus = (currentStatus == 'verified') ? 'pending' : 'verified';
 
-      await _firestore.collection('users').doc(mentorId).update({
+      await PublicProfileService.update(_firestore, mentorId, {
         'verificationStatus': newStatus,
       });
 
@@ -153,8 +156,9 @@ class UsersController extends GetxController {
     final nextStatus = disabled ? 'active' : 'disabled';
     isUpdating.value = true;
     try {
-      await _firestore.collection('users').doc(account.id).update({
+      await PublicProfileService.update(_firestore, account.id, {
         'accountStatus': nextStatus,
+        'status': disabled ? 'active' : 'inactive',
         'accountStatusUpdatedAt': FieldValue.serverTimestamp(),
       });
       final list = account.role == 'mentor' ? mentorsList : usersList;

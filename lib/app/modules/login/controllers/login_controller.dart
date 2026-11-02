@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/services/account_policy.dart';
 
 class LoginController extends GetxController {
   // Controller input
@@ -86,7 +87,7 @@ class LoginController extends GetxController {
         return;
       }
 
-      if (userData['accountStatus']?.toString() == 'disabled') {
+      if (!AccountPolicy.isActive(userData)) {
         await _auth.signOut();
         await _clearLoginData();
         CustomSnackbar.show(
@@ -103,7 +104,7 @@ class LoginController extends GetxController {
         String? verificationStatus = userData['verificationStatus']?.toString();
 
         // Block login only if verification status is null or 'pending'
-        if (verificationStatus == null || verificationStatus == 'pending') {
+        if (verificationStatus != 'verified') {
           // Sign out the user since they can't login
           await _auth.signOut();
           await _clearLoginData();
@@ -194,7 +195,7 @@ class LoginController extends GetxController {
               userRole = 'customer';
             }
 
-            if (userData['accountStatus']?.toString() == 'disabled') {
+            if (!AccountPolicy.isActive(userData)) {
               await _auth.signOut();
               await _clearLoginData();
               return;
@@ -206,8 +207,7 @@ class LoginController extends GetxController {
                   ?.toString();
 
               // Block auto-login only if verification status is null or 'pending'
-              if (verificationStatus == null ||
-                  verificationStatus == 'pending') {
+              if (verificationStatus != 'verified') {
                 // Sign out the user since they can't login
                 await _auth.signOut();
                 await _clearLoginData();

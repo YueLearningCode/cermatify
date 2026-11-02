@@ -40,6 +40,11 @@ async function playRequest(productId, token, consume = false) {
 export const preparePlayPurchase = onCall(options, async (request) => {
   const uid = requireUser(request);
   if (!billingEnabled.value()) throw new HttpsError('failed-precondition', 'Pembayaran belum diaktifkan.');
+  const buyer = (await db.doc(`users/${uid}`).get()).data();
+  if (buyer?.status !== 'active' || buyer.accountStatus === 'disabled' ||
+      buyer.adultConfirmed !== true || buyer.termsVersion !== '2026-11-01' || !buyer.termsAcceptedAt) {
+    throw new HttpsError('failed-precondition', 'Periksa status akun dan persetujuan ketentuan layanan.');
+  }
   let selection;
   try { selection = validateSelection(request.data); }
   catch { throw new HttpsError('invalid-argument', 'Pilihan layanan tidak valid.'); }
@@ -58,7 +63,7 @@ export const preparePlayPurchase = onCall(options, async (request) => {
     }
     selection.serviceType = service.type;
     const mentor = (await db.collection('users').doc(selection.mentorId).get()).data();
-    if (mentor?.role !== 'mentor' || mentor.status !== 'active' || mentor.verificationStatus !== 'verified' ||
+    if (mentor?.role !== 'mentor' || mentor.status !== 'active' || mentor.accountStatus === 'disabled' || mentor.verificationStatus !== 'verified' ||
         !Array.isArray(mentor.layananIds) || !mentor.layananIds.includes(selection.serviceId)) {
       throw new HttpsError('failed-precondition', 'Mentor tidak tersedia untuk layanan ini.');
     }

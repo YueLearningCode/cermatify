@@ -109,7 +109,7 @@ class CreateKuesionerController extends GetxController {
       String? adminMentorId;
       try {
         final adminSnapshot = await _firestore
-            .collection('users')
+            .collection('publicProfiles')
             .where('role', isEqualTo: 'admin')
             .limit(1)
             .get();

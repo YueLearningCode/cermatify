@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/services/account_policy.dart';
+import '../../../data/services/public_profile_service.dart';
 
 /// [RegisterController] adalah kelas yang mengelola logika registrasi pengguna.
 class RegisterController extends GetxController {
@@ -51,6 +53,7 @@ class RegisterController extends GetxController {
   }
 
   var agreeToTerms = false.obs;
+  var adultConfirmed = false.obs;
   var isFormValid = false.obs;
   var userRole = 'customer'.obs; // Default role
 
@@ -75,6 +78,7 @@ class RegisterController extends GetxController {
     linkedinController.addListener(_checkFormValidity);
     // Listen to observable changes
     ever(agreeToTerms, (_) => _checkFormValidity());
+    ever(adultConfirmed, (_) => _checkFormValidity());
     ever(selectedKampus, (_) {
       _checkFormValidity();
       _filterJurusanByKampus();
@@ -174,7 +178,7 @@ class RegisterController extends GetxController {
 
   // Method to check and update form validity
   void _checkFormValidity() {
-    if (!agreeToTerms.value) {
+    if (!agreeToTerms.value || !adultConfirmed.value) {
       isFormValid.value = false;
       return;
     }
@@ -276,6 +280,16 @@ class RegisterController extends GetxController {
   /// Fungsi untuk melakukan pendaftaran pengguna baru.
   /// Validasi dilakukan untuk memastikan semua field terisi sebelum melakukan registrasi.
   Future<void> register() async {
+    if (isLoading.value) return;
+    if (!adultConfirmed.value) {
+      CustomSnackbar.show(
+        title: 'Batas usia',
+        message:
+            'Pendaftaran tersedia untuk pengguna berusia 18 tahun ke atas.',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
     // Validate nama
     final nama = namaController.text.trim();
     if (nama.isEmpty) {
@@ -501,6 +515,9 @@ class RegisterController extends GetxController {
         'role': userRole.value,
         'status': 'active',
         'createdAt': FieldValue.serverTimestamp(),
+        'adultConfirmed': true,
+        'termsVersion': AccountPolicy.version,
+        'termsAcceptedAt': FieldValue.serverTimestamp(),
       };
 
       // Add mentorRole, layanan, LinkedIn, and verificationStatus only for mentors
@@ -519,9 +536,10 @@ class RegisterController extends GetxController {
         userData['verificationStatus'] = 'pending';
       }
 
-      await _firestore.collection('users').doc(userId).set(userData);
+      await PublicProfileService.create(_firestore, userId!, userData);
 
-      Get.toNamed(Routes.LOGIN);
+      await _auth.signOut();
+      Get.offAllNamed(Routes.LOGIN);
 
       // Menampilkan snackbar untuk sukses dan navigasi ke halaman login
       CustomSnackbar.show(
@@ -533,6 +551,13 @@ class RegisterController extends GetxController {
       CustomSnackbar.show(
         title: 'Error',
         message: "${e.message}",
+        backgroundColor: AppColors.redColor,
+      );
+    } catch (_) {
+      CustomSnackbar.show(
+        title: 'Pendaftaran belum selesai',
+        message:
+            'Data akun belum berhasil disimpan. Periksa koneksi. Jika email sudah terdaftar tetapi tidak dapat login, hubungi bantuan Cermatify.',
         backgroundColor: AppColors.redColor,
       );
     } finally {

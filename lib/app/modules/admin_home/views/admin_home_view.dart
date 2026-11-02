@@ -269,6 +269,13 @@ class AdminHomeView extends GetView<AdminHomeController> {
   Widget _buildQuickActions() {
     final actions = [
       WorkspaceQuickActionData(
+        title: 'Laporan pengguna',
+        subtitle: 'Tinjau laporan chat dan ambil tindakan.',
+        icon: Icons.flag_outlined,
+        color: AppColors.orangeColor,
+        onTap: () => Get.toNamed(Routes.ADMIN_MODERATION),
+      ),
+      WorkspaceQuickActionData(
         title: 'Kelola pengguna',
         subtitle: 'Lihat, verifikasi, dan perbarui akun.',
         icon: Icons.manage_accounts_outlined,

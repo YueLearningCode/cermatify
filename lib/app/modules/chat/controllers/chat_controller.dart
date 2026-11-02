@@ -480,7 +480,10 @@ class ChatController extends GetxController {
         .toSet();
     for (final userId in idsToFetch) {
       try {
-        final doc = await _firestore.collection('users').doc(userId).get();
+        final doc = await _firestore
+            .collection('publicProfiles')
+            .doc(userId)
+            .get();
         if (doc.exists) {
           final data = doc.data();
           final String displayName =
@@ -517,7 +520,7 @@ class ChatController extends GetxController {
     }).toList();
   }
 
-  void loadMessages(String mentorId, {String? orderId}) {
+  Future<void> loadMessages(String mentorId, {String? orderId}) async {
     _roomVisible = true;
     final userId = currentUserId;
     final String roomId = buildRoomId(mentorId, orderId: orderId);
@@ -531,6 +534,17 @@ class ChatController extends GetxController {
     isLoadingMessages.value = true;
     messageLoadError.value = '';
     chatMessages.clear();
+    try {
+      await createOrGetChatRoom(mentorId: mentorId, orderId: orderId);
+    } catch (_) {
+      if (_activeRoomId == roomId && !isClosed) {
+        isLoadingMessages.value = false;
+        messageLoadError.value =
+            'Percakapan belum dapat dibuka. Periksa koneksi dan status akun.';
+      }
+      return;
+    }
+    if (isClosed || _activeRoomId != roomId || currentUserId != userId) return;
     // Bind realtime stream from Firestore
     _messagesSubscription?.cancel();
     _messagesSubscription = _firestore
@@ -541,7 +555,9 @@ class ChatController extends GetxController {
         .snapshots()
         .listen(
           (snapshot) {
-            if (isClosed || _activeRoomId != roomId || currentUserId != userId) {
+            if (isClosed ||
+                _activeRoomId != roomId ||
+                currentUserId != userId) {
               return;
             }
             final msgs = snapshot.docs.map((d) {
@@ -599,6 +615,13 @@ class ChatController extends GetxController {
     }
 
     final messageText = messageController.text.trim();
+    if (messageText.length > 4000) {
+      Get.snackbar(
+        'Pesan terlalu panjang',
+        'Maksimal 4.000 karakter per pesan.',
+      );
+      return;
+    }
     messageController.clear();
 
     isSending.value = true;
@@ -634,7 +657,7 @@ class ChatController extends GetxController {
       }
       Get.snackbar(
         'Pesan gagal dikirim',
-        'Periksa koneksi lalu coba kembali.',
+        'Periksa koneksi dan status akun. Pesan tidak dapat dikirim jika ada blokir pengguna.',
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -668,6 +691,23 @@ class ChatController extends GetxController {
         .collection('chatRooms')
         .doc(roomId);
 
+    // A block stops writes, but participants must still be able to open their
+    // existing history to report messages or remove their own block.
+    try {
+      final existing = await roomRef.get();
+      if (existing.exists) {
+        final members = existing.data()?['users'] as List<dynamic>? ?? [];
+        if (!members.contains(userId) || !members.contains(mentorId)) {
+          throw StateError('Percakapan tidak sesuai.');
+        }
+        return roomId;
+      }
+    } on FirebaseException catch (error) {
+      // Reading an absent member-only document is denied. Creation is checked
+      // independently by rules; never ignore network or other read errors.
+      if (error.code != 'permission-denied') rethrow;
+    }
+
     final List<String> ids = [userId, mentorId]..sort();
 
     final roomData = {
@@ -681,8 +721,7 @@ class ChatController extends GetxController {
       roomData['orderId'] = orderId;
     }
 
-    // Reading an absent room is denied by member-only rules. Merge identity
-    // first, without resetting any existing messages or preview metadata.
+    // Merge identity without resetting messages if another client created it.
     await roomRef.set(roomData, SetOptions(merge: true));
 
     return roomId;

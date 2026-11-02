@@ -4,6 +4,7 @@ import { initializeApp, deleteApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { fulfillPurchase } from '../fulfill-purchase.js';
 import { digest } from '../purchase-validation.js';
+import { syncPublicProfile } from '../public-profile.js';
 import { changePlayOrderStatus, reserveWithdrawal, changeWithdrawalStatus, revokePlayPurchase } from '../finance.js';
 
 // Fail closed: these tests must never touch a live Firebase project.
@@ -24,7 +25,9 @@ beforeEach(async () => {
   await db.doc('playPurchaseIntents/intent1').set({ userId: 'alice', productId: 'paper_basic',
     serviceId: 'paper', mentorId: 'mentor1', price: 75000, currency: 'IDR', status: 'pending' });
   await db.doc('users/mentor1').set({ saldo: 0, role: 'mentor', status: 'active' });
-  await db.doc('users/admin1').set({ role: 'admin' });
+  await db.doc('users/admin1').set({ role: 'admin', status: 'active' });
+  await db.doc('users/alice').set({ role: 'customer', status: 'active', adultConfirmed: true,
+    termsVersion: '2026-11-01', termsAcceptedAt: new Date() });
 });
 after(async () => { await db.terminate(); await deleteApp(app); });
 
@@ -167,4 +170,61 @@ test('checkout refuses anonymous callers, inactive catalog, self-purchase and ra
   await db.doc('playPurchaseLimits/alice').set({ minute: Math.floor(Date.now() / 60000), minuteCount: 20,
     day: Math.floor(Date.now() / 86400000), dayCount: 100 });
   await assert.rejects(() => preparePlayPurchase.run(input));
+});
+
+test('disabled admin and mentor cannot mutate finances even with a valid auth identity', async () => {
+  await fulfillPurchase(db, request);
+  await db.doc('users/admin1').update({ accountStatus: 'disabled' });
+  await assert.rejects(() => changePlayOrderStatus(db, 'admin1', 'intent1', 'progress'));
+  await db.doc('users/admin1').update({ accountStatus: 'active', status: 'inactive' });
+  await assert.rejects(() => changePlayOrderStatus(db, 'admin1', 'intent1', 'progress'));
+  await db.doc('users/mentor1').update({ saldo: 100000, accountStatus: 'disabled' });
+  await assert.rejects(() => reserveWithdrawal(db, 'mentor1', withdrawal));
+  assert.equal((await db.doc('orders/intent1').get()).data().status, 'waiting verification');
+  assert.equal((await db.doc('users/mentor1').get()).data().saldo, 100000);
+});
+
+test('new checkout rejects disabled buyers and missing policy consent, including quotes', async () => {
+  const input = { auth: { uid: 'alice', token: {} }, data: { serviceId: 'kuesioner',
+    quoteOnly: true, questionnaire: { link: 'https://example.com/form' } } };
+  await db.doc('playBillingCatalog/kuesioner').set({ enabled: true, productId: 'cermatify_questionnaire', price: 25000 });
+  // Use a valid mentoring request so account checks are not confused with selection validation.
+  input.data = { serviceId: 'paper', mentorId: 'mentor1', quoteOnly: true };
+  await db.doc('playBillingCatalog/mentoring_basic').set({ enabled: true, productId: 'cermatify_mentoring_basic', price: 75000 });
+  await db.doc('layanan/paper').set({ type: 'paperlink' });
+  await db.doc('users/mentor1').update({ verificationStatus: 'verified', layananIds: ['paper'] });
+  assert.ok((await preparePlayPurchase.run(input)).productId);
+  for (const change of [{ accountStatus: 'disabled' }, { accountStatus: 'active', adultConfirmed: false },
+    { adultConfirmed: true, termsVersion: 'old' }]) {
+    await db.doc('users/alice').update(change);
+    await assert.rejects(() => preparePlayPurchase.run(input));
+  }
+});
+
+test('public-profile migration defaults to dry-run and never changes private data', async () => {
+  const original = (await db.doc('users/alice').get()).data();
+  await db.doc('users/alice').update({ email: 'private@example.com', saldo: 1000, kampus: 'Private campus' });
+  const source = (await db.doc('users/alice').get()).data();
+  assert.equal(await syncPublicProfile(db, 'alice'), 'created');
+  assert.equal((await db.doc('publicProfiles/alice').get()).exists, false);
+  assert.equal(await syncPublicProfile(db, 'alice', { apply: true }), 'created');
+  assert.equal(await syncPublicProfile(db, 'alice', { apply: true }), 'unchanged');
+  assert.deepEqual((await db.doc('users/alice').get()).data(), source);
+  const publicData = (await db.doc('publicProfiles/alice').get()).data();
+  assert.equal(publicData.email, undefined);
+  assert.equal(publicData.saldo, undefined);
+  assert.equal(publicData.kampus, '');
+  assert.equal(publicData.termsVersion, undefined);
+  assert.equal(source.adultConfirmed, original.adultConfirmed);
+});
+
+test('migration removes accidental public fields and reflects the latest private status', async () => {
+  await db.doc('publicProfiles/mentor1').set({ email: 'must-not-remain@example.com', status: 'active' });
+  await db.doc('users/mentor1').update({ status: 'inactive', accountStatus: 'disabled' });
+  assert.equal(await syncPublicProfile(db, 'mentor1', { apply: true }), 'changed');
+  const profile = (await db.doc('publicProfiles/mentor1').get()).data();
+  assert.equal(profile.email, undefined);
+  assert.equal(profile.status, 'inactive');
+  assert.equal(profile.accountStatus, 'disabled');
+  assert.equal(await syncPublicProfile(db, 'missing', { apply: true }), 'missing');
 });
