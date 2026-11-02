@@ -19,15 +19,13 @@ import '../controllers/sourcelink_controller.dart';
 import '../../kuesioner/controllers/create_kuesioner_controller.dart';
 import '../../../data/services/play_billing_service.dart';
 import '../../../data/widgets/play_checkout_panel.dart';
+import '../../kuesioner/views/questionnaire_link_step.dart';
 
 class SourcelinkSubmitView extends GetView<SourcelinkController> {
   const SourcelinkSubmitView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Load saved criteria when view is built
-    controller.loadSavedCriteria();
-
     return _SourcelinkSubmitViewStateful(controller: controller);
   }
 }
@@ -51,6 +49,7 @@ class _SourcelinkSubmitViewStatefulState
 
   final isLoading = false.obs;
   final paymentProofImage = Rxn<SelectedImageData>();
+  String? _validatedPlayLink;
 
   void _goBack() {
     if (Get.key.currentState?.canPop() ?? false) {
@@ -63,10 +62,13 @@ class _SourcelinkSubmitViewStatefulState
   Future<void> _createOrderAndKuesioner() async {
     try {
       // Validate link
-      if (widget.controller.linkController.text.trim().isEmpty) {
+      final linkError = validateQuestionnaireLink(
+        widget.controller.linkController.text,
+      );
+      if (linkError != null) {
         CustomSnackbar.show(
           title: 'Perhatian',
-          message: 'Masukkan link terlebih dahulu',
+          message: linkError,
           backgroundColor: AppColors.error,
           isNav: false,
         );
@@ -302,20 +304,29 @@ class _SourcelinkSubmitViewStatefulState
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 700),
-              child: PlayCheckoutPanel(
-                selection: {
-                  'serviceId': 'kuesioner',
-                  'questionnaire': {
-                    'link': widget.controller.linkController.text.trim(),
-                    'rentangUsia': widget.controller.selectedUsia.value,
-                    'jenisKelamin': widget.controller.selectedKelamin.value,
-                    'tingkatPenghasilan':
-                        widget.controller.selectedPenghasilan.value,
-                    'pendidikanTerakhir':
-                        widget.controller.selectedPendidikan.value,
-                  },
-                },
-              ),
+              child: _validatedPlayLink == null
+                  ? QuestionnaireLinkStep(
+                      initialLink: widget.controller.linkController.text,
+                      onContinue: (link) {
+                        widget.controller.linkController.text = link;
+                        setState(() => _validatedPlayLink = link);
+                      },
+                    )
+                  : PlayCheckoutPanel(
+                      selection: {
+                        'serviceId': 'kuesioner',
+                        'questionnaire': {
+                          'link': _validatedPlayLink!,
+                          'rentangUsia': widget.controller.selectedUsia.value,
+                          'jenisKelamin':
+                              widget.controller.selectedKelamin.value,
+                          'tingkatPenghasilan':
+                              widget.controller.selectedPenghasilan.value,
+                          'pendidikanTerakhir':
+                              widget.controller.selectedPendidikan.value,
+                        },
+                      },
+                    ),
             ),
           ),
         ),

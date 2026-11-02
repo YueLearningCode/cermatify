@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/content/help_content.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/modules/landing/widgets/landing_navigation.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ class LandingFooter extends StatelessWidget {
 
   final ValueChanged<LandingNavTarget> onSelected;
 
-  static const supportEmail = 'cermatifycompany@gmail.com';
+  static const supportEmail = HelpContent.supportEmail;
 
   @override
   Widget build(BuildContext context) {

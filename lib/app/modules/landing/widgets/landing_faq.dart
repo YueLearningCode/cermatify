@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/content/help_content.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,32 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 class LandingFaq extends StatelessWidget {
   const LandingFaq({super.key});
 
-  static const _questions = [
-    (
-      'Layanan apa saja yang bisa saya pilih?',
-      'Cermat Paper untuk pendampingan karya ilmiah, Cermat Competition untuk persiapan kompetisi, dan Cermat Kuesioner untuk pengajuan tautan serta kebutuhan responden penelitian.',
-    ),
-    (
-      'Apakah saya harus punya akun?',
-      'Kamu bisa membaca informasi layanan dan FAQ di halaman ini tanpa akun. Untuk memilih mentor, mengirim pengajuan, atau menggunakan layanan di aplikasi, masuk atau daftar terlebih dahulu.',
-    ),
-    (
-      'Bagaimana cara memilih mentor?',
-      'Setelah masuk, pilih pendampingan karya ilmiah atau kompetisi. Gunakan pilihan bidang layanan yang tersedia, lalu tinjau profil mentor agar sesuai dengan kebutuhanmu.',
-    ),
-    (
-      'Bagaimana pembayaran diverifikasi?',
-      'Ikuti petunjuk pembayaran pada pemesanan dan unggah buktinya. Admin akan meninjau bukti pembayaran dan memperbarui status pesanan di aplikasi.',
-    ),
-    (
-      'Bagaimana cara mendaftar sebagai mentor?',
-      'Pilih menu Jadi Mentor untuk membuka formulir pendaftaran mentor. Lengkapi profil, bidang layanan, dan tautan LinkedIn. Pengajuan akan ditinjau sebelum akun dapat digunakan sebagai mentor.',
-    ),
-    (
-      'Apakah pendampingan mencakup pengerjaan tugas saya?',
-      'Pendampingan membantu kamu memahami dan mengembangkan pekerjaanmu sendiri melalui arahan serta masukan. Layanan tidak mencakup pengerjaan tugas atas namamu atau pembuatan data, referensi, dan respons penelitian fiktif.',
-    ),
-  ];
+  static const _questions = HelpContent.landing;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +32,7 @@ class LandingFaq extends StatelessWidget {
                 ),
                 iconColor: AppColors.primaryDark,
                 title: Text(
-                  _questions[i].$1,
+                  _questions[i]['question']!,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -69,7 +45,7 @@ class LandingFaq extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        _questions[i].$2,
+                        _questions[i]['answer']!,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           height: 1.65,

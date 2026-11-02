@@ -141,7 +141,7 @@ class FaqHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pusat bantuan mentor',
+                  'Pusat bantuan Cermatify',
                   style: GoogleFonts.poppins(
                     fontSize: MediaQuery.sizeOf(context).width < 600 ? 20 : 25,
                     fontWeight: FontWeight.w800,

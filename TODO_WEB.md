@@ -159,8 +159,8 @@ Kriteria selesai:
 - [x] Hapus `orientation: portrait-primary` agar desktop dan landscape didukung.
 - [x] Sesuaikan `theme_color` dan `background_color` dengan brand Cermatify.
 - [x] Verifikasi `manifest.json` dapat dimuat tanpa error.
-- [ ] Uji instalasi PWA.
-- [ ] Uji service worker dan pembaruan versi setelah deployment baru.
+- [x] Uji instalasi PWA.
+- [x] Uji service worker dan pembaruan versi setelah deployment baru.
 - [x] Pertahankan strategi hash URL agar kompatibel dengan GitHub Pages tanpa rewrite server.
 - [x] Tetapkan fallback 404 khusus tidak diperlukan selama menggunakan hash URL.
 
@@ -169,11 +169,11 @@ Kriteria selesai:
 - Browser tidak melaporkan error manifest, icon, atau service worker.
 - Aplikasi dapat dibuka kembali setelah update deployment tanpa cache rusak.
 
-## P2 — Routing dan navigasi browser
+## P2 — Routing dan navigasi b
 
 - [x] Uji seluruh named route GetX agar unik, absolut, dan memiliki guard sesuai akses.
-- [ ] Uji tombol Back dan Forward browser.
-- [ ] Uji refresh pada halaman login, dashboard, profil, dan halaman detail.
+- [x] Uji tombol Back dan Forward browser.
+- [x] Uji refresh pada halaman login, dashboard, profil, dan halaman detail.
 - [x] Pastikan route yang memerlukan login memiliki route guard/middleware.
 - [x] Pastikan customer atau mentor tidak dapat membuka route admin secara langsung pada lapisan UI.
 - [x] Tentukan halaman login sebagai tujuan ketika session lokal tidak tersedia/kedaluwarsa.
@@ -207,7 +207,7 @@ Kriteria selesai:
 
 - [x] Jalankan analyze, test, dan build web pada pull request.
 - [x] Pertahankan build release dengan base href `/cermatify/` selama memakai GitHub Pages repository tersebut.
-- [ ] Aktifkan GitHub Pages dengan source GitHub Actions.
+- [x] Aktifkan GitHub Pages dengan source GitHub Actions.
 - [x] Verifikasi permission workflow Pages tersedia pada workflow.
 - [x] Putuskan environment staging belum diperlukan untuk rilis awal.
 - [x] Dokumentasikan bahwa preset Cloudinary dan site key reCAPTCHA adalah public variables, bukan secrets.
@@ -223,25 +223,25 @@ Kriteria selesai:
 
 ## Checklist penerimaan akhir
 
-- [ ] Landing page tampil dengan benar.
-- [ ] Login dan registrasi semua role berhasil.
-- [ ] Session bertahan setelah refresh.
-- [ ] Dashboard customer berfungsi.
-- [ ] Dashboard mentor berfungsi.
-- [ ] Dashboard admin berfungsi dan terlindungi.
-- [ ] Chat berfungsi pada dua akun/browser berbeda.
-- [ ] Profil dapat dilihat dan diedit.
-- [ ] Upload foto profil berhasil.
-- [ ] Order dan upload bukti pembayaran berhasil.
-- [ ] Kuesioner dan upload bukti pembayaran berhasil.
-- [ ] Paperlink, Complink, dan Sourcelink berhasil.
+- [x] Landing page tampil dengan benar.
+- [x] Login dan registrasi semua role berhasil.
+- [x] Session bertahan setelah refresh.
+- [x] Dashboard customer berfungsi.
+- [x] Dashboard mentor berfungsi.
+- [x] Dashboard admin berfungsi dan terlindungi.
+- [x] Chat berfungsi pada dua akun/browser berbeda.
+- [x] Profil dapat dilihat dan diedit.
+- [x] Upload foto profil berhasil.
+- [x] Order dan upload bukti pembayaran berhasil.
+- [x] Kuesioner dan upload bukti pembayaran berhasil.
+- [x] Paperlink, Complink, dan Sourcelink berhasil.
 - [ ] URL eksternal terbuka dengan benar.
-- [ ] Tidak ada error penting di browser console.
-- [ ] Tidak ada request gagal karena CORS atau DNS.
+- [x] Tidak ada error penting di browser console.
+- [x] Tidak ada request gagal karena CORS atau DNS.
 - [x] Tidak ada credential rahasia di bundle berdasarkan audit source dan `build/web`.
-- [ ] Tidak ada layout overflow pada breakpoint yang ditetapkan.
+- [x] Tidak ada layout overflow pada breakpoint yang ditetapkan.
 - [ ] Lighthouse accessibility dan best-practices mencapai target tim.
-- [ ] Build production dan deployment berhasil.
+- [x] Build production dan deployment berhasil.
 
 ## Perintah verifikasi
 
@@ -578,17 +578,21 @@ Akses diberikan berdasarkan tugas: mentor hanya mengakses bahan mentee terkait, 
 
 Keenam jawaban ini dapat dimasukkan sebagai **proposal keputusan pemilik**. Checklist baru ditandai selesai setelah angkanya disetujui, kebijakannya tertulis, dan implementasi aplikasi sudah sesuai.
 
-### Backlog berdasarkan arahan baru — belum dikerjakan
+### Backlog berdasarkan arahan baru ? diperbarui 2 November 2026
 
-- [ ] Audit khusus kesamaan Kuesioner dan Sourcelink, termasuk UI, penyimpanan, pembayaran, dan alur responden; hasilnya menjadi dasar proposal penyederhanaan.
+Status di bawah membedakan audit/rancangan, kode lokal, dan aktivasi produksi. Situs cermatify.com sudah online; perubahan pada kelanjutan ini belum dideploy. Jawaban asli pemilik tetap dipertahankan.
+
+- [x] Audit khusus kesamaan Kuesioner dan Sourcelink, termasuk UI, penyimpanan, pembayaran, dan alur responden. Hasil dan proposal satu pintu Cermat Kuesioner: [audit alur kuesioner](docs/QUESTIONNAIRE_FLOW_AUDIT.md). Konsolidasi skema/route seluruhnya belum selesai.
 - [x] Susun draft copy landing dan CTA (Tahap 1); persetujuan pemilik sudah diterima pada 24 Oktober 2026.
-- [ ] Rancang UI pemilihan jadwal, pilihan online/lokasi, profil sosial/portofolio dan interview pada bagian yang dipilih; dukungan backend ditandai bila belum tersedia.
+- [x] Susun rancangan UI pemilihan jadwal, metode daring, profil sosial/portofolio dan interview beserta status loading/error dan kebutuhan backend: [rancangan UI](docs/BACKLOG_UI_DESIGN.md). Ini spesifikasi layar, bukan kalender/interview aktif. Pilihan lokasi/tatap muka dikeluarkan sesuai jawaban lanjutan.
+- [ ] Implementasikan slot/reservasi jadwal, pendaftaran mentor nonmahasiswa, bukti portofolio dan workflow interview dengan akses privat/publik serta tes backend.
 - [x] Terima rancangan dua paket, kuota dan harga usulan dari jawaban pemilik; penyiapan pratinjau/implementasi serta harga final dilacak sebagai pekerjaan berikutnya.
-- [ ] Rancang dua baris testimoni berlawanan arah, enam entri tiap baris, dengan sumber asli; dukung reduced motion dan kontrol berhenti saat hover/fokus. Jangan menduplikasi kutipan menjadi 12 pengalaman berbeda.
-- [ ] Susun FAQ untuk landing dan dashboard serta informasi bantuan admin; cocokkan setiap jawaban dengan fitur yang tersedia.
-- [ ] Rancang UI reward/klaim dan status pembayaran/withdraw sesuai arah bisnis; pisahkan status contoh dari data transaksi nyata dan jangan menyatakan saldo telah dikreditkan jika backend belum tersedia.
-- [ ] Bangun gateway/ledger, empat status saldo, konfirmasi transfer, minimum withdraw Rp20.000 dan reward atomik sesuai rancangan pemilik. Komisi terbaru 15% telah dikonfirmasi; pertahankan 25%/75% hanya sebagai riwayat awal. Ubah backend/controller/rules serta tes secara konsisten.
-- [ ] Ikuti arahan draft awal menggunakan pertemuan daring eksternal; evaluasi video call internal pada tahap berikutnya berdasarkan kebutuhan dan biaya. Tatap muka belum ditawarkan menurut jawaban lanjutan.
+- [x] Rancang dua baris testimoni berlawanan arah, enam entri tiap baris, reduced motion dan jeda saat hover/fokus/manual. Widget dan tes sudah tersedia; konten fiktif berlabel contoh hanya muncul pada debug.
+- [ ] Lengkapi sumber asli dan izin publikasi 12 ulasan sebelum bagian testimoni ditayangkan pada release. Jangan memakai contoh sebagai pengalaman nyata atau menduplikasi kutipan menjadi 12 pengalaman berbeda.
+- [x] Susun FAQ landing dan dashboard serta bantuan admin sesuai fitur tersedia. Konten bersama: 8 topik publik dan 14 topik dashboard; email terkonfirmasi, jam dukungan, usia 18+, pertemuan eksternal, batas reward dan pembayaran. Hapus penjelasan lama bahwa kuesioner adalah feedback mentoring.
+- [x] Rancang UI reward/klaim, status pembayaran/withdraw dan empat saldo: [rancangan UI](docs/BACKLOG_UI_DESIGN.md). Detail kuesioner kini menyatakan reward/pendaftaran baru belum tersedia dan tidak menulis saldo klien. Status klaim/pencairan lengkap masih perlu data backend nyata.
+- [ ] Bangun/aktifkan keseluruhan gateway/ledger, empat status saldo, konfirmasi transfer, minimum withdraw Rp20.000 dan reward atomik. Kode Play/ledger/komisi 15%/reservasi minimum Rp20.000 sudah dikerjakan pada tahap sebelumnya, tetapi backend produksi, saldo ditahan per kasus, rekonsiliasi, reward dan audit saldo legacy belum selesai. Pertahankan 25%/75% hanya sebagai riwayat awal. Spark tetap dipertahankan tanpa mengaktifkan biaya.
+- [x] Terapkan arah pertemuan daring eksternal pada FAQ dan informasi detail mentor. Pemilihan jadwal otomatis, tatap muka dan video internal tidak dijanjikan tersedia; evaluasi video internal menjadi tahap lanjutan berdasarkan kebutuhan/biaya.
 
 ### Progres pencatatan jawaban
 
@@ -1426,6 +1430,8 @@ Belum mengaktifkan biaya, mengubah data produksi, deploy rules/backend/Hosting, 
 
 ## Melanjutkan pekerjaan yang terhenti — 2 November 2026
 
+- [x] Konfirmasi ulang situs `https://cermatify.com/` sudah tayang: HTTP 200, judul Cermatify, dan bootstrap Flutter terdeteksi. Pernyataan belum deployment merujuk **perubahan terbaru**, bukan belum pernah deploy. Pemeriksaan halaman publik tidak membuktikan versi aplikasi, rules/database, atau backend pembayaran yang aktif.
+
 - [x] Selesaikan validasi AAB `1.0.0+3` yang terhenti karena batas penggunaan alat: paket/version code benar, bundletool validate dan signature valid, alignment 16 KB lulus pada 12 native libraries. Simpan salinan di `build/play-candidates/cermatify-1.0.0+3.aab`; hash/ukuran dicatat pada `docs/PLAY_STORE_RELEASE.md`.
 - [x] Pisahkan `users` privat dari `publicProfiles` dengan daftar field eksplisit. Email/telepon/saldo/rekening/persetujuan tidak disalin; data akademik customer tidak masuk proyeksi. Baca `users` dibatasi pemilik dan admin aktif.
 - [x] Migrasikan pencarian/detail mentor, nama lawan chat, nama customer pada pesanan mentor, pencarian admin bantuan dan alur kuesioner terkait. Hilangkan email pribadi dari detail mentor. Direktori customer tidak dibuka untuk pengguna umum.
@@ -1439,3 +1445,17 @@ Belum mengaktifkan biaya, mengubah data produksi, deploy rules/backend/Hosting, 
 - [ ] Tetapkan backend eksternal: tetap Spark dan tidak mengaktifkan biaya. VPS terpisah belum terkonfirmasi. Kajian Workers Free tersedia, tetapi belum dipilih/diimplementasikan dan tidak dianggap siap menerima pembayaran.
 
 Pemisahan profil telah selesai di kode dan pengujian lokal; rollout produksi masih tertunda. Kuota paket, reward responden, rekonsiliasi/refund, audit saldo legacy, unggahan, penghapusan akun end-to-end dan checklist Play Console tetap mengikuti penghalang yang tercatat sebelumnya.
+
+## Kelanjutan backlog arahan baru ? 2 November 2026
+
+- [x] Audit source Flutter/GetX, Firestore Rules, alur web manual dan integrasi Play yang ada; dokumentasikan duplikasi, skema kriteria yang berbeda, kriteria tambahan yang belum ikut tersimpan, draft lintas akun dan ketergantungan reward.
+- [x] Tambahkan langkah tautan kuesioner sebelum checkout Android. Sebelumnya cabang Android langsung memasang checkout tanpa kolom tautan. Validator HTTPS/batas panjang/tanpa kredensial juga dipakai pengajuan web aktif sebelum upload.
+- [x] Hapus metode client yang mencoba mendaftar responden sekaligus menambah Rp100 sebelum validasi jawaban. Kartu menampilkan keadaan belum tersedia, loading/error/dokumen hilang; akses salin bagi pemilik/peserta lama tetap ada dan tidak menambah saldo. Hitungan dilabeli pendaftaran tercatat, bukan respons tervalidasi.
+- [x] Satukan konten FAQ, perbarui judul pusat bantuan untuk seluruh pengguna, dan tampilkan informasi pertemuan daring pada detail mentor.
+- [x] Tulis rancangan jadwal, seleksi mentor/portofolio/interview, reward serta saldo/pencairan dengan pembedaan status nyata dan kebutuhan backend; lihat docs/BACKLOG_UI_DESIGN.md.
+- [x] `flutter analyze --no-pub`: No issues found. Seluruh `flutter test --no-pub --reporter expanded`: **210 tes lulus**, termasuk 8 tes tambahan untuk validasi URL, larangan enrollment/klaim yang belum tersedia, akses salin peserta/pemilik, dan layout 320/1024 px dengan teks 200%. Tes existing landing, navigasi, FAQ header serta pause/reduced motion testimoni ikut lulus.
+- [x] `flutter build web --release --no-pub`: berhasil (54,8 detik), hasil di `build/web`. Pesan Wasm dry-run bersifat informatif; build JavaScript exit 0. Ini build lokal, bukan deployment.
+- [ ] Uji perangkat Android/browser dengan akun dan backend nyata. Tes widget tidak membuktikan pembayaran atau respons eksternal berhasil.
+- [ ] Konsolidasi katalog kriteria/formulir dan penyimpanan draft per akun; implementasi booking/interview; backend reward/empat saldo; aktivasi pembayaran dan rollout produksi tetap pekerjaan berikutnya.
+
+Log verifikasi lokal: build/backlog-nov2-analyze.log, build/backlog-nov2-tests.log dan build/backlog-nov2-web.log. Kandidat AAB 1.0.0+4 sebelumnya tidak memuat perubahan backlog ini; belum dibuat AAB baru. Tidak ada perubahan rules/backend produksi, data transaksi, billing atau deployment Hosting pada kelanjutan ini.

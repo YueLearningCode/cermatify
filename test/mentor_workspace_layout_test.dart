@@ -111,7 +111,7 @@ void main() {
       );
 
       expect(find.textContaining('Mentor Cermatify'), findsOneWidget);
-      expect(find.text('Pusat bantuan mentor'), findsOneWidget);
+      expect(find.text('Pusat bantuan Cermatify'), findsOneWidget);
       expect(find.text('Kuesioner'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

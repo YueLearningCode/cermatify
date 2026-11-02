@@ -1,4 +1,5 @@
 import 'package:cermatify/app/data/models/mentor_model.dart';
+import 'package:cermatify/app/data/content/help_content.dart';
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/services/play_billing_service.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
@@ -16,6 +17,35 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 int mentorDetailColumnCount(double width) => width >= 880 ? 2 : 1;
+
+class MentorMeetingNotice extends StatelessWidget {
+  const MentorMeetingNotice({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: AppColors.border),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Pertemuan daring',
+          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          HelpContent.meetings['answer']!,
+          style: GoogleFonts.poppins(fontSize: 12, height: 1.6),
+        ),
+      ],
+    ),
+  );
+}
 
 class DetailMentorView extends StatefulWidget {
   const DetailMentorView({
@@ -190,6 +220,8 @@ class _DetailMentorViewState extends State<DetailMentorView> {
                         );
                       },
                     ),
+                    const SizedBox(height: 16),
+                    const MentorMeetingNotice(),
                     const SizedBox(height: 16),
                     FilledButton.icon(
                       key: const Key('mentor-primary-action'),

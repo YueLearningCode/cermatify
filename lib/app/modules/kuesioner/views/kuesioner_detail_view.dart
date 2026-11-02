@@ -54,40 +54,46 @@ class KuesionerDetailView extends StatelessWidget {
                 SliverPadding(
                   padding: EdgeInsets.fromLTRB(gutter, 16, gutter, 0),
                   sliver: SliverToBoxAdapter(
-                    child:
-                        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                          stream: firestore
-                              .collection('kuesioners')
-                              .doc(kuesioner.id)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            final data = snapshot.data?.data() ?? const {};
-                            return KuesionerAccessCard(
-                              link:
-                                  data['link']?.toString() ??
-                                  kuesioner.link ??
-                                  '',
-                              isCreator:
-                                  currentUid.isNotEmpty &&
-                                  currentUid ==
-                                      (data['userId']?.toString() ??
-                                          data['createdBy']?.toString()),
-                              alreadySigned:
-                                  currentUid.isNotEmpty &&
-                                  ((data['signedBy'] as List?) ?? const [])
-                                      .map((value) => value.toString())
-                                      .contains(currentUid),
-                              respondentCount:
-                                  ((data['signedBy'] as List?) ?? const [])
-                                      .length,
-                              onCopy: (link) => _copyLink(link),
-                              onRegister: () => _registerRespondent(
-                                firestore: firestore,
-                                currentUid: currentUid,
-                              ),
-                            );
-                          },
-                        ),
+                    child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: firestore
+                          .collection('kuesioners')
+                          .doc(kuesioner.id)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return const Text(
+                            'Akses kuesioner belum dapat diperiksa. Kembali dan buka lagi untuk mencoba ulang.',
+                          );
+                        }
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final data = snapshot.data?.data();
+                        if (data == null) {
+                          return const Text('Kuesioner tidak lagi tersedia.');
+                        }
+                        final signedBy = data['signedBy'] is List
+                            ? data['signedBy'] as List
+                            : const [];
+                        return KuesionerAccessCard(
+                          link: data['link']?.toString() ?? '',
+                          isCreator:
+                              currentUid.isNotEmpty &&
+                              currentUid ==
+                                  (data['userId']?.toString() ??
+                                      data['createdBy']?.toString()),
+                          alreadySigned:
+                              currentUid.isNotEmpty &&
+                              signedBy
+                                  .map((value) => value.toString())
+                                  .contains(currentUid),
+                          respondentCount: signedBy.length,
+                          onCopy: (link) => _copyLink(link),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 SliverPadding(
@@ -176,52 +182,6 @@ class KuesionerDetailView extends StatelessWidget {
       backgroundColor: AppColors.primary,
       colorText: AppColors.surface,
     );
-  }
-
-  Future<void> _registerRespondent({
-    required FirebaseFirestore firestore,
-    required String currentUid,
-  }) async {
-    if (currentUid.isEmpty) return;
-    try {
-      final questionnaireRef = firestore
-          .collection('kuesioners')
-          .doc(kuesioner.id);
-      final snapshot = await questionnaireRef.get();
-      final signedBy = (snapshot.data()?['signedBy'] as List?) ?? const [];
-      if (signedBy.map((value) => value.toString()).contains(currentUid)) {
-        Get.snackbar('Info', 'Anda sudah terdaftar sebagai responden.');
-        return;
-      }
-      final userRef = firestore.collection('users').doc(currentUid);
-      await firestore.runTransaction((transaction) async {
-        final userSnapshot = await transaction.get(userRef);
-        final balance = (userSnapshot.data()?['saldo'] as int?) ?? 0;
-        transaction.set(questionnaireRef, {
-          'signedBy': FieldValue.arrayUnion([currentUid]),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        if (userSnapshot.exists) {
-          transaction.update(userRef, {
-            'saldo': balance + 100,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        }
-      });
-      Get.snackbar(
-        'Berhasil',
-        'Anda terdaftar sebagai responden dan saldo bertambah Rp 100.',
-        backgroundColor: AppColors.greenColor,
-        colorText: AppColors.surface,
-      );
-    } catch (error) {
-      Get.snackbar(
-        'Gagal',
-        'Tidak dapat mendaftarkan responden: $error',
-        backgroundColor: AppColors.redColor,
-        colorText: AppColors.surface,
-      );
-    }
   }
 }
 
@@ -317,14 +277,12 @@ class KuesionerAccessCard extends StatelessWidget {
     required this.alreadySigned,
     required this.respondentCount,
     required this.onCopy,
-    required this.onRegister,
   });
   final String link;
   final bool isCreator;
   final bool alreadySigned;
   final int respondentCount;
   final ValueChanged<String> onCopy;
-  final VoidCallback onRegister;
 
   @override
   Widget build(BuildContext context) {
@@ -359,13 +317,13 @@ class KuesionerAccessCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$respondentCount responden',
+                      '$respondentCount pendaftaran tercatat',
                       style: _text(13, FontWeight.w700),
                     ),
                     Text(
                       canAccess
                           ? (link.isEmpty ? 'Tautan belum tersedia' : link)
-                          : 'Daftar untuk memperoleh akses kuesioner.',
+                          : 'Pendaftaran responden baru belum tersedia.',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: _text(
@@ -386,30 +344,64 @@ class KuesionerAccessCard extends StatelessWidget {
                   label: const Text('Salin tautan'),
                 )
               : FilledButton.icon(
-                  onPressed: onRegister,
-                  icon: const Icon(Icons.person_add_alt_rounded, size: 17),
-                  label: const Text('Jadi responden'),
+                  onPressed: null,
+                  icon: const Icon(Icons.hourglass_empty_rounded, size: 17),
+                  label: const Text('Pendaftaran belum tersedia'),
                 );
-          if (compact) {
-            return Column(
-              children: [
-                information,
-                const SizedBox(height: 14),
-                SizedBox(width: double.infinity, child: action),
-              ],
-            );
-          }
-          return Row(
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: information),
-              const SizedBox(width: 16),
-              action,
+              if (compact)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [information, const SizedBox(height: 14), action],
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(child: information),
+                    const SizedBox(width: 16),
+                    action,
+                  ],
+                ),
+              const SizedBox(height: 16),
+              const QuestionnaireRewardNotice(),
             ],
           );
         },
       ),
     );
   }
+}
+
+/// Availability only: no simulated claim, enrollment, or balance mutations.
+class QuestionnaireRewardNotice extends StatelessWidget {
+  const QuestionnaireRewardNotice({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.primary.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Reward belum tersedia', style: _text(13, FontWeight.w700)),
+        const SizedBox(height: 6),
+        Text(
+          'Membuka tautan atau terdaftar sebagai responden tidak menambah saldo. Klaim reward belum diaktifkan.',
+          style: _text(12, FontWeight.w400, AppColors.textSecondary),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Saat program tersedia, respons perlu dikirim dan divalidasi sebelum reward disetujui. Syarat dan nominal akan dijelaskan sebelum kamu ikut.',
+          style: _text(12, FontWeight.w400, AppColors.textSecondary),
+        ),
+      ],
+    ),
+  );
 }
 
 class KuesionerAnswerCard extends StatelessWidget {
