@@ -1,8 +1,9 @@
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
-import { getFirestore, FieldPath } from 'firebase-admin/firestore';
+import { getFirestore, Firestore, FieldPath } from 'firebase-admin/firestore';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { syncPublicProfile } from '../public-profile.js';
+import { firebaseCliGoogleAuth } from './firebase-cli-auth.js';
 
 const args = process.argv.slice(2);
 const value = (name) => args.find((arg) => arg.startsWith(`${name}=`))?.slice(name.length + 1);
@@ -21,29 +22,23 @@ let db;
 const counts = { created: 0, changed: 0, unchanged: 0, missing: 0 };
 try {
   const cliAuthPath = value('--firebase-cli-auth');
-  let credential;
   if (process.env.FIRESTORE_EMULATOR_HOST) {
     initializeApp({ projectId });
+    db = getFirestore();
   } else if (cliAuthPath) {
     const module = await import(pathToFileURL(resolve(cliAuthPath)).href);
-    const auth = module.default ?? module;
-    const account = auth.getGlobalDefaultAccount();
-    if (!account) throw new Error('authentication-required');
-    credential = { getAccessToken: async () => {
-      const tokens = await auth.getAccessToken(account.tokens.refresh_token, ['https://www.googleapis.com/auth/cloud-platform']);
-      if (!tokens.access_token) throw new Error('authentication-required');
-      return { access_token: tokens.access_token, expires_in: 3600 };
-    } };
-    initializeApp({ projectId, credential });
+    // Admin SDK accepts certificate/ADC credentials only for Firestore.
+    // Its exported Cloud client also supports GoogleAuth with an OAuth client.
+    db = new Firestore({ projectId, auth: firebaseCliGoogleAuth(module.default ?? module, projectId) });
   } else {
     initializeApp({ projectId, credential: applicationDefault() });
+    db = getFirestore();
   }
-  db = getFirestore();
   let cursor;
   while (true) {
     let query = db.collection('users').orderBy(FieldPath.documentId()).limit(200);
     if (cursor) query = query.startAfter(cursor);
-      const page = await query.select().get();
+    const page = await query.select().get();
     if (page.empty) break;
     for (const user of page.docs) {
       counts[await syncPublicProfile(db, user.id, { apply })]++;

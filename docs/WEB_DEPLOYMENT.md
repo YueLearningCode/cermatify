@@ -1,5 +1,19 @@
 # Deployment Flutter Web Cermatify
 
+## Deployment live terbaru - 8 November 2026
+
+Build release utama terbaru sudah diterbitkan ke **https://cermatify.com** dan **https://cermatify.web.app**, versi Hosting **e5a66bc5157be477**. Verifikasi 8 November 2026 sekitar 10.14 WIB: halaman utama, main.dart.js, privacy policy dan halaman hapus akun di kedua domain HTTP 200 dan SHA-256 sesuai artefak lokal. Channel sementara nov8-review digunakan sebelum cutover dan berlaku 1 hari.
+
+Pemilik menyetujui migrasi profil minimum, pengamanan rules dan publikasi melalui chat. Sebanyak **60 publicProfiles dibuat**, dengan hasil dry-run ulang **60 unchanged, 0 created/changed/missing**. Jumlah akhir users 60/publicProfiles 60/kategori 4. Operator migrasi memakai select/field mask di memori, mencetak hitungan saja, dan tidak menulis users/akun Auth/saldo/order atau mengekspor payload akun. Rencana awal snapshot profil ditolak auto-review lalu diganti dengan agregat dan metadata rules.
+
+Rules aman sudah diterapkan melalui deploy **firestore:rules**; source produksi cocok dengan lokal. Query agregat tanpa autentikasi ke users/publicProfiles menghasilkan **403**, sedangkan kategori tetap **200 (4 dokumen)**. Rules menolak perubahan saldo/withdraw langsung dari browser; backend pembayaran belum diaktifkan. Deployment tidak mencakup Functions, billing atau App Check enforcement. Pengujian akun/login/transaksi nyata setelah cutover masih harus dilakukan; hasil HTTP/hash/rules tidak menggantikannya. Bukti ada di build/hosting-nov8/live-verification.json dan log terkait; detail keputusan/progres ada di TODO_WEB.md.
+
+Privacy policy: https://cermatify.com/legal/privacy.html . Halaman hapus akun: https://cermatify.com/legal/delete-account.html .
+
+Validasi operator: 20 unit test, 29 rules test dan 18 integration test lulus. Kode Flutter tetap menggunakan hasil 240 tes lulus dan build release terbaru yang diverifikasi pada pratinjau sebelum dipublikasikan.
+
+Versi Hosting sebelumnya a6a8304593f4a2c9 disimpan sebagai metadata audit. Jangan memulihkan rules lama yang membuka semua akses. Client lama dapat meminta data private milik pengguna lain yang sengaja ditolak rules baru; rollback Hosting harus ditinjau bersama kompatibilitas client/rules.
+
 ## Firebase Hosting — penyiapan 25 Oktober 2026
 
 Deployment awal berhasil: **https://cermatify.web.app** (alternatif:
