@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/widgets/searchable_dropdown_form_field.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/responsive_content.dart';
 import 'package:cermatify/app/data/widgets/workspace_page_header.dart';
@@ -194,7 +195,7 @@ class DiscoverySelectField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
-      child: DropdownButtonFormField<String>(
+      child: SearchableDropdownFormField(
         initialValue: value,
         items: items,
         onChanged: enabled ? onChanged : null,

@@ -1,8 +1,27 @@
 # Persiapan rilis Cermatify — 28 Oktober 2026
 
+**Bundle lokal terbaru - 8 November 2026: 1.0.0+6.** Memuat kategori/label kompetisi, privacy policy/retensi, desain daftar mentor dan daftar layanan yang bisa dijelajahi sebelum mengetik. Package com.cermatify.app, min SDK 24/target SDK 36. Build release berhasil, bundletool validate dan jarsigner (jar verified) lulus; alignment 16 KB lulus untuk 8 library 64-bit. Warning SDK/Kotlin dan signing yang sudah dicatat tetap ada. Belum diunggah/diterima Play dan belum dinyatakan siap produksi.
+
+- File utama: `build/app/outputs/bundle/release/app-release.aab`.
+- File untuk dipilih saat upload: **`build/play-candidates/cermatify-1.0.0+6.aab`**.
+- Ukuran: **69,778,511 byte**; SHA-256 **`28b131ea3ffbb50e5abc21cc46d52084c27dcfaee8f54b7725e64f6bee7baee8`**.
+- Acuan kode terakhir: analyzer bersih, 240 tes Flutter lulus pada pekerjaan pencarian layanan. Pada pembuatan AAB ini hanya versi dinaikkan menjadi 1.0.0+6.
+- Nama file tidak mengubah identitas/versi internal. Setiap pembaruan Play harus memakai versionCode yang belum dipakai; lihat [Android versioning](https://developer.android.com/studio/publish/versioning).
+- Catatan +5 dan sebelumnya di bawah adalah riwayat; penghalang backend/pembayaran/migrasi/rollout tetap harus diselesaikan.
+
+**Perubahan setelah build +5 (7 November 2026):** kategori kompetisi, select dengan pencarian dan pembaruan privacy policy/retensi satu tahun sudah ditambahkan di source. AAB +5 di bawah tidak memuat perubahan tersebut. Lihat `COMPETITION_CATEGORIES.md`, `PRIVACY_POLICY.md` dan `PRIVACY_OPERATIONS.md`; diperlukan build dengan version code lebih tinggi untuk distribusi berikutnya.
+
+**Bundle sebelumnya - 7 November 2026: `1.0.0+5`.** Memuat kode backlog terbaru; package `com.cermatify.app`, target SDK 36. Build release berhasil; analyzer bersih dan 210 tes Flutter lulus. Bundletool validate, signature (`jar verified`) dan alignment native 64-bit 16 KB lulus, dengan warning yang dicatat di TODO. Belum diunggah/diterima Google Play atau diuji melalui Play Store. Penghalang backend/pembayaran/migrasi produksi di bawah tetap berlaku.
+
+- File utama: `build/app/outputs/bundle/release/app-release.aab`.
+- Salinan untuk dipilih saat upload: `build/play-candidates/cermatify-1.0.0+5.aab`.
+- Ukuran: **69.603.014 byte**; SHA-256 **`63926c7bd73923d20b6171858bf6917d604baf6ac14b6ec5b22a84231b223fa5`**.
+- `pubspec.yaml` pada build tersebut menyimpan versi `1.0.0+5`; kandidat +4 disimpan sebagai referensi. Keterangan 2 November berikut merupakan catatan historis.
+
+
 **Status terbaru 2 November 2026:** kode kandidat `1.0.0+4` menambahkan pemisahan profil privat/publik dan migrasi yang diuji lokal. Lihat [panduan migrasi profil](PUBLIC_PROFILE_MIGRATION.md). Analyzer bersih; 202 tes Flutter, 12 unit backend/CLI, 25 rules, 17 integration test lulus; 7 tes legal diulang setelah perubahan dokumen dan lulus. Belum melakukan migrasi atau deployment produksi. Build awal `+4` gagal akibat Gradle 9.7.1 tidak kompatibel dengan AGP 8.11.1; wrapper dikembalikan ke 8.14 setelah konfigurasi sebelumnya disalin untuk referensi. Pembayaran tetap nonaktif dan backend eksternal belum diputuskan. Rilis publik belum siap.
 
-### Artefak terbaru `1.0.0+4` — 2 November 2026
+### Artefak sebelumnya `1.0.0+4` — 2 November 2026
 
 - Path: `build/app/outputs/bundle/release/app-release.aab`.
 - Ukuran: **69.585.515 byte**; SHA-256 **`dbaf5a1cb537bfa9674e2707ffbac25d1e7d99ac81440b5a02a8092dd3cac08e`**.

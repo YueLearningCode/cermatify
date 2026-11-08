@@ -1,3 +1,6 @@
+import '../widgets/mentor_registration_content.dart';
+import 'package:cermatify/app/data/widgets/searchable_service_checklist.dart';
+import 'package:cermatify/app/data/widgets/searchable_dropdown_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
@@ -14,385 +17,505 @@ class RegisterView extends GetView<RegisterController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: ResponsiveAuthShell(
-            title: 'Mulai perjalanan bersama Cermatify',
-            description:
-                'Daftar sebagai pengguna atau mentor dalam satu formulir yang nyaman pada semua ukuran layar.',
-            form: Form(
-              key: controller.formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Hero(
-                      tag: 'logo',
-                      child: Image.asset(
-                        'assets/images/logo.jpeg',
-                        height: 150,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  Obx(
-                    () => Text(
-                      controller.userRole.value == 'mentor'
-                          ? "Daftar Sebagai Mentor"
-                          : "Buat Akun Baru",
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.black414,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Obx(
-                    () => CheckboxListTile(
-                      contentPadding: EdgeInsets.zero,
-                      value: controller.adultConfirmed.value,
-                      onChanged: (value) =>
-                          controller.adultConfirmed.value = value ?? false,
-                      title: const Text(
-                        'Saya sudah berusia 18 tahun atau lebih.',
-                      ),
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ),
-                  Obx(
-                    () => Text(
-                      controller.userRole.value == 'mentor'
-                          ? "Bergabunglah sebagai mentor dan bagikan pengetahuan Anda"
-                          : "Bergabunglah dengan kami dan mulai perjalanan belajar Anda",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: AppColors.greyTextSecondaryColor,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  CustomTextField(
-                    controller: controller.namaController,
-                    hintText: "Nama Lengkap",
-                    icon: Icons.person_outline,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Nama tidak boleh kosong';
-                      }
-                      if (value.length < 3) {
-                        return 'Nama minimal 3 karakter';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextField(
-                    controller: controller.emailController,
-                    hintText: "Email",
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Email tidak boleh kosong';
-                      }
-                      if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      ).hasMatch(value)) {
-                        return 'Masukkan email yang valid';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextField(
-                    controller: controller.passwordController,
-                    hintText: "Kata Sandi",
-                    icon: Icons.lock_outline,
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Kata sandi tidak boleh kosong';
-                      }
-                      if (value.length < 6) {
-                        return 'Kata sandi minimal 6 karakter';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextField(
-                    controller: controller.confirmPasswordController,
-                    hintText: "Konfirmasi Kata Sandi",
-                    icon: Icons.lock_outline,
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Konfirmasi kata sandi tidak boleh kosong';
-                      }
-                      if (value.length < 6) {
-                        return 'Konfirmasi kata sandi minimal 6 karakter';
-                      }
-                      // Access password value directly - it's an observable getter
-                      if (value != controller.passwordController.text) {
-                        return 'Kata sandi tidak cocok';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  CustomTextField(
-                    controller: controller.noTelpController,
-                    hintText: "Nomor Telepon",
-                    icon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value != null && value.isNotEmpty) {
-                        if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                          return 'Nomor telepon harus berupa angka';
-                        }
-                        if (value.length < 10) {
-                          return 'Nomor telepon minimal 10 digit';
-                        }
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Obx(
-                    () => Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30.0),
-                        border: Border.all(
-                          color: controller.selectedKampus.value.isNotEmpty
-                              ? AppColors.secondaryColor
-                              : Colors.grey,
-                          width: 1.0,
+    return Obx(() {
+      final isMentor = controller.userRole.value == 'mentor';
+      return Scaffold(
+        backgroundColor: AppColors.bgColor,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.sizeOf(context).width < 600 && isMentor
+                  ? 16
+                  : 24,
+              vertical: isMentor ? 24 : 0,
+            ),
+            child: ResponsiveAuthShell(
+              alignTop: isMentor,
+              visualPanel: isMentor ? const MentorRecruitmentPanel() : null,
+              mobileIntroduction: isMentor
+                  ? const MentorRecruitmentPanel(compact: true)
+                  : null,
+              title: 'Mulai perjalanan bersama Cermatify',
+              description:
+                  'Daftar sebagai pengguna atau mentor dalam satu formulir yang nyaman pada semua ukuran layar.',
+              form: MentorRegistrationFormSurface(
+                enabled: isMentor,
+                child: Form(
+                  key: controller.formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (isMentor) ...[
+                        const MentorRegistrationHeader(),
+                        const MentorFormSection(
+                          number: '01',
+                          title: 'Informasi akun',
+                          description:
+                              'Gunakan email aktif untuk akun dan informasi pengajuan.',
                         ),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        initialValue: controller.selectedKampus.value.isEmpty
-                            ? null
-                            : controller.selectedKampus.value,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
+                      ] else ...[
+                        const SizedBox(height: 20),
+                        Center(
+                          child: Hero(
+                            tag: 'logo',
+                            child: Image.asset(
+                              'assets/images/logo.jpeg',
+                              height: 150,
+                            ),
                           ),
-                          prefixIcon: IconTheme(
-                            data: IconThemeData(
+                        ),
+                        const SizedBox(height: 40),
+                        Obx(
+                          () => Text(
+                            controller.userRole.value == 'mentor'
+                                ? "Daftar Sebagai Mentor"
+                                : "Buat Akun Baru",
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.black414,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Obx(
+                          () => CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: controller.adultConfirmed.value,
+                            onChanged: (value) =>
+                                controller.adultConfirmed.value =
+                                    value ?? false,
+                            title: const Text(
+                              'Saya sudah berusia 18 tahun atau lebih.',
+                            ),
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                        ),
+                        Obx(
+                          () => Text(
+                            controller.userRole.value == 'mentor'
+                                ? "Bergabunglah sebagai mentor dan bagikan pengetahuan Anda"
+                                : "Bergabunglah dengan kami dan mulai perjalanan belajar Anda",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              color: AppColors.greyTextSecondaryColor,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                      CustomTextField(
+                        controller: controller.namaController,
+                        hintText: "Nama Lengkap",
+                        icon: Icons.person_outline,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Nama tidak boleh kosong';
+                          }
+                          if (value.length < 3) {
+                            return 'Nama minimal 3 karakter';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CustomTextField(
+                        controller: controller.emailController,
+                        hintText: "Email",
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Email tidak boleh kosong';
+                          }
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
+                            return 'Masukkan email yang valid';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CustomTextField(
+                        controller: controller.passwordController,
+                        hintText: "Kata Sandi",
+                        icon: Icons.lock_outline,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Kata sandi tidak boleh kosong';
+                          }
+                          if (value.length < 6) {
+                            return 'Kata sandi minimal 6 karakter';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CustomTextField(
+                        controller: controller.confirmPasswordController,
+                        hintText: "Konfirmasi Kata Sandi",
+                        icon: Icons.lock_outline,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Konfirmasi kata sandi tidak boleh kosong';
+                          }
+                          if (value.length < 6) {
+                            return 'Konfirmasi kata sandi minimal 6 karakter';
+                          }
+                          // Access password value directly - it's an observable getter
+                          if (value != controller.passwordController.text) {
+                            return 'Kata sandi tidak cocok';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CustomTextField(
+                        controller: controller.noTelpController,
+                        hintText: "Nomor Telepon",
+                        icon: Icons.phone_outlined,
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty) {
+                            if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                              return 'Nomor telepon harus berupa angka';
+                            }
+                            if (value.length < 10) {
+                              return 'Nomor telepon minimal 10 digit';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      if (isMentor)
+                        const MentorFormSection(
+                          number: '02',
+                          title: 'Latar belakang akademik',
+                          description:
+                              'Bantu tim mengenali pengalaman dan bidang keahlianmu.',
+                        ),
+                      Obx(
+                        () => Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30.0),
+                            border: Border.all(
+                              color: controller.selectedKampus.value.isNotEmpty
+                                  ? AppColors.secondaryColor
+                                  : Colors.grey,
+                              width: 1.0,
+                            ),
+                          ),
+                          child: SearchableDropdownFormField(
+                            initialValue:
+                                controller.selectedKampus.value.isEmpty
+                                ? null
+                                : controller.selectedKampus.value,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 16,
+                              ),
+                              prefixIcon: IconTheme(
+                                data: IconThemeData(
+                                  color:
+                                      controller.selectedKampus.value.isNotEmpty
+                                      ? AppColors.primaryColor
+                                      : Colors.grey,
+                                ),
+                                child: const Icon(Icons.school_outlined),
+                              ),
+                              hintText: "Kampus",
+                              hintStyle: AppStyles.body1(),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            style: AppStyles.body1(color: AppColors.black414),
+                            items: controller.listKampus.map((
+                              Map<String, String> kampus,
+                            ) {
+                              return DropdownMenuItem<String>(
+                                value: kampus['id'],
+                                child: Text(
+                                  kampus['name'] ?? '',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: AppStyles.body1(
+                                    color: AppColors.black414,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              controller.selectedKampus.value = newValue ?? '';
+                            },
+                            validator: (value) {
+                              return null; // Optional field
+                            },
+                            icon: Icon(
+                              Icons.arrow_drop_down,
                               color: controller.selectedKampus.value.isNotEmpty
                                   ? AppColors.primaryColor
                                   : Colors.grey,
                             ),
-                            child: const Icon(Icons.school_outlined),
                           ),
-                          hintText: "Kampus",
-                          hintStyle: AppStyles.body1(),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
                         ),
-                        style: AppStyles.body1(color: AppColors.black414),
-                        items: controller.listKampus.map((
-                          Map<String, String> kampus,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: kampus['id'],
-                            child: Text(
-                              kampus['name'] ?? '',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: AppStyles.body1(color: AppColors.black414),
+                      ),
+                      const SizedBox(height: 20),
+                      Obx(
+                        () => Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30.0),
+                            border: Border.all(
+                              color: controller.selectedJurusan.value.isNotEmpty
+                                  ? AppColors.secondaryColor
+                                  : Colors.grey,
+                              width: 1.0,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          controller.selectedKampus.value = newValue ?? '';
-                        },
-                        validator: (value) {
-                          return null; // Optional field
-                        },
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                          color: controller.selectedKampus.value.isNotEmpty
-                              ? AppColors.primaryColor
-                              : Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Obx(
-                    () => Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30.0),
-                        border: Border.all(
-                          color: controller.selectedJurusan.value.isNotEmpty
-                              ? AppColors.secondaryColor
-                              : Colors.grey,
-                          width: 1.0,
-                        ),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        initialValue: controller.selectedJurusan.value.isEmpty
-                            ? null
-                            : controller.selectedJurusan.value,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
                           ),
-                          prefixIcon: IconTheme(
-                            data: IconThemeData(
+                          child: SearchableDropdownFormField(
+                            initialValue:
+                                controller.selectedJurusan.value.isEmpty
+                                ? null
+                                : controller.selectedJurusan.value,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 16,
+                              ),
+                              prefixIcon: IconTheme(
+                                data: IconThemeData(
+                                  color:
+                                      controller
+                                          .selectedJurusan
+                                          .value
+                                          .isNotEmpty
+                                      ? AppColors.primaryColor
+                                      : Colors.grey,
+                                ),
+                                child: const Icon(Icons.menu_book_outlined),
+                              ),
+                              hintText: "Jurusan",
+                              hintStyle: AppStyles.body1(),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            style: AppStyles.body1(color: AppColors.black414),
+                            items: controller.filteredJurusan.map((
+                              Map<String, String> jurusan,
+                            ) {
+                              return DropdownMenuItem<String>(
+                                value: jurusan['id'],
+                                child: Text(
+                                  jurusan['name'] ?? '',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: AppStyles.body1(
+                                    color: AppColors.black414,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              controller.selectedJurusan.value = newValue ?? '';
+                            },
+                            validator: (value) {
+                              return null; // Optional field
+                            },
+                            icon: Icon(
+                              Icons.arrow_drop_down,
                               color: controller.selectedJurusan.value.isNotEmpty
                                   ? AppColors.primaryColor
                                   : Colors.grey,
                             ),
-                            child: const Icon(Icons.menu_book_outlined),
                           ),
-                          hintText: "Jurusan",
-                          hintStyle: AppStyles.body1(),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
                         ),
-                        style: AppStyles.body1(color: AppColors.black414),
-                        items: controller.filteredJurusan.map((
-                          Map<String, String> jurusan,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: jurusan['id'],
-                            child: Text(
-                              jurusan['name'] ?? '',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: AppStyles.body1(color: AppColors.black414),
+                      ),
+                      const SizedBox(height: 20),
+                      Obx(
+                        () => Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30.0),
+                            border: Border.all(
+                              color:
+                                  controller.selectedSemester.value.isNotEmpty
+                                  ? AppColors.secondaryColor
+                                  : Colors.grey,
+                              width: 1.0,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          controller.selectedJurusan.value = newValue ?? '';
-                        },
-                        validator: (value) {
-                          return null; // Optional field
-                        },
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                          color: controller.selectedJurusan.value.isNotEmpty
-                              ? AppColors.primaryColor
-                              : Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Obx(
-                    () => Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30.0),
-                        border: Border.all(
-                          color: controller.selectedSemester.value.isNotEmpty
-                              ? AppColors.secondaryColor
-                              : Colors.grey,
-                          width: 1.0,
-                        ),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        initialValue: controller.selectedSemester.value.isEmpty
-                            ? null
-                            : controller.selectedSemester.value,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
                           ),
-                          prefixIcon: IconTheme(
-                            data: IconThemeData(
+                          child: SearchableDropdownFormField(
+                            initialValue:
+                                controller.selectedSemester.value.isEmpty
+                                ? null
+                                : controller.selectedSemester.value,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 16,
+                              ),
+                              prefixIcon: IconTheme(
+                                data: IconThemeData(
+                                  color:
+                                      controller
+                                          .selectedSemester
+                                          .value
+                                          .isNotEmpty
+                                      ? AppColors.primaryColor
+                                      : Colors.grey,
+                                ),
+                                child: const Icon(
+                                  Icons.calendar_today_outlined,
+                                ),
+                              ),
+                              hintText: "Semester",
+                              hintStyle: AppStyles.body1(),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            style: AppStyles.body1(color: AppColors.black414),
+                            items: controller.listSemester.map((
+                              String semester,
+                            ) {
+                              return DropdownMenuItem<String>(
+                                value: semester,
+                                child: Text(
+                                  semester,
+                                  style: AppStyles.body1(
+                                    color: AppColors.black414,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              controller.selectedSemester.value =
+                                  newValue ?? '';
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Semester harus dipilih';
+                              }
+                              return null;
+                            },
+                            icon: Icon(
+                              Icons.arrow_drop_down,
                               color:
                                   controller.selectedSemester.value.isNotEmpty
                                   ? AppColors.primaryColor
                                   : Colors.grey,
                             ),
-                            child: const Icon(Icons.calendar_today_outlined),
                           ),
-                          hintText: "Semester",
-                          hintStyle: AppStyles.body1(),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                        style: AppStyles.body1(color: AppColors.black414),
-                        items: controller.listSemester.map((String semester) {
-                          return DropdownMenuItem<String>(
-                            value: semester,
-                            child: Text(
-                              semester,
-                              style: AppStyles.body1(color: AppColors.black414),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          controller.selectedSemester.value = newValue ?? '';
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Semester harus dipilih';
-                          }
-                          return null;
-                        },
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                          color: controller.selectedSemester.value.isNotEmpty
-                              ? AppColors.primaryColor
-                              : Colors.grey,
                         ),
                       ),
-                    ),
-                  ),
-                  Obx(
-                    () => controller.userRole.value == 'mentor'
-                        ? Column(
-                            children: [
-                              const SizedBox(height: 20),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  border: Border.all(
-                                    color:
-                                        controller
-                                            .selectedMentorRole
-                                            .value
-                                            .isNotEmpty
-                                        ? AppColors.secondaryColor
-                                        : Colors.grey,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                child: DropdownButtonFormField<String>(
-                                  initialValue:
-                                      controller
-                                          .selectedMentorRole
-                                          .value
-                                          .isEmpty
-                                      ? null
-                                      : controller.selectedMentorRole.value,
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 10,
-                                      horizontal: 16,
+                      Obx(
+                        () => controller.userRole.value == 'mentor'
+                            ? Column(
+                                children: [
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Semester 5 menjadi acuan pengalaman, bukan syarat mutlak. Seleksi tetap berdasarkan kompetensi dan interview.',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      height: 1.6,
+                                      color: AppColors.textSecondary,
                                     ),
-                                    prefixIcon: IconTheme(
-                                      data: IconThemeData(
+                                  ),
+                                  const SizedBox(height: 28),
+                                  const MentorFormSection(
+                                    number: '03',
+                                    title: 'Keahlian & layanan',
+                                    description:
+                                        'Lengkapi profil dan pilih bidang yang siap kamu dampingi.',
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30.0),
+                                      border: Border.all(
+                                        color:
+                                            controller
+                                                .selectedMentorRole
+                                                .value
+                                                .isNotEmpty
+                                            ? AppColors.secondaryColor
+                                            : Colors.grey,
+                                        width: 1.0,
+                                      ),
+                                    ),
+                                    child: SearchableDropdownFormField(
+                                      initialValue:
+                                          controller
+                                              .selectedMentorRole
+                                              .value
+                                              .isEmpty
+                                          ? null
+                                          : controller.selectedMentorRole.value,
+                                      isExpanded: true,
+                                      decoration: InputDecoration(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 10,
+                                              horizontal: 16,
+                                            ),
+                                        prefixIcon: IconTheme(
+                                          data: IconThemeData(
+                                            color:
+                                                controller
+                                                    .selectedMentorRole
+                                                    .value
+                                                    .isNotEmpty
+                                                ? AppColors.primaryColor
+                                                : Colors.grey,
+                                          ),
+                                          child: const Icon(Icons.work_outline),
+                                        ),
+                                        hintText: "Bidang pendampingan",
+                                        hintStyle: AppStyles.body1(),
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                      ),
+                                      style: AppStyles.body1(
+                                        color: AppColors.black414,
+                                      ),
+                                      items: controller.listMentorRole.map((
+                                        String role,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: role,
+                                          child: Text(
+                                            role == 'complink'
+                                                ? 'Cermat Competition'
+                                                : 'Cermat Paper',
+                                            style: AppStyles.body1(
+                                              color: AppColors.black414,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) {
+                                        controller.selectedMentorRole.value =
+                                            newValue ?? '';
+                                      },
+                                      validator: (value) {
+                                        if (controller.userRole.value ==
+                                                'mentor' &&
+                                            (value == null || value.isEmpty)) {
+                                          return 'Role mentor harus dipilih';
+                                        }
+                                        return null;
+                                      },
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
                                         color:
                                             controller
                                                 .selectedMentorRole
@@ -401,241 +524,242 @@ class RegisterView extends GetView<RegisterController> {
                                             ? AppColors.primaryColor
                                             : Colors.grey,
                                       ),
-                                      child: const Icon(Icons.work_outline),
                                     ),
-                                    hintText: "Role Mentor",
-                                    hintStyle: AppStyles.body1(),
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
                                   ),
-                                  style: AppStyles.body1(
-                                    color: AppColors.black414,
+                                  const SizedBox(height: 20),
+                                  CustomTextField(
+                                    controller: controller.linkedinController,
+                                    hintText: "Link LinkedIn",
+                                    icon: Icons.link_outlined,
+                                    keyboardType: TextInputType.url,
+                                    validator: (value) {
+                                      if (controller.userRole.value ==
+                                          'mentor') {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Link LinkedIn tidak boleh kosong';
+                                        }
+                                        // Validate LinkedIn URL format - accept various LinkedIn URL formats
+                                        final lowerValue = value.toLowerCase();
+                                        if (!lowerValue.contains(
+                                          'linkedin.com',
+                                        )) {
+                                          return 'Link harus mengandung linkedin.com';
+                                        }
+                                        // Check if it's a valid URL format
+                                        final urlPattern = RegExp(
+                                          r'^https?://[^\s/$.?#].[^\s]*$',
+                                          caseSensitive: false,
+                                        );
+                                        if (!urlPattern.hasMatch(value)) {
+                                          return 'Masukkan link LinkedIn yang valid\nContoh: https://linkedin.com/in/username';
+                                        }
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  items: controller.listMentorRole.map((
-                                    String role,
-                                  ) {
-                                    return DropdownMenuItem<String>(
-                                      value: role,
-                                      child: Text(
-                                        role == 'complink'
-                                            ? 'Cermat Competition'
-                                            : 'Cermat Paper',
-                                        style: AppStyles.body1(
-                                          color: AppColors.black414,
-                                        ),
+                                  const SizedBox(height: 20),
+                                  // Layanan Section
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color:
+                                            controller
+                                                .selectedLayanan
+                                                .isNotEmpty
+                                            ? AppColors.secondaryColor
+                                            : Colors.grey,
+                                        width: 1.0,
                                       ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    controller.selectedMentorRole.value =
-                                        newValue ?? '';
-                                  },
-                                  validator: (value) {
-                                    if (controller.userRole.value == 'mentor' &&
-                                        (value == null || value.isEmpty)) {
-                                      return 'Role mentor harus dipilih';
-                                    }
-                                    return null;
-                                  },
-                                  icon: Icon(
-                                    Icons.arrow_drop_down,
-                                    color:
-                                        controller
-                                            .selectedMentorRole
-                                            .value
-                                            .isNotEmpty
-                                        ? AppColors.primaryColor
-                                        : Colors.grey,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              CustomTextField(
-                                controller: controller.linkedinController,
-                                hintText: "Link LinkedIn",
-                                icon: Icons.link_outlined,
-                                keyboardType: TextInputType.url,
-                                validator: (value) {
-                                  if (controller.userRole.value == 'mentor') {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Link LinkedIn tidak boleh kosong';
-                                    }
-                                    // Validate LinkedIn URL format - accept various LinkedIn URL formats
-                                    final lowerValue = value.toLowerCase();
-                                    if (!lowerValue.contains('linkedin.com')) {
-                                      return 'Link harus mengandung linkedin.com';
-                                    }
-                                    // Check if it's a valid URL format
-                                    final urlPattern = RegExp(
-                                      r'^https?://[^\s/$.?#].[^\s]*$',
-                                      caseSensitive: false,
-                                    );
-                                    if (!urlPattern.hasMatch(value)) {
-                                      return 'Masukkan link LinkedIn yang valid\nContoh: https://linkedin.com/in/username';
-                                    }
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              // Layanan Section
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: controller.selectedLayanan.isNotEmpty
-                                        ? AppColors.secondaryColor
-                                        : Colors.grey,
-                                    width: 1.0,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(
-                                          Icons.list_alt_rounded,
-                                          color:
-                                              controller
-                                                  .selectedLayanan
-                                                  .isNotEmpty
-                                              ? AppColors.primaryColor
-                                              : Colors.grey,
-                                          size: 20,
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.list_alt_rounded,
+                                              color:
+                                                  controller
+                                                      .selectedLayanan
+                                                      .isNotEmpty
+                                                  ? AppColors.primaryColor
+                                                  : Colors.grey,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                "Layanan yang Disediakan",
+                                                style: AppStyles.body1(
+                                                  color: AppColors.black414,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          "Layanan yang Disediakan",
-                                          style: AppStyles.body1(
-                                            color: AppColors.black414,
-                                            fontWeight: FontWeight.w600,
+                                        if (controller.selectedLayanan.isEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              top: 8,
+                                            ),
+                                            child: Text(
+                                              'Pilih minimal satu layanan',
+                                              style: AppStyles.body3(
+                                                color: AppColors.redColor,
+                                              ),
+                                            ),
                                           ),
+                                        const SizedBox(height: 12),
+                                        SearchableServiceChecklist(
+                                          key: ValueKey(
+                                            controller.selectedMentorRole.value,
+                                          ),
+                                          services: controller.availableLayanan,
+                                          isLoading: controller
+                                              .isLoadingServices
+                                              .value,
+                                          errorMessage:
+                                              controller.servicesError.value,
+                                          onRetry: controller.fetchLayanan,
+                                          helperText:
+                                              controller
+                                                  .selectedMentorRole
+                                                  .value
+                                                  .isEmpty
+                                              ? 'Lihat semua layanan di bawah. Pilihan pertama akan menentukan bidang pendampinganmu.'
+                                              : 'Pilih dari daftar atau cari nama layanan. Ubah bidang pendampingan untuk melihat layanan lainnya.',
+                                          selectedIds: controller
+                                              .selectedLayanan
+                                              .toSet(),
+                                          onToggle: controller.toggleLayanan,
                                         ),
                                       ],
                                     ),
-                                    if (controller.selectedLayanan.isEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 8),
-                                        child: Text(
-                                          'Pilih minimal satu layanan',
-                                          style: AppStyles.body3(
-                                            color: AppColors.redColor,
-                                          ),
-                                        ),
-                                      ),
-                                    const SizedBox(height: 12),
-                                    ...controller.availableLayanan.map((
-                                      Map<String, String> layanan,
-                                    ) {
-                                      final layananId = layanan['id'] ?? '';
-                                      return Obx(
-                                        () => CheckboxListTile(
-                                          value: controller.selectedLayanan
-                                              .contains(layananId),
-                                          onChanged: (value) => controller
-                                              .toggleLayanan(layananId),
-                                          title: Text(
-                                            layanan['name'] ?? '',
-                                            style: AppStyles.body2(
-                                              color: AppColors.black414,
-                                              fontWeight:
-                                                  controller.selectedLayanan
-                                                      .contains(layananId)
-                                                  ? FontWeight.w600
-                                                  : FontWeight.normal,
-                                            ),
-                                          ),
-                                          activeColor: AppColors.primaryColor,
-                                          contentPadding: EdgeInsets.zero,
-                                          dense: true,
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  const SizedBox(height: 10),
-                  Obx(
-                    () => Row(
-                      children: [
-                        Checkbox(
-                          value: controller.agreeToTerms.value,
-                          onChanged: (value) => controller.toggleAgreeToTerms(),
-                          activeColor: AppColors.primaryColor,
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 10),
+                      if (isMentor) ...[
+                        const SizedBox(height: 24),
+                        const MentorFormSection(
+                          number: '04',
+                          title: 'Persetujuan',
+                          description:
+                              'Baca ketentuan sebelum mengirim pengajuan.',
                         ),
-                        Expanded(
-                          child: Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              const Text('Saya menyetujui'),
-                              TextButton(
-                                onPressed: () => Get.toNamed(Routes.TERMS),
-                                child: const Text('Syarat dan Ketentuan'),
-                              ),
-                              const Text('dan telah membaca'),
-                              TextButton(
-                                onPressed: () => Get.toNamed(Routes.PRIVACY),
-                                child: const Text('Kebijakan Privasi'),
-                              ),
-                            ],
+                        Obx(
+                          () => CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: controller.adultConfirmed.value,
+                            onChanged: (value) =>
+                                controller.adultConfirmed.value =
+                                    value ?? false,
+                            title: const Text(
+                              'Saya sudah berusia 18 tahun atau lebih.',
+                            ),
+                            controlAffinity: ListTileControlAffinity.leading,
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Obx(
-                    () => CustomButtonSimple(
-                      text: controller.isLoading.value
-                          ? "Memproses..."
-                          : (controller.userRole.value == 'mentor'
-                                ? "Daftar Mentor"
-                                : "Daftar"),
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : () => controller.register(),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Center(
-                    child: InkWell(
-                      onTap: () {
-                        Get.offAllNamed(Routes.LOGIN);
-                      },
-                      child: RichText(
-                        text: TextSpan(
-                          style: GoogleFonts.poppins(
-                            color: AppColors.greyTextSecondaryColor,
-                          ),
-                          children: const [
-                            TextSpan(text: "Sudah punya akun? "),
-                            TextSpan(
-                              text: "Masuk",
-                              style: TextStyle(
-                                color: AppColors.primaryColor,
-                                fontWeight: FontWeight.w600,
+                      Obx(
+                        () => Row(
+                          children: [
+                            Checkbox(
+                              value: controller.agreeToTerms.value,
+                              onChanged: (value) =>
+                                  controller.toggleAgreeToTerms(),
+                              activeColor: AppColors.primaryColor,
+                            ),
+                            Expanded(
+                              child: Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  const Text('Saya menyetujui'),
+                                  TextButton(
+                                    onPressed: () => Get.toNamed(Routes.TERMS),
+                                    child: const Text('Syarat dan Ketentuan'),
+                                  ),
+                                  const Text('dan telah membaca'),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Get.toNamed(Routes.PRIVACY),
+                                    child: const Text('Kebijakan Privasi'),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      Obx(
+                        () => isMentor
+                            ? MentorSubmissionButton(
+                                isLoading: controller.isLoading.value,
+                                onSubmit: controller.register,
+                              )
+                            : CustomButtonSimple(
+                                text: controller.isLoading.value
+                                    ? 'Memproses...'
+                                    : 'Daftar',
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : controller.register,
+                              ),
+                      ),
+                      if (isMentor) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Pengajuan akan ditinjau. Akses mentor diberikan setelah pengajuan disetujui.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            height: 1.6,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 30),
+                      Center(
+                        child: InkWell(
+                          onTap: () {
+                            Get.offAllNamed(Routes.LOGIN);
+                          },
+                          child: RichText(
+                            text: TextSpan(
+                              style: GoogleFonts.poppins(
+                                color: AppColors.greyTextSecondaryColor,
+                              ),
+                              children: const [
+                                TextSpan(text: "Sudah punya akun? "),
+                                TextSpan(
+                                  text: "Masuk",
+                                  style: TextStyle(
+                                    color: AppColors.primaryColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

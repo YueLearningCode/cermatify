@@ -199,9 +199,35 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    match /layanan/{documentId} {
+    match /competitionCategories/{categoryId} {
+      function validCategory() {
+        return request.resource.data.keys().hasOnly(['name', 'active', 'createdAt', 'updatedAt']) &&
+            request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+            request.resource.data.name.size() <= 100 && request.resource.data.active is bool;
+      }
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if isAdmin() && validCategory() &&
+          request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+      allow update: if isAdmin() && validCategory() &&
+          request.resource.data.createdAt == resource.data.createdAt && request.resource.data.updatedAt == request.time;
+      // Archive instead of deleting a category referenced by existing services.
+      allow delete: if false;
+    }
+
+    match /layanan/{documentId} {
+      function validCompetitionCategory() {
+        let categoryId = request.resource.data.get('competitionCategoryId', '');
+        return categoryId is string && (categoryId == '' || (
+          request.resource.data.type == 'complink' && (
+            (resource != null && categoryId == resource.data.get('competitionCategoryId', '')) ||
+            (exists(/databases/$(database)/documents/competitionCategories/$(categoryId)) &&
+             get(/databases/$(database)/documents/competitionCategories/$(categoryId)).data.active == true)
+          )
+        ));
+      }
+      allow read: if true;
+      allow create, update: if isAdmin() && validCompetitionCategory();
+      allow delete: if isAdmin();
     }
 
     match /data_diri/{userId} {

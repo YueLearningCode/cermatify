@@ -23,6 +23,7 @@ class ListMentorView extends StatefulWidget {
     this.layananId,
     this.layananPrice,
     this.layananType,
+    this.competitionCategory,
   });
 
   final String? kampus;
@@ -31,6 +32,7 @@ class ListMentorView extends StatefulWidget {
   final String? layananId;
   final int? layananPrice;
   final String? layananType;
+  final String? competitionCategory;
 
   @override
   State<ListMentorView> createState() => _ListMentorViewState();
@@ -87,6 +89,8 @@ class _ListMentorViewState extends State<ListMentorView> {
                 _SearchAndFilters(
                   controller: _searchController,
                   filters: [
+                    if (widget.competitionCategory?.isNotEmpty == true)
+                      (Icons.category_outlined, widget.competitionCategory!),
                     if (widget.kampus?.isNotEmpty == true)
                       (Icons.account_balance_outlined, widget.kampus!),
                     if (widget.jurusan?.isNotEmpty == true)

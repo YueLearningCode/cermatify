@@ -4,6 +4,71 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('competition service card displays its specific category', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 620,
+            height: 108,
+            child: AdminMasterDataCard(
+              item: MasterDataItem(
+                id: 'ux',
+                name: 'UI/UX Design Competition',
+                type: 'complink',
+                harga: 20000,
+              ),
+              tabIndex: 2,
+              kampusName: '',
+              competitionCategoryName: 'Desain & Media Kreatif',
+              onEdit: () {},
+              onDelete: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(
+      find.text('Cermat Competition · Desain & Media Kreatif'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Rp'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'category tab remains usable on a narrow screen with enlarged text',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var selected = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: AdminMasterDataTabs(
+              selectedIndex: 0,
+              onSelected: (index) => selected = index,
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Kategori lomba'));
+      await tester.pump();
+      expect(selected, 3);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   test('master data grid adapts to available content width', () {
     expect(adminMasterDataColumnCount(600), 1);
     expect(adminMasterDataColumnCount(899), 1);

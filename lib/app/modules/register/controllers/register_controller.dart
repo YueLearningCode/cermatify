@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/models/mentor_service_options.dart';
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
@@ -45,12 +46,12 @@ class RegisterController extends GetxController {
   var selectedLayanan = <String>[].obs; // Store layanan IDs
 
   // Get available layanan filtered by mentor role
-  List<Map<String, String>> get availableLayanan {
-    if (selectedMentorRole.value.isEmpty) return [];
-    return listLayanan
-        .where((layanan) => layanan['type'] == selectedMentorRole.value)
-        .toList();
-  }
+  List<Map<String, String>> get availableLayanan =>
+      availableMentorServices(listLayanan, selectedMentorRole.value);
+
+  final isLoadingServices = false.obs;
+  final servicesError = ''.obs;
+  Future<void>? _servicesRequest;
 
   var agreeToTerms = false.obs;
   var adultConfirmed = false.obs;
@@ -98,6 +99,10 @@ class RegisterController extends GetxController {
 
   // Fetch master data from Firebase
   Future<void> fetchMasterData() async {
+    await Future.wait([_fetchAcademicMasterData(), fetchLayanan()]);
+  }
+
+  Future<void> _fetchAcademicMasterData() async {
     try {
       // Fetch kampus
       final kampusSnapshot = await _firestore.collection('kampus').get();
@@ -121,22 +126,37 @@ class RegisterController extends GetxController {
           })
           .toList()
           .cast<Map<String, String>>();
-
-      // Fetch layanan
-      final layananSnapshot = await _firestore.collection('layanan').get();
-      listLayanan.value = layananSnapshot.docs
-          .map((doc) {
-            final data = doc.data();
-            return {
-              'id': doc.id,
-              'name': data['name']?.toString() ?? '',
-              'type': data['type']?.toString() ?? '',
-            };
-          })
-          .toList()
-          .cast<Map<String, String>>();
     } catch (e) {
       AppLogger.info('Error fetching master data: $e');
+    }
+  }
+
+  Future<void> fetchLayanan() => _servicesRequest ??= _fetchLayanan()
+      .whenComplete(() => _servicesRequest = null);
+
+  Future<void> _fetchLayanan() async {
+    isLoadingServices.value = true;
+    servicesError.value = '';
+    try {
+      final snapshot = await _firestore.collection('layanan').get();
+      final services = snapshot.docs.map(
+        (doc) => {
+          'id': doc.id,
+          'name': doc.data()['name']?.toString().trim() ?? '',
+          'type': doc.data()['type']?.toString() ?? '',
+        },
+      );
+      listLayanan.assignAll(availableMentorServices(services, ''));
+      listLayanan.sort(
+        (a, b) => (a['name'] ?? '').toLowerCase().compareTo(
+          (b['name'] ?? '').toLowerCase(),
+        ),
+      );
+    } catch (_) {
+      servicesError.value =
+          'Daftar layanan belum dapat dimuat. Periksa koneksi dan coba lagi.';
+    } finally {
+      isLoadingServices.value = false;
     }
   }
 
@@ -264,9 +284,19 @@ class RegisterController extends GetxController {
   void toggleLayanan(String layananId) {
     if (selectedLayanan.contains(layananId)) {
       selectedLayanan.remove(layananId);
-    } else {
-      selectedLayanan.add(layananId);
+      return;
     }
+    final role = mentorRoleForServiceSelection(
+      listLayanan,
+      layananId,
+      selectedMentorRole.value,
+    );
+    if (role == null) return;
+    if (selectedMentorRole.value.isEmpty) {
+      selectedMentorRole.value = role;
+      selectedLayanan.clear();
+    }
+    selectedLayanan.add(layananId);
   }
 
   /// Instance FirebaseAuth untuk autentikasi pengguna.
@@ -281,6 +311,16 @@ class RegisterController extends GetxController {
   /// Validasi dilakukan untuk memastikan semua field terisi sebelum melakukan registrasi.
   Future<void> register() async {
     if (isLoading.value) return;
+    if (userRole.value == 'mentor' &&
+        (isLoadingServices.value || servicesError.value.isNotEmpty)) {
+      CustomSnackbar.show(
+        title: 'Periksa daftar layanan',
+        message:
+            'Tunggu daftar layanan selesai dimuat atau coba muat ulang sebelum mengirim pengajuan.',
+        backgroundColor: AppColors.redColor,
+      );
+      return;
+    }
     if (!adultConfirmed.value) {
       CustomSnackbar.show(
         title: 'Batas usia',

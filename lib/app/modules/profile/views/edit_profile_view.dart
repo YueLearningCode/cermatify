@@ -1,3 +1,5 @@
+import 'package:cermatify/app/data/widgets/searchable_service_checklist.dart';
+import 'package:cermatify/app/data/widgets/searchable_dropdown_form_field.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/custom_snackbar.dart';
 import 'package:cermatify/app/modules/profile/controllers/profile_controller.dart';
@@ -149,7 +151,7 @@ class _EditProfileViewState extends State<EditProfileView> {
 
     return EditProfileFieldGrid(
       children: [
-        DropdownButtonFormField<String>(
+        SearchableDropdownFormField(
           initialValue: _validMapValue(
             controller.selectedKampus.value,
             campusItems,
@@ -177,7 +179,7 @@ class _EditProfileViewState extends State<EditProfileView> {
             controller.selectedJurusan.value = '';
           },
         ),
-        DropdownButtonFormField<String>(
+        SearchableDropdownFormField(
           initialValue: _validMapValue(
             controller.selectedJurusan.value,
             majorItems,
@@ -206,7 +208,7 @@ class _EditProfileViewState extends State<EditProfileView> {
               ? null
               : (value) => controller.selectedJurusan.value = value ?? '',
         ),
-        DropdownButtonFormField<String>(
+        SearchableDropdownFormField(
           initialValue:
               controller.listSemester.contains(
                 controller.selectedSemester.value,
@@ -249,7 +251,7 @@ class _EditProfileViewState extends State<EditProfileView> {
           ),
         ),
         const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
+        SearchableDropdownFormField(
           initialValue:
               controller.listMentorRole.contains(
                 controller.selectedMentorRole.value,
@@ -308,33 +310,18 @@ class _EditProfileViewState extends State<EditProfileView> {
                   ),
                 ],
               ),
-              if (controller.availableLayanan.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Text(
-                    'Pilih peran mentor untuk menampilkan layanan.',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                )
-              else
-                ...controller.availableLayanan.map((service) {
-                  final serviceId = service['id'] ?? '';
-                  return CheckboxListTile(
-                    value: controller.selectedLayanan.contains(serviceId),
-                    onChanged: (_) => controller.toggleLayanan(serviceId),
-                    title: Text(
-                      service['name'] ?? '',
-                      style: GoogleFonts.poppins(fontSize: 12),
-                    ),
-                    activeColor: AppColors.primaryColor,
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }),
+              SearchableServiceChecklist(
+                key: ValueKey(controller.selectedMentorRole.value),
+                services: controller.availableLayanan,
+                isLoading: controller.isLoadingServices.value,
+                errorMessage: controller.servicesError.value,
+                onRetry: controller.fetchLayanan,
+                helperText: controller.selectedMentorRole.value.isEmpty
+                    ? 'Lihat semua layanan di bawah. Pilihan pertama akan menentukan bidang pendampinganmu.'
+                    : 'Pilih dari daftar atau cari nama layanan. Ubah peran mentor untuk melihat layanan lainnya.',
+                selectedIds: controller.selectedLayanan.toSet(),
+                onToggle: controller.toggleLayanan,
+              ),
             ],
           ),
         ),

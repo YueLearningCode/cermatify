@@ -131,11 +131,17 @@ class ResponsiveAuthShell extends StatelessWidget {
     required this.form,
     required this.title,
     required this.description,
+    this.visualPanel,
+    this.mobileIntroduction,
+    this.alignTop = false,
   });
 
   final Widget form;
   final String title;
   final String description;
+  final Widget? visualPanel;
+  final Widget? mobileIntroduction;
+  final bool alignTop;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +152,16 @@ class ResponsiveAuthShell extends StatelessWidget {
       return Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
-          child: form,
+          child: mobileIntroduction == null
+              ? form
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    mobileIntroduction!,
+                    const SizedBox(height: 20),
+                    form,
+                  ],
+                ),
         ),
       );
     }
@@ -155,18 +170,23 @@ class ResponsiveAuthShell extends StatelessWidget {
       constraints: BoxConstraints(
         minHeight: viewportHeight.clamp(620, double.infinity),
       ),
-      child: Center(
+      child: Align(
+        alignment: alignTop ? Alignment.topCenter : Alignment.center,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1180),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: alignTop
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: _AuthVisualPanel(
-                  key: const ValueKey('auth_visual_panel'),
-                  title: title,
-                  description: description,
-                ),
+                child:
+                    visualPanel ??
+                    _AuthVisualPanel(
+                      key: const ValueKey('auth_visual_panel'),
+                      title: title,
+                      description: description,
+                    ),
               ),
               const SizedBox(width: 56),
               SizedBox(

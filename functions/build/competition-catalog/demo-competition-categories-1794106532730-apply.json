@@ -1,0 +1,166 @@
+{
+  "projectId": "demo-competition-categories",
+  "readAt": "2026-11-08T02:55:32.728Z",
+  "services": [
+    {
+      "name": "projects/demo-competition-categories/databases/(default)/documents/layanan/essay",
+      "fields": {
+        "name": {
+          "stringValue": "Essai Competition"
+        },
+        "type": {
+          "stringValue": "complink"
+        },
+        "harga": {
+          "integerValue": "20000"
+        }
+      },
+      "createTime": "2026-11-08T02:55:32.183149Z",
+      "updateTime": "2026-11-08T02:55:32.183149Z"
+    },
+    {
+      "name": "projects/demo-competition-categories/databases/(default)/documents/layanan/olympiad",
+      "fields": {
+        "name": {
+          "stringValue": "Olimpiade"
+        },
+        "type": {
+          "stringValue": "complink"
+        },
+        "harga": {
+          "integerValue": "20000"
+        }
+      },
+      "createTime": "2026-11-08T02:55:32.187153Z",
+      "updateTime": "2026-11-08T02:55:32.187153Z"
+    },
+    {
+      "name": "projects/demo-competition-categories/databases/(default)/documents/layanan/poster",
+      "fields": {
+        "name": {
+          "stringValue": "Poster Competition"
+        },
+        "type": {
+          "stringValue": "complink"
+        },
+        "harga": {
+          "integerValue": "20000"
+        },
+        "untouched": {
+          "stringValue": "keep"
+        }
+      },
+      "createTime": "2026-11-08T02:55:32.177151Z",
+      "updateTime": "2026-11-08T02:55:32.177151Z"
+    }
+  ],
+  "categories": [],
+  "plan": {
+    "projectId": "demo-competition-categories",
+    "assignments": [
+      {
+        "id": "essay",
+        "name": "Essai Competition",
+        "categoryId": "karya-tulis-penelitian",
+        "categoryName": "Karya Tulis & Penelitian"
+      },
+      {
+        "id": "poster",
+        "name": "Poster Competition",
+        "categoryId": "desain-media-kreatif",
+        "categoryName": "Desain & Media Kreatif"
+      }
+    ],
+    "skipped": [],
+    "writes": [
+      {
+        "update": {
+          "name": "projects/demo-competition-categories/databases/(default)/documents/competitionCategories/karya-tulis-penelitian",
+          "fields": {
+            "name": {
+              "stringValue": "Karya Tulis & Penelitian"
+            },
+            "active": {
+              "booleanValue": true
+            }
+          }
+        },
+        "currentDocument": {
+          "exists": false
+        },
+        "updateTransforms": [
+          {
+            "fieldPath": "createdAt",
+            "setToServerValue": "REQUEST_TIME"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "setToServerValue": "REQUEST_TIME"
+          }
+        ]
+      },
+      {
+        "update": {
+          "name": "projects/demo-competition-categories/databases/(default)/documents/competitionCategories/desain-media-kreatif",
+          "fields": {
+            "name": {
+              "stringValue": "Desain & Media Kreatif"
+            },
+            "active": {
+              "booleanValue": true
+            }
+          }
+        },
+        "currentDocument": {
+          "exists": false
+        },
+        "updateTransforms": [
+          {
+            "fieldPath": "createdAt",
+            "setToServerValue": "REQUEST_TIME"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "setToServerValue": "REQUEST_TIME"
+          }
+        ]
+      },
+      {
+        "update": {
+          "name": "projects/demo-competition-categories/databases/(default)/documents/layanan/essay",
+          "fields": {
+            "competitionCategoryId": {
+              "stringValue": "karya-tulis-penelitian"
+            }
+          }
+        },
+        "updateMask": {
+          "fieldPaths": [
+            "competitionCategoryId"
+          ]
+        },
+        "currentDocument": {
+          "updateTime": "2026-11-08T02:55:32.183149Z"
+        }
+      },
+      {
+        "update": {
+          "name": "projects/demo-competition-categories/databases/(default)/documents/layanan/poster",
+          "fields": {
+            "competitionCategoryId": {
+              "stringValue": "desain-media-kreatif"
+            }
+          }
+        },
+        "updateMask": {
+          "fieldPaths": [
+            "competitionCategoryId"
+          ]
+        },
+        "currentDocument": {
+          "updateTime": "2026-11-08T02:55:32.177151Z"
+        }
+      }
+    ]
+  }
+}

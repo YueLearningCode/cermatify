@@ -1459,3 +1459,120 @@ Pemisahan profil telah selesai di kode dan pengujian lokal; rollout produksi mas
 - [ ] Konsolidasi katalog kriteria/formulir dan penyimpanan draft per akun; implementasi booking/interview; backend reward/empat saldo; aktivasi pembayaran dan rollout produksi tetap pekerjaan berikutnya.
 
 Log verifikasi lokal: build/backlog-nov2-analyze.log, build/backlog-nov2-tests.log dan build/backlog-nov2-web.log. Kandidat AAB 1.0.0+4 sebelumnya tidak memuat perubahan backlog ini; belum dibuat AAB baru. Tidak ada perubahan rules/backend produksi, data transaksi, billing atau deployment Hosting pada kelanjutan ini.
+
+
+## Bundle Android terbaru - 7 November 2026
+
+- [x] Naikkan versi pubspec.yaml menjadi `1.0.0+5` untuk membuat AAB dari kode terbaru, termasuk perubahan backlog FAQ, tautan sebelum checkout Android dan status reward yang belum aktif.
+- [x] Simpan bundle sebelumnya sebagai `build/play-candidates/cermatify-1.0.0+4.aab`.
+- [x] `flutter analyze --no-pub`: No issues found; seluruh `flutter test --no-pub --reporter expanded`: **210 tes lulus**.
+- [x] `flutter build appbundle --release --no-pub`: berhasil, Gradle 233,4 detik. File utama `build/app/outputs/bundle/release/app-release.aab`; salinan bernama versi `build/play-candidates/cermatify-1.0.0+5.aab`.
+- [x] Bundletool validate lulus; manifest aktual: package `com.cermatify.app`, version name `1.0.0`, version code `5`, min SDK 24 dan target SDK 36.
+- [x] Jarsigner: `jar verified`; pemeriksaan alignment 16 KB lulus untuk library 64-bit (8 library 64-bit dari 12 library native total). Warning signing self-signed/chain/timestamp dan perbedaan JarFile/JarInputStream masih muncul seperti kandidat sebelumnya; bukan klaim bebas warning.
+- [x] Ukuran **69.603.014 byte**, SHA-256 **`63926c7bd73923d20b6171858bf6917d604baf6ac14b6ec5b22a84231b223fa5`**. Hash salinan kandidat cocok dengan file utama.
+- [ ] Unggah melalui Play Console dan uji pemasangan/fungsional lewat Internal testing. Belum dilakukan pada tugas pembuatan bundle ini; kesiapan pembayaran/backend/migrasi produksi tetap mengikuti penghalang rilis terdahulu.
+
+Log: `build/play-release-nov7-aab.log`, `build/play-release-nov7-analyze.log`, `build/play-release-nov7-tests.log`, `build/play-release-v5-bundle-validation.log`, `build/play-release-v5-manifest.xml`, `build/play-release-v5-signature.log`, `build/play-release-v5-native.json`. Build masih memuat warning migrasi Kotlin dan versi SDK XML. Tidak mengubah signing key, melakukan deploy Hosting/backend/rules, atau mengaktifkan biaya. AAB ini menggantikan kandidat +4 sebagai bundle lokal terbaru, belum membuktikan penerimaan Google Play.
+
+
+## Kategori lomba, pencarian pilihan dan privacy policy - 7 November 2026
+
+Arahan: tambahkan kategori pada kompetisi/pencarian mentor, ubah select panjang menjadi pilihan yang dapat dicari dan tetap memiliki daftar, serta siapkan kebijakan privasi. Jawaban pemilik pada 7 November 2026: **chat/dokumen layanan disimpan 1 tahun setelah layanan selesai**. Jawaban asli sebelumnya tidak diubah.
+
+- [x] Tambahkan skema `competitionCategories/{id}` berisi nama, status aktif dan timestamp; tambahkan field opsional `layanan.competitionCategoryId` untuk layanan `complink`. ID layanan, relasi mentor, harga, order dan saldo tetap dipertahankan.
+- [x] Tambahkan tab **Kategori lomba** pada Master Data admin, form tambah/edit, arsip dan aktivasi kembali. Hubungkan layanan kompetisi ke kategori melalui select yang dapat dicari. Arsip mempertahankan referensi layanan lama, bukan menghapus kategori.
+- [x] Tambahkan urutan **kategori lomba -> cabang/layanan -> pencarian mentor**. Semua kategori tetap menyertakan data lama; Belum dikategorikan memudahkan pengelompokan bertahap. Perubahan kategori/reset data mengosongkan pilihan cabang yang tidak lagi sesuai.
+- [x] Implementasikan pilihan dengan pencarian dan daftar pada discovery mentor Paper/Competition, register/edit profil serta filter admin terkait. Pilihan mengembalikan ID, bukan teks bebas; mengetik atau membatalkan tidak mengubah data.
+- [x] Tambahkan pencarian pada daftar checkbox layanan mentor saat register/edit profil. Centang tetap dipertahankan walaupun item tidak termasuk hasil pencarian.
+- [x] Lindungi katalog kategori dengan rules admin aktif, allowlist, validasi nama/timestamp dan larangan delete; validasi layanan menolak kategori palsu/tidak aktif/tipe selain kompetisi. Relasi lama dan layanan tanpa kategori tetap kompatibel.
+- [x] Lengkapi `assets/legal/privacy.json`, `docs/PRIVACY_POLICY.md` dan `web/legal/privacy.html` dengan pengelola/kontak, data/tujuan, kategori/pencarian lokal, akses gambar, data teknis/perangkat, Google/Firebase/Cloudinary/Play, keamanan, hak dan penghapusan akun.
+- [x] Terapkan keputusan retensi **1 tahun** untuk chat/dokumen setelah layanan terkait terakhir selesai, dengan permintaan penghapusan lebih awal dan pengecualian terbatas untuk sengketa/transaksi/keamanan. Kebijakan mengungkap bahwa penghapusan saat ini melalui pemeriksaan pengelola, belum job otomatis.
+- [x] Dokumentasikan skema, langkah admin, rollout dan tes manual pada `docs/COMPETITION_CATEGORIES.md`; prosedur retensi/penghapusan dan publikasi privacy policy pada `docs/PRIVACY_OPERATIONS.md`.
+- [x] Analyzer **No issues found**; seluruh **218 tes Flutter lulus**, termasuk 8 tes tambahan untuk filter kategori, pencarian/pemilihan ID, pembatalan, reset dependensi, multi-select dan layout layar kecil/teks 200 persen. **29 tes Firestore Rules lulus** di emulator `demo-cermatify`, termasuk 4 tes kategori/relasi baru. Tidak menggunakan transaksi/data produksi.
+- [x] `flutter build web --release --no-pub`: berhasil, kompilasi akhir 59,6 detik; hasil di `build/web`. Pesan Wasm dry-run informatif, exit code 0. Ini build lokal dan belum deployment.
+- [ ] Terapkan katalog/client/rules pada lingkungan tujuan secara terkoordinasi dengan migrasi profil publik dan backend sebelumnya; isi kategori sebenarnya lewat admin. Tidak melakukan seed otomatis atau perubahan database produksi pada tugas ini.
+- [ ] Publikasikan HTML privacy policy terbaru pada URL publik dan cocokkan Data safety/URL Play Console. Isi terbaru belum dianggap tayang hanya karena domain sudah aktif.
+- [ ] Tetapkan petugas pemeriksaan retensi bulanan, uji penghapusan Firestore/Cloudinary end-to-end dan siapkan otomasi retensi. Durasi numerik data transaksi/laporan/backup masih perlu ditetapkan terpisah; tidak menyamakan seluruh data dengan chat/dokumen.
+- [ ] Uji akun admin/customer/mentor pada perangkat/browser nyata. Build AAB berikutnya harus menggunakan version code di atas 5; bundle +5 sebelumnya tidak memuat kategori/select/privasi terbaru ini.
+
+Log: `build/categories-nov7-analyze.log`, `build/categories-nov7-tests.log`, `build/categories-nov7-rules.log`, `build/categories-nov7-web.log`. Tidak melakukan deploy Hosting/rules/backend, tidak mengubah billing, tidak menjalankan migrasi produksi dan tidak mengunggah AAB. File panduan baru di docs mengikuti pengecualian docs/ yang sudah ada pada .gitignore; sumber kebijakan JSON/HTML dan kode fitur tetap berada pada berkas proyek yang dilacak.
+
+
+## Pengelompokan layanan bernama Competition - 7 November 2026
+
+Arahan pemilik: baca daftar layanan aktual dan berikan kategori lomba yang menjelaskan bidang kompetisinya agar pemilihan mentoring lebih mudah dipahami.
+
+- [x] Baca katalog produksi proyek cermatify melalui sesi Firebase CLI, tanpa mencetak credential. Ditemukan 15 layanan: 12 bernama Competition, 1 Olimpiade dan 2 layanan Paper; semua 12 Competition belum memiliki kategori dan kategori belum tersedia.
+- [x] Siapkan pemetaan 4 kelompok: Desain & Media Kreatif (UI/UX Design, Poster, Desain Grafis, Infographics, Videografi); Bisnis & Kewirausahaan (Business Case, Business Plan); Karya Tulis & Penelitian (Essai, Paper, LKTI); Debat & Public Speaking (Debate, Speech).
+- [x] Dry-run produksi: 4 dokumen kategori baru dan 12 field competitionCategoryId direncanakan, tanpa nama Competition yang tidak dikenali. Nama, harga Rp20.000, ID layanan, relasi mentor, pesanan dan saldo tidak masuk perubahan.
+- [x] Siapkan functions/competition-categories.js serta functions/scripts/categorize-competition-services.js: default dry-run, target eksplisit, konfirmasi project pada apply, snapshot wajib, updateMask hanya field kategori, precondition versi/exists, commit atomik dan verifikasi field lama setelah tulis. Rerun melewati layanan yang sudah berkategori; nama tidak dikenal dan field invalid dilaporkan tanpa ditimpa.
+- [x] Tambahkan label kategori spesifik pada kartu layanan admin, pilihan cabang dan filter hasil mentor. Nama layanan asli tetap dipakai untuk pencocokan mentor; tampilan kartu sempit tidak overflow.
+- [x] Analyzer bersih; seluruh **219 tes Flutter lulus**, **17 unit test backend/CLI lulus**, dan **1 integration test katalog lulus** di namespace emulator demo-competition-categories. Integration test meliputi dry-run tidak menulis, apply atomik, idempotensi, data Olimpiade/harga tidak berubah, serta abort precondition ketika data diubah bersamaan.
+- [x] Build web release terbaru label kategori berhasil (50,7 detik), exit code 0; hasil di build/web. Belum deploy Hosting.
+- [x] Terapkan pemetaan pada Firebase produksi setelah pemilik menjawab **Setuju, terapkan 4 kategori dan 12 layanan**. Penolakan auto-review sebelumnya terselesaikan dengan persetujuan eksplisit ini. Apply berhasil: 4 kategori dibuat dan competitionCategoryId diisi pada 12 layanan, lalu diverifikasi melalui pembacaan ulang.
+- [x] Baca rules produksi sebagai pembanding: belum ada match competitionCategories atau publicProfiles. Tidak melakukan deploy rules atau mengubah akses data; peluncuran client/akses katalog masih memerlukan rollout yang telah dicatat sebelumnya.
+- [x] Dokumentasikan rencana nyata, batas izin dan pemulihan berbasis snapshot pada docs/COMPETITION_CATEGORIZATION.md. Snapshot katalog dan rules hanya disimpan lokal di build/competition-catalog; bukan ekspor akun/data transaksi.
+
+Log: build/competition-catalog-dry-run.log, build/competition-catalog-unit.log, build/competition-catalog-integration.log, build/competition-labels-analyze.log, build/competition-labels-tests.log dan build/competition-labels-web.log. Tidak menjalankan deploy Hosting, backend, rules, migrasi profil atau unggahan AAB pada tugas ini. Status penulisan katalog harus diperbarui setelah keputusan pemilik dan hasil penerapan benar-benar diperiksa.
+
+
+### Penerapan kategori yang disetujui pemilik - 7 November 2026
+
+- [x] Terima persetujuan eksplisit pemilik untuk 4 kategori dan 12 layanan di Firebase produksi, tanpa perubahan harga/nama/ID/mentor/order/saldo.
+- [x] Ulangi dry-run sebelum apply: target tetap 4 kategori dan 12 layanan, distribusi kelompok sesuai pemetaan yang disetujui.
+- [x] Apply atomik berhasil pada project cermatify. Snapshot wajib disimpan sebelum commit dan snapshot hasil disimpan setelah verifikasi.
+- [x] Pembacaan ulang: **Desain & Media Kreatif 5**, **Bisnis & Kewirausahaan 2**, **Karya Tulis & Penelitian 3**, **Debat & Public Speaking 2**. Seluruh 12 Competition memiliki hubungan kategori.
+- [x] Bandingkan seluruh 15 layanan sebelum/sesudah: tepat 12 field competitionCategoryId berubah; seluruh field lain tetap identik, termasuk nama dan harga. Tiga layanan lainnya tidak berubah.
+- [x] Jalankan dry-run verifikasi setelah apply: 0 category writes dan 0 services linked baru; 12 layanan dilaporkan already-assigned. Tidak menulis ulang kategori/relasi yang sudah selesai.
+- [ ] Peluncuran label/filter UI baru dan akses katalog client melalui rules masih mengikuti rollout terkoordinasi. Persetujuan penerapan katalog ini tidak mencakup deploy Hosting/rules, migrasi profil publik atau aktivasi pembayaran. Pembacaan rules sebelumnya menunjukkan match competitionCategories/publicProfiles belum terdeploy.
+
+Bukti: build/competition-catalog-approved-dry-run.log, build/competition-catalog-apply.log, build/competition-catalog-verified-dry-run.log, build/competition-catalog/verification-summary.json. Snapshot sebelum dan sesudah tercantum pada ringkasan verifikasi. Perubahan produksi pada tugas ini terbatas pada empat dokumen kategori dan field kategori 12 layanan yang disetujui.
+
+
+## Halaman daftar mentor - selesai 8 November 2026
+
+Arahan pemilik: perbagus halaman daftar mentor, cantumkan manfaat dan persyaratan, dengan tema yang tetap dekat dengan login. Pengerjaan dimulai 7 November dan diselesaikan 8 November 2026 setelah proses alat sempat tertahan.
+
+- [x] Tambahkan panel rekrutmen khusus mentor dengan palet biru, gradien lembut, radius membulat, logo dan ilustrasi banner2 yang sama dengan keluarga halaman login. Kedua panel diselaraskan dari atas agar ilustrasi tidak berada jauh di tengah formulir panjang.
+- [x] Cantumkan manfaat: dampak pendampingan, pengalaman membimbing, serta peluang pendapatan sesuai layanan tanpa menjanjikan jumlah sesi atau penghasilan.
+- [x] Cantumkan persyaratan: usia 18+, kompetensi bidang, profil/LinkedIn serta minimal satu bukti kompetensi yang relevan, peninjauan dan interview. Semester 5 dijelaskan sebagai acuan pengalaman, bukan syarat mutlak. Sertakan batas integritas akademik dan kontak tim untuk latar belakang nonmahasiswa yang belum sesuai formulir.
+- [x] Bagi formulir menjadi empat kelompok: Informasi akun, Latar belakang akademik, Keahlian & layanan, Persetujuan. Pindahkan persetujuan usia mentor ke bagian akhir, berdekatan dengan syarat/privasi, tanpa mencentang otomatis atau mengubah kewajiban validasinya.
+- [x] Ubah tombol mentor menjadi **Kirim pengajuan mentor**, dengan status loading yang menonaktifkan tombol. Tinggi tombol mengikuti pembesaran teks; jelaskan akses mentor diberikan setelah pengajuan disetujui.
+- [x] Pertahankan kontrak field, controller, rules dan proses peninjauan yang ada. Layout login memakai opsi default ResponsiveAuthShell seperti sebelumnya; halaman mentor memakai panel/alignTop khusus. Tidak menambahkan janji slot otomatis, interview otomatis atau pencairan otomatis.
+- [x] Pada ponsel/tablet, manfaat dan persyaratan dapat dibuka pada panel ringkas sebelum formulir; pada desktop, informasi lengkap berada di panel kiri. Judul layanan dan nama brand memiliki batas lebar yang benar saat teks diperbesar.
+- [x] Analyzer **No issues found**; seluruh **232 tes Flutter lulus**, termasuk 13 tes baru untuk layout mentor pada 320/375/768/1024/1440 px dan teks 100%/200%, keselarasan panel panjang, pembukaan persyaratan mobile, serta tombol nonaktif saat loading. Tes layout login sebelumnya ikut lulus.
+- [x] Build web release aplikasi utama berhasil (kompilasi terakhir 95,4 detik), hasil di build/web. Log: build/mentor-register-analyze.log, build/mentor-register-tests.log, build/mentor-register-layout-tests.log dan build/mentor-register-web.log.
+- [ ] Pemeriksaan visual/interaksi browser nyata belum lulus. Browser-use dicoba dua kali tetapi kernel/helper gagal; renderer Chrome headless lokal menghasilkan halaman kosong saat bootstrap Firebase, sehingga screenshot tersebut tidak dipakai sebagai bukti UI. Tes widget/build tidak dianggap bukti E2E pendaftaran.
+- [ ] Deploy perubahan UI dan buat AAB baru bila diperlukan. Tidak melakukan deploy Hosting/rules/backend, mengunggah AAB, mengirim formulir, menyetujui usia atau membuat akun pada tugas desain ini.
+
+Berkas utama: lib/app/modules/register/views/register_view.dart, lib/app/modules/register/widgets/mentor_registration_content.dart, lib/app/data/widgets/responsive_layout.dart dan test/mentor_registration_layout_test.dart. Panduan: docs/MENTOR_REGISTRATION_UI.md. Jawaban asli pemilik tetap dipertahankan.
+
+
+## Daftar layanan saat pencarian mentor diklik - 8 November 2026
+
+Arahan pemilik: tampilkan daftar layanan ketika kolom pencarian dipilih agar mentor tidak perlu menebak kata kunci.
+
+- [x] Temukan penyebab daftar kosong sebelum mengetik: availableLayanan langsung mengembalikan daftar kosong ketika bidang mentor belum dipilih, dan pemuatan layanan sebelumnya menunggu query kampus/jurusan yang memakai catch bersama.
+- [x] Tampilkan seluruh layanan Paper/Competition yang valid sebelum bidang ditentukan; pilihan pertama menentukan bidang mentor secara otomatis. Pilihan berikutnya tetap mengikuti satu bidang, dan pilihan manual bidang masih tersedia.
+- [x] Pertahankan daftar checkbox saat kolom kosong/diklik; tambahkan jumlah layanan tersedia, label Cermat Paper/Competition, petunjuk memilih langsung atau mencari, serta tombol hapus pencarian untuk kembali melihat seluruh pilihan tanpa menghapus centang.
+- [x] Pisahkan pemuatan katalog layanan dari data akademik. Gunakan status loading, error dan muat ulang yang berbeda dari daftar kosong atau hasil pencarian tanpa kecocokan. Permintaan katalog bersamaan memakai future yang sama; kegagalan tidak diganti data contoh.
+- [x] Terapkan konsisten di pendaftaran dan edit profil. Pengiriman pengajuan/penyimpanan profil mentor ditahan saat katalog masih dimuat atau gagal dimuat agar pilihan tidak disimpan dari keadaan data yang belum siap.
+- [x] Analyzer No issues found; seluruh **240 tes Flutter lulus**, termasuk 8 tes tambahan untuk pilihan sebelum role, penentuan role dari layanan yang valid, daftar saat fokus tanpa mengetik, tombol hapus yang mempertahankan centang, perbedaan loading/error/kosong/tidak cocok, retry dan teks 200 persen di layar sempit.
+- [x] Build web release terakhir perubahan daftar layanan berhasil (46,0 detik), exit code 0; hasil di build/web. Ini build lokal, belum deployment.
+- [ ] Periksa perilaku pada browser/perangkat dengan akun uji bila lingkungan siap. Tes widget tidak dianggap bukti pengajuan akun atau edit produksi berhasil.
+
+Log: build/mentor-service-search-analyze.log, build/mentor-service-search-focused-tests.log, build/mentor-service-search-tests.log, build/mentor-service-search-web.log. Tidak melakukan perubahan skema database, penulisan produksi, deploy Hosting/rules/backend, atau pembuatan AAB pada tugas ini. File utama: searchable_service_checklist.dart, mentor_service_options.dart, RegisterController/ProfileController dan dua view terkait. Jawaban asli pemilik tetap dipertahankan.
+
+
+## App Bundle terbaru - 8 November 2026
+
+- [x] Naikkan pubspec.yaml menjadi **1.0.0+6**; package tetap **com.cermatify.app**, signing release memakai konfigurasi yang sudah ada.
+- [x] Build `flutter build appbundle --release --no-pub` berhasil, Gradle 209,8 detik. Bundle memuat kategori/label lomba, privacy policy terbaru, desain daftar mentor dan perbaikan daftar/pencarian layanan.
+- [x] Validasi bundletool lulus; manifest aktual version code 6, version name 1.0.0, min SDK 24 dan target SDK 36.
+- [x] Jarsigner menyatakan jar verified. Pemeriksaan alignment 16 KB lulus untuk 8 library 64-bit dari 12 library native total. Warning self-signed/chain/timestamp dan metadata JarFile/JarInputStream tetap muncul seperti kandidat sebelumnya; bukan klaim bebas warning atau diterima Play.
+- [x] File utama: build/app/outputs/bundle/release/app-release.aab. Salinan untuk diunggah: **build/play-candidates/cermatify-1.0.0+6.aab**. Ukuran **69,778,511 byte**; SHA-256 **28b131ea3ffbb50e5abc21cc46d52084c27dcfaee8f54b7725e64f6bee7baee8**. Hash salinan cocok dengan file utama.
+- [x] Kode yang dibundle memakai hasil pengujian pencarian layanan terakhir: analyzer bersih dan 240 tes Flutter lulus. Pada tugas pembuatan bundle ini hanya versi dinaikkan; tidak mengulang tes yang sama tanpa perubahan logika.
+- [x] Jelaskan kepada pemilik: nama file AAB boleh dipertahankan/diganti; Google Play menggunakan versionCode dalam manifest dan setiap unggahan pembaruan memerlukan kode versi yang belum digunakan. File bernama versi memudahkan pemilihan artefak.
+- [ ] Unggah ke Play Console dan uji melalui jalur testing. Belum dilakukan pada tugas ini. Prasyarat backend berbayar, akses kategori/profil publik dan rollout produksi tetap mengikuti catatan sebelumnya.
+
+Log: build/play-release-nov8-v6-aab.log, build/play-release-v6-bundle-validation.log, build/play-release-v6-manifest.xml, build/play-release-v6-signature.log, build/play-release-v6-native.json dan build/play-release-v6-metadata.json. Kandidat +5 tetap tersedia sebagai arsip. Tidak deploy Hosting/rules/backend, mengubah data produksi/billing, atau mengunggah AAB pada tugas pembuatan bundle ini.

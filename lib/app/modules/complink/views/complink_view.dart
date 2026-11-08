@@ -1,4 +1,5 @@
 import 'package:cermatify/app/data/services/app_logger.dart';
+import 'package:cermatify/app/data/models/competition_catalog.dart';
 import 'package:cermatify/app/data/theme/app_colors.dart';
 import 'package:cermatify/app/data/widgets/mentor_discovery_layout.dart';
 import 'package:cermatify/app/routes/app_pages.dart';
@@ -50,6 +51,7 @@ class ComplinkView extends GetView<ComplinkController> {
         layananId: controller.selectedCabang.value,
         layananPrice: price,
         layananType: 'complink',
+        competitionCategory: controller.selectedCategoryName,
       ),
     );
   }
@@ -77,8 +79,32 @@ class ComplinkView extends GetView<ComplinkController> {
           onSubmit: _searchMentors,
           children: [
             DiscoverySelectField(
-              label: 'Kategori kompetisi',
-              hint: 'Pilih kategori atau cabang lomba',
+              label: 'Kategori lomba',
+              hint: 'Cari kategori lomba',
+              icon: Icons.category_outlined,
+              value: controller.selectedCategory.value,
+              items: [
+                const DropdownMenuItem(
+                  value: '',
+                  child: Text('Semua kategori'),
+                ),
+                const DropdownMenuItem(
+                  value: uncategorizedCompetitionId,
+                  child: Text('Belum dikategorikan'),
+                ),
+                ...controller.categories.map(
+                  (item) => DropdownMenuItem(
+                    value: item['id'],
+                    child: Text(item['name'] ?? ''),
+                  ),
+                ),
+              ],
+              onChanged: (value) =>
+                  controller.selectedCategory.value = value ?? '',
+            ),
+            DiscoverySelectField(
+              label: 'Cabang atau layanan lomba',
+              hint: 'Cari cabang lomba',
               icon: Icons.workspace_premium_outlined,
               value: _safeValue(
                 controller.selectedCabang.value,
@@ -89,7 +115,7 @@ class ComplinkView extends GetView<ComplinkController> {
                     (item) => DropdownMenuItem<String>(
                       value: item['id'],
                       child: Text(
-                        item['name'] ?? '-',
+                        controller.serviceChoiceLabel(item),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

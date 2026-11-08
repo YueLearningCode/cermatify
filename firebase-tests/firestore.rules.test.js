@@ -110,6 +110,57 @@ after(async () => {
   await testEnv.cleanup();
 });
 
+test('competition category catalog is public but only active admins can write', async () => {
+  const admin = testEnv.authenticatedContext('admin-1').firestore();
+  const customer = testEnv.authenticatedContext('customer-1').firestore();
+  const guest = testEnv.unauthenticatedContext().firestore();
+  const category = { name: 'Riset dan karya ilmiah', active: true,
+    createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+  await assertFails(setDoc(doc(customer, 'competitionCategories/research'), category));
+  await assertFails(setDoc(doc(guest, 'competitionCategories/research'), category));
+  await assertSucceeds(setDoc(doc(admin, 'competitionCategories/research'), category));
+  await assertSucceeds(getDocs(collection(guest, 'competitionCategories')));
+  await assertFails(updateDoc(doc(admin, 'competitionCategories/research'), { privateNotes: 'not public' }));
+  await assertFails(updateDoc(doc(admin, 'competitionCategories/research'), { name: 'x'.repeat(101), updatedAt: serverTimestamp() }));
+});
+
+test('competition services require an existing active category and reject paper links', async () => {
+  const db = testEnv.authenticatedContext('admin-1').firestore();
+  const service = { name: 'Esai', type: 'complink', harga: 75000, competitionCategoryId: 'writing' };
+  await assertFails(setDoc(doc(db, 'layanan/essay'), service));
+  await assertSucceeds(setDoc(doc(db, 'competitionCategories/writing'), {
+    name: 'Kepenulisan', active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+  }));
+  await assertSucceeds(setDoc(doc(db, 'layanan/essay'), service));
+  await assertFails(setDoc(doc(db, 'layanan/paper'), { ...service, type: 'paperlink' }));
+  await assertFails(setDoc(doc(db, 'layanan/invalid'), { ...service, competitionCategoryId: ['writing'] }));
+});
+
+test('archiving preserves old references while preventing new assignments', async () => {
+  const db = testEnv.authenticatedContext('admin-1').firestore();
+  await setDoc(doc(db, 'competitionCategories/writing'), {
+    name: 'Kepenulisan', active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+  });
+  await setDoc(doc(db, 'layanan/essay'), {
+    name: 'Esai', type: 'complink', harga: 75000, competitionCategoryId: 'writing',
+  });
+  await assertSucceeds(updateDoc(doc(db, 'competitionCategories/writing'), { active: false, updatedAt: serverTimestamp() }));
+  await assertFails(deleteDoc(doc(db, 'competitionCategories/writing')));
+  await assertSucceeds(updateDoc(doc(db, 'layanan/essay'), { harga: 80000 }));
+  await assertFails(setDoc(doc(db, 'layanan/new'), { name: 'Baru', type: 'complink', harga: 75000, competitionCategoryId: 'writing' }));
+  await assertSucceeds(updateDoc(doc(db, 'layanan/essay'), { competitionCategoryId: '' }));
+  await assertSucceeds(updateDoc(doc(db, 'competitionCategories/writing'), { active: true, updatedAt: serverTimestamp() }));
+  await assertSucceeds(updateDoc(doc(db, 'layanan/essay'), { competitionCategoryId: 'writing' }));
+});
+
+test('legacy services without category remain writable only by admin', async () => {
+  const admin = testEnv.authenticatedContext('admin-1').firestore();
+  const customer = testEnv.authenticatedContext('customer-1').firestore();
+  await assertSucceeds(updateDoc(doc(admin, 'layanan/service-1'), { harga: 55000 }));
+  await assertSucceeds(setDoc(doc(admin, 'layanan/legacy'), { name: 'Lomba lama', type: 'complink', harga: 75000 }));
+  await assertFails(updateDoc(doc(customer, 'layanan/legacy'), { competitionCategoryId: '' }));
+});
+
 test('unauthenticated visitors cannot read user documents', async () => {
   const db = testEnv.unauthenticatedContext().firestore();
   await assertFails(getDoc(doc(db, 'users/customer-1')));

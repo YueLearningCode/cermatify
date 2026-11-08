@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/widgets/searchable_dropdown_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -51,7 +52,7 @@ class MasterDataView extends GetView<MasterDataController> {
                       horizontalPadding,
                       0,
                     ),
-                    child: _MasterDataTabs(
+                    child: AdminMasterDataTabs(
                       selectedIndex: selectedTab,
                       onSelected: controller.changeTab,
                     ),
@@ -111,11 +112,15 @@ class MasterDataView extends GetView<MasterDataController> {
         scrollable: true,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Hapus data',
+          controller.selectedTab.value == 3
+              ? 'Arsipkan kategori'
+              : 'Hapus data',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         content: Text(
-          'Yakin ingin menghapus “${item.name}”? Tindakan ini tidak dapat dibatalkan.',
+          controller.selectedTab.value == 3
+              ? 'Arsipkan kategori ini? Relasi layanan lama tetap disimpan. Kategori dapat diaktifkan kembali melalui Edit.'
+              : 'Yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.',
           style: GoogleFonts.poppins(),
         ),
         actions: [
@@ -130,7 +135,7 @@ class MasterDataView extends GetView<MasterDataController> {
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.redColor),
             child: Text(
-              'Hapus',
+              controller.selectedTab.value == 3 ? 'Arsipkan' : 'Hapus',
               style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
           ),
@@ -332,6 +337,70 @@ class MasterDataView extends GetView<MasterDataController> {
                   );
                 }),
               ],
+              if (controller.selectedTab.value == 3) ...[
+                const SizedBox(height: 12),
+                Obx(
+                  () => SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Kategori aktif'),
+                    subtitle: const Text(
+                      'Kategori arsip tetap tersimpan untuk layanan lama.',
+                    ),
+                    value: controller.categoryActive.value,
+                    onChanged: (value) =>
+                        controller.categoryActive.value = value,
+                  ),
+                ),
+              ],
+              if (isLayanan) ...[
+                const SizedBox(height: 16),
+                Obx(() {
+                  if (controller.typeController.value != 'complink') {
+                    return const SizedBox.shrink();
+                  }
+                  if (controller.categoriesError.value.isNotEmpty) {
+                    return TextButton(
+                      onPressed: controller.fetchCategories,
+                      child: Text(controller.categoriesError.value),
+                    );
+                  }
+                  return SearchableDropdownFormField(
+                    initialValue: controller.selectedCompetitionCategory.value,
+                    decoration: const InputDecoration(
+                      labelText: 'Kategori lomba',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      const DropdownMenuItem(
+                        value: '',
+                        child: Text('Belum dikategorikan'),
+                      ),
+                      ...controller.competitionCategories
+                          .where(
+                            (category) =>
+                                category.active ||
+                                category.id ==
+                                    controller
+                                        .selectedCompetitionCategory
+                                        .value,
+                          )
+                          .map(
+                            (category) => DropdownMenuItem(
+                              value: category.id,
+                              child: Text(
+                                category.active
+                                    ? category.name
+                                    : '${category.name} (arsip)',
+                              ),
+                            ),
+                          ),
+                    ],
+                    onChanged: (value) =>
+                        controller.selectedCompetitionCategory.value =
+                            value ?? '',
+                  );
+                }),
+              ],
               if (isLayanan && isEdit) ...[
                 const SizedBox(height: 16),
                 Obx(() {
@@ -530,6 +599,10 @@ class MasterDataView extends GetView<MasterDataController> {
                               ? controller.selectedKampusForJurusan.value
                               : null,
                           harga: isLayanan ? harga : null,
+                          competitionCategoryId: isLayanan
+                              ? controller.selectedCompetitionCategory.value
+                              : null,
+                          active: controller.categoryActive.value,
                         );
                       } else {
                         final harga = controller.hargaController.text.isNotEmpty
@@ -549,6 +622,10 @@ class MasterDataView extends GetView<MasterDataController> {
                               ? controller.selectedKampusForJurusan.value
                               : null,
                           harga: isLayanan ? harga : null,
+                          competitionCategoryId: isLayanan
+                              ? controller.selectedCompetitionCategory.value
+                              : null,
+                          active: controller.categoryActive.value,
                         );
                       }
                     },
@@ -592,6 +669,15 @@ class MasterDataView extends GetView<MasterDataController> {
     final isJurusan = controller.selectedTab.value == 1;
     final hasSelectedKampus = controller.selectedKampus.value.isNotEmpty;
 
+    if (controller.selectedTab.value == 3 &&
+        controller.categoriesError.value.isNotEmpty) {
+      return Center(
+        child: TextButton(
+          onPressed: controller.fetchCategories,
+          child: Text(controller.categoriesError.value),
+        ),
+      );
+    }
     if (isJurusan && !hasSelectedKampus) {
       return const _MasterDataEmptyState(
         icon: Icons.menu_book_outlined,
@@ -643,6 +729,11 @@ class MasterDataView extends GetView<MasterDataController> {
           item: item,
           tabIndex: controller.selectedTab.value,
           kampusName: kampusName,
+          competitionCategoryName: controller.competitionCategories
+              .firstWhereOrNull(
+                (category) => category.id == item.competitionCategoryId,
+              )
+              ?.name,
           onOpen: controller.selectedTab.value == 0
               ? () => controller.openJurusanForKampus(item.id)
               : null,
@@ -719,7 +810,7 @@ class _MasterDataHeader extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                'Atur kampus, jurusan, dan layanan yang digunakan Cermatify.',
+                'Atur kampus, jurusan, kategori lomba, dan layanan Cermatify.',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -778,8 +869,9 @@ class _MasterDataHeader extends StatelessWidget {
   }
 }
 
-class _MasterDataTabs extends StatelessWidget {
-  const _MasterDataTabs({
+class AdminMasterDataTabs extends StatelessWidget {
+  const AdminMasterDataTabs({
+    super.key,
     required this.selectedIndex,
     required this.onSelected,
   });
@@ -793,10 +885,14 @@ class _MasterDataTabs extends StatelessWidget {
       (label: 'Kampus', icon: Icons.school_outlined),
       (label: 'Jurusan', icon: Icons.menu_book_outlined),
       (label: 'Layanan', icon: Icons.work_outline_rounded),
+      (label: 'Kategori lomba', icon: Icons.category_outlined),
     ];
 
+    final compact =
+        MediaQuery.sizeOf(context).width < 600 ||
+        MediaQuery.textScalerOf(context).scale(11) > 16;
     return Container(
-      height: 52,
+      height: compact ? 100 : 52,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -812,13 +908,14 @@ class _MasterDataTabs extends StatelessWidget {
               borderRadius: BorderRadius.circular(11),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                height: 42,
+                height: compact ? 90 : 42,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: selected ? AppColors.primaryColor : Colors.transparent,
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Row(
+                child: Flex(
+                  direction: compact ? Axis.vertical : Axis.horizontal,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
@@ -828,10 +925,12 @@ class _MasterDataTabs extends StatelessWidget {
                           ? AppColors.surface
                           : AppColors.textSecondary,
                     ),
-                    const SizedBox(width: 7),
+                    SizedBox(width: compact ? 0 : 7, height: compact ? 4 : 0),
                     Flexible(
                       child: Text(
                         tabs[index].label,
+                        maxLines: compact ? 2 : 1,
+                        textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 11,
@@ -942,7 +1041,7 @@ class _MasterDataToolbar extends StatelessWidget {
 
   Widget? _buildFilter() {
     if (selectedTab == 1) {
-      return DropdownButtonFormField<String>(
+      return SearchableDropdownFormField(
         initialValue: selectedKampus.isEmpty ? null : selectedKampus,
         isExpanded: true,
         hint: Text('Pilih kampus', style: GoogleFonts.poppins(fontSize: 12)),
@@ -964,7 +1063,7 @@ class _MasterDataToolbar extends StatelessWidget {
     }
 
     if (selectedTab == 2) {
-      return DropdownButtonFormField<String>(
+      return SearchableDropdownFormField(
         initialValue: selectedLayananFilter,
         decoration: _filterDecoration(Icons.filter_alt_outlined),
         style: GoogleFonts.poppins(fontSize: 11, color: AppColors.textPrimary),
@@ -1012,6 +1111,7 @@ class AdminMasterDataCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onOpen,
+    this.competitionCategoryName,
   });
 
   final MasterDataItem item;
@@ -1020,6 +1120,7 @@ class AdminMasterDataCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback? onOpen;
+  final String? competitionCategoryName;
 
   @override
   Widget build(BuildContext context) {
@@ -1030,6 +1131,8 @@ class AdminMasterDataCard extends StatelessWidget {
         ? kampusName
         : tabIndex == 2 && item.harga != null
         ? AppFormats.hargaPendek(item.harga!)
+        : tabIndex == 3
+        ? (item.active ? 'Kategori aktif' : 'Kategori diarsipkan')
         : _masterDataLabel(tabIndex);
 
     return Material(
@@ -1092,8 +1195,10 @@ class AdminMasterDataCard extends StatelessWidget {
                       const SizedBox(height: 5),
                       Text(
                         item.type == 'complink'
-                            ? 'Cermat Competition'
+                            ? 'Cermat Competition · ${competitionCategoryName ?? 'Belum dikategorikan'}'
                             : 'Cermat Paper',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 9,
                           fontWeight: FontWeight.w600,
@@ -1113,7 +1218,7 @@ class AdminMasterDataCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               _CardAction(
-                tooltip: 'Hapus data',
+                tooltip: tabIndex == 3 ? 'Arsipkan kategori' : 'Hapus data',
                 icon: Icons.delete_outline_rounded,
                 color: AppColors.redColor,
                 onTap: onDelete,
@@ -1242,6 +1347,8 @@ IconData _masterDataIcon(int index) {
       return Icons.menu_book_outlined;
     case 2:
       return Icons.work_outline_rounded;
+    case 3:
+      return Icons.category_outlined;
     default:
       return Icons.school_outlined;
   }
@@ -1253,6 +1360,8 @@ String _masterDataLabel(int index) {
       return 'Jurusan';
     case 2:
       return 'Layanan';
+    case 3:
+      return 'Kategori lomba';
     default:
       return 'Kampus';
   }

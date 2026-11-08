@@ -1,3 +1,4 @@
+import 'package:cermatify/app/data/models/mentor_service_options.dart';
 import 'dart:async';
 import 'package:cermatify/app/data/services/app_logger.dart';
 import 'package:get/get.dart';
@@ -108,12 +109,12 @@ class ProfileController extends GetxController {
       .obs; // [{id: '...', name: '...', type: 'complink'|'paperlink'}]
 
   // Get available layanan filtered by mentor role
-  List<Map<String, String>> get availableLayanan {
-    if (selectedMentorRole.value.isEmpty) return [];
-    return listLayanan
-        .where((layanan) => layanan['type'] == selectedMentorRole.value)
-        .toList();
-  }
+  List<Map<String, String>> get availableLayanan =>
+      availableMentorServices(listLayanan, selectedMentorRole.value);
+
+  final isLoadingServices = false.obs;
+  final servicesError = ''.obs;
+  Future<void>? _servicesRequest;
 
   // Selected values for dropdowns in edit profile
   var selectedKampus = ''.obs; // Store kampus ID
@@ -164,6 +165,10 @@ class ProfileController extends GetxController {
 
   // Fetch master data from Firebase
   Future<void> fetchMasterData() async {
+    await Future.wait([_fetchAcademicMasterData(), fetchLayanan()]);
+  }
+
+  Future<void> _fetchAcademicMasterData() async {
     try {
       // Fetch kampus
       final kampusSnapshot = await _firestore.collection('kampus').get();
@@ -187,31 +192,56 @@ class ProfileController extends GetxController {
           })
           .toList()
           .cast<Map<String, String>>();
-
-      // Fetch layanan
-      final layananSnapshot = await _firestore.collection('layanan').get();
-      listLayanan.value = layananSnapshot.docs
-          .map((doc) {
-            final data = doc.data();
-            return {
-              'id': doc.id,
-              'name': data['name']?.toString() ?? '',
-              'type': data['type']?.toString() ?? '',
-            };
-          })
-          .toList()
-          .cast<Map<String, String>>();
     } catch (e) {
       AppLogger.info('Error fetching master data: $e');
+    }
+  }
+
+  Future<void> fetchLayanan() => _servicesRequest ??= _fetchLayanan()
+      .whenComplete(() => _servicesRequest = null);
+
+  Future<void> _fetchLayanan() async {
+    isLoadingServices.value = true;
+    servicesError.value = '';
+    try {
+      final snapshot = await _firestore.collection('layanan').get();
+      final services = snapshot.docs.map(
+        (doc) => {
+          'id': doc.id,
+          'name': doc.data()['name']?.toString().trim() ?? '',
+          'type': doc.data()['type']?.toString() ?? '',
+        },
+      );
+      listLayanan.assignAll(availableMentorServices(services, ''));
+      listLayanan.sort(
+        (a, b) => (a['name'] ?? '').toLowerCase().compareTo(
+          (b['name'] ?? '').toLowerCase(),
+        ),
+      );
+    } catch (_) {
+      servicesError.value =
+          'Daftar layanan belum dapat dimuat. Periksa koneksi dan coba lagi.';
+    } finally {
+      isLoadingServices.value = false;
     }
   }
 
   void toggleLayanan(String layananId) {
     if (selectedLayanan.contains(layananId)) {
       selectedLayanan.remove(layananId);
-    } else {
-      selectedLayanan.add(layananId);
+      return;
     }
+    final role = mentorRoleForServiceSelection(
+      listLayanan,
+      layananId,
+      selectedMentorRole.value,
+    );
+    if (role == null) return;
+    if (selectedMentorRole.value.isEmpty) {
+      selectedMentorRole.value = role;
+      selectedLayanan.clear();
+    }
+    selectedLayanan.add(layananId);
   }
 
   @override
@@ -405,6 +435,15 @@ class ProfileController extends GetxController {
     String? mentorRole,
     List<String>? layananIds,
   }) async {
+    if (userRole.value == 'mentor' &&
+        (isLoadingServices.value || servicesError.value.isNotEmpty)) {
+      CustomSnackbar.show(
+        title: 'Periksa daftar layanan',
+        message:
+            'Tunggu daftar layanan selesai dimuat atau coba muat ulang sebelum menyimpan profil.',
+      );
+      return false;
+    }
     try {
       isLoading.value = true;
       final User? user = _auth.currentUser;

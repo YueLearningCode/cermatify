@@ -10,6 +10,8 @@ class MasterDataItem {
   final String name;
   final String? type; // For layanan: 'complink' or 'paperlink'
   final String? kampusId; // For jurusan: links to kampus
+  final String? competitionCategoryId;
+  final bool active;
   final int? harga; // For layanan: price in Rupiah
 
   MasterDataItem({
@@ -18,6 +20,8 @@ class MasterDataItem {
     this.type,
     this.kampusId,
     this.harga,
+    this.competitionCategoryId,
+    this.active = true,
   });
 
   factory MasterDataItem.fromFirestore(DocumentSnapshot doc) {
@@ -26,6 +30,8 @@ class MasterDataItem {
       id: doc.id,
       name: data['name'] ?? '',
       type: data['type'],
+      competitionCategoryId: data['competitionCategoryId'] as String?,
+      active: data['active'] != false,
       kampusId: data['kampusId'],
       harga: data['harga'] != null
           ? (data['harga'] is int
@@ -46,6 +52,9 @@ class MasterDataItem {
     if (harga != null) {
       map['harga'] = harga;
     }
+    if (competitionCategoryId != null) {
+      map['competitionCategoryId'] = competitionCategoryId;
+    }
     return map;
   }
 }
@@ -60,6 +69,10 @@ class MasterDataController extends GetxController {
   final kampusList = <MasterDataItem>[].obs;
   final jurusanList = <MasterDataItem>[].obs;
   final layananList = <MasterDataItem>[].obs;
+  final competitionCategories = <MasterDataItem>[].obs;
+  final selectedCompetitionCategory = ''.obs;
+  final categoryActive = true.obs;
+  final categoriesError = ''.obs;
 
   final isLoading = false.obs;
   final isSaving = false.obs;
@@ -86,12 +99,21 @@ class MasterDataController extends GetxController {
   }
 
   Future<void> fetchAllData() async {
-    await Future.wait([fetchKampus(), fetchJurusan(), fetchLayanan()]);
+    isLoading.value = true;
+    try {
+      await Future.wait([
+        fetchKampus(),
+        fetchJurusan(),
+        fetchLayanan(),
+        fetchCategories(),
+      ]);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> fetchKampus() async {
     try {
-      isLoading.value = true;
       QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         // Try with orderBy createdAt first
@@ -126,14 +148,11 @@ class MasterDataController extends GetxController {
     } catch (e) {
       AppLogger.info('Error fetching kampus: $e');
       kampusList.value = [];
-    } finally {
-      isLoading.value = false;
     }
   }
 
   Future<void> fetchJurusan() async {
     try {
-      isLoading.value = true;
       QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         // Try with orderBy createdAt first
@@ -170,14 +189,11 @@ class MasterDataController extends GetxController {
     } catch (e) {
       AppLogger.info('Error fetching jurusan: $e');
       jurusanList.value = [];
-    } finally {
-      isLoading.value = false;
     }
   }
 
   Future<void> fetchLayanan() async {
     try {
-      isLoading.value = true;
       QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         // Try with orderBy createdAt first
@@ -214,8 +230,24 @@ class MasterDataController extends GetxController {
     } catch (e) {
       AppLogger.info('Error fetching layanan: $e');
       layananList.value = [];
-    } finally {
-      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchCategories() async {
+    categoriesError.value = '';
+    try {
+      final snapshot = await _firestore
+          .collection('competitionCategories')
+          .get();
+      competitionCategories.assignAll(
+        snapshot.docs.map(MasterDataItem.fromFirestore),
+      );
+      competitionCategories.sort(
+        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
+    } catch (_) {
+      categoriesError.value =
+          'Kategori lomba belum dapat dimuat. Coba muat ulang.';
     }
   }
 
@@ -227,6 +259,8 @@ class MasterDataController extends GetxController {
         return 'jurusan';
       case 2:
         return 'layanan';
+      case 3:
+        return 'competitionCategories';
       default:
         return 'kampus';
     }
@@ -241,6 +275,8 @@ class MasterDataController extends GetxController {
         return _getFilteredJurusan();
       case 2:
         return _getFilteredLayanan();
+      case 3:
+        return competitionCategories;
       default:
         return kampusList;
     }
@@ -285,12 +321,25 @@ class MasterDataController extends GetxController {
     String? type,
     String? kampusId,
     int? harga,
+    String? competitionCategoryId,
+    bool active = true,
   }) async {
+    if (isSaving.value) return;
     try {
       if (name.trim().isEmpty) {
         CustomSnackbar.show(
           title: 'Error',
           message: 'Name cannot be empty',
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return;
+      }
+
+      if (selectedTab.value == 3 && name.trim().length > 100) {
+        CustomSnackbar.show(
+          title: 'Nama kategori terlalu panjang',
+          message: 'Gunakan maksimal 100 karakter.',
           backgroundColor: AppColors.redColor,
           isNav: false,
         );
@@ -335,6 +384,14 @@ class MasterDataController extends GetxController {
         data['harga'] = harga;
       }
 
+      if (collection == 'competitionCategories') {
+        data['active'] = active;
+        data['updatedAt'] = FieldValue.serverTimestamp();
+      } else if (collection == 'layanan') {
+        data['competitionCategoryId'] = type == 'complink'
+            ? (competitionCategoryId ?? '')
+            : '';
+      }
       await _firestore.collection(collection).add(data);
 
       // Close dialog first
@@ -367,12 +424,25 @@ class MasterDataController extends GetxController {
     String? type,
     String? kampusId,
     int? harga,
+    String? competitionCategoryId,
+    bool active = true,
   }) async {
+    if (isSaving.value) return;
     try {
       if (name.trim().isEmpty) {
         CustomSnackbar.show(
           title: 'Error',
           message: 'Name cannot be empty',
+          backgroundColor: AppColors.redColor,
+          isNav: false,
+        );
+        return;
+      }
+
+      if (selectedTab.value == 3 && name.trim().length > 100) {
+        CustomSnackbar.show(
+          title: 'Nama kategori terlalu panjang',
+          message: 'Gunakan maksimal 100 karakter.',
           backgroundColor: AppColors.redColor,
           isNav: false,
         );
@@ -414,6 +484,14 @@ class MasterDataController extends GetxController {
         data['harga'] = harga;
       }
 
+      if (collection == 'competitionCategories') {
+        data['active'] = active;
+        data['updatedAt'] = FieldValue.serverTimestamp();
+      } else if (collection == 'layanan') {
+        data['competitionCategoryId'] = type == 'complink'
+            ? (competitionCategoryId ?? '')
+            : '';
+      }
       await _firestore.collection(collection).doc(id).update(data);
 
       // Close dialog first
@@ -445,11 +523,20 @@ class MasterDataController extends GetxController {
       isSaving.value = true;
       final collection = getCollectionName();
 
-      await _firestore.collection(collection).doc(id).delete();
+      if (collection == 'competitionCategories') {
+        await _firestore.collection(collection).doc(id).update({
+          'active': false,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await _firestore.collection(collection).doc(id).delete();
+      }
 
       CustomSnackbar.show(
         title: 'Success',
-        message: 'Item deleted successfully',
+        message: collection == 'competitionCategories'
+            ? 'Kategori diarsipkan. Relasi layanan tetap disimpan.'
+            : 'Item deleted successfully',
         backgroundColor: AppColors.greenColor,
         isNav: false,
       );
@@ -496,6 +583,8 @@ class MasterDataController extends GetxController {
   }
 
   void openCreateDialog() {
+    selectedCompetitionCategory.value = '';
+    categoryActive.value = true;
     nameController.clear();
     hargaController.clear();
     // For jurusan, use the currently selected kampus from filter
@@ -518,6 +607,8 @@ class MasterDataController extends GetxController {
   }
 
   void openEditDialog(MasterDataItem item) {
+    selectedCompetitionCategory.value = item.competitionCategoryId ?? '';
+    categoryActive.value = item.active;
     nameController.text = item.name;
     if (item.harga != null) {
       hargaController.text = item.harga.toString();
